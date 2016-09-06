@@ -1,0 +1,18 @@
+# Build folders
+build/
+Debug/
+Release/
+ipch/
+
+# Resources folder
+res/
+
+# Application produced files
+imgui.ini
+log.txt
+
+# Visual Studio Files
+*.opensdf
+*.sdf
+*.suo
+*.vcxproj.user

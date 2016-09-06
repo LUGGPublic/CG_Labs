@@ -1,0 +1,5 @@
+#pragma once
+
+
+#define SHADERS_PATH(n)   (std::string("@SHADERS_DIR@/") + std::string(n))
+#define RESOURCES_PATH(n) (std::string("@RESOURCES_DIR@/") + std::string(n))
