@@ -36,9 +36,9 @@ find_package (OpenGL REQUIRED)
 # assimp is used for loading the objects’s models
 # 3.3 is required as it is the first version to have (experimental) glTF
 # support
-find_package ( assimp )
+find_package (assimp QUIET)
 if (NOT assimp_FOUND)
-	message (STATUS "Ignore the previous message about assimp, we will use our own.")
+	message (STATUS "As assimp was not found on your computer, we will fetch it from the source.")
 	EXTERNALPROJECT_ADD (
 		assimp
 		PREFIX "assimp"
@@ -72,9 +72,9 @@ endif ()
 
 
 # GLFW is used for inputs and windows handling
-find_package ( glfw3 )
+find_package (glfw3 QUIET)
 if (NOT glfw3_FOUND)
-	message (STATUS "Ignore the previous message about glfw, we will use our own.")
+	message (STATUS "As GLFW was not found on your computer, we will fetch it from the source.")
 	EXTERNALPROJECT_ADD (
 		glfw
 		PREFIX "glfw"
@@ -97,9 +97,9 @@ endif ()
 
 
 # GLM is used for matrices, vectors and camera handling
-find_package (glm)
+find_package (glm QUIET)
 if (NOT glm_FOUND)
-	MESSAGE (STATUS "Ignore the previous message about glm, we will use our own.")
+	MESSAGE (STATUS "As GLM was not found on your computer, we will fetch it from the source.")
 	EXTERNALPROJECT_ADD (
 		glm
 		PREFIX "glm"
@@ -115,8 +115,9 @@ endif ()
 
 
 # ImGui is used for the windowing system inside the application
-find_package (imgui)
+find_package (imgui QUIET)
 if (NOT imgui_FOUND)
+	MESSAGE (STATUS "As Dear ImGUI was not found on your computer, we will fetch it from the source.")
 	EXTERNALPROJECT_ADD (
 		imgui
 		PREFIX "imgui"
