@@ -52,6 +52,8 @@ if (NOT assimp_FOUND)
 	set (ASSIMP_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/assimp/include" CACHE STRING "assimp include dir")
 	if (CMAKE_HOST_WIN32)
 		set (ASSIMP_LIBRARIES "${CMAKE_BINARY_DIR}/assimp/lib/assimp-vc140-mt.lib" CACHE STRING "assimp lib path")
+		add_custom_command (TARGET assimp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/assimp/bin/assimp-vc140-mt.dll ${CMAKE_BINARY_DIR}/src/${PROJECT_NAME}/Debug)
+		add_custom_command (TARGET assimp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/assimp/bin/assimp-vc140-mt.dll ${CMAKE_BINARY_DIR}/src/${PROJECT_NAME}/Release)
 	elseif (CMAKE_HOST_APPLE)
 		set (ASSIMP_LIBRARIES "${CMAKE_BINARY_DIR}/assimp/lib/libassimp.dylib" CACHE STRING "assimp lib path")
 	else ()
@@ -177,6 +179,27 @@ set (RESOURCES_DIR "${PROJECT_SOURCE_DIR}/res")
 configure_file ("${PROJECT_SOURCE_DIR}/src/core/config.hpp.in" "${PROJECT_BINARY_DIR}/config.hpp")
 
 
+# Set up Doxygen documentation generation
+option (LUGGCGL_BUILD_DOCUMENTATION "Build documentation for Lund University Computer Graphics Labs" OFF)
+if (LUGGCGL_BUILD_DOCUMENTATION)
+	find_package (Doxygen REQUIRED)
+	set (LUGGCGL_VERSION_NUMBER "${CMAKE_PROJECT_VERSION}")
+	set (LUGGCGL_DOC_INPUT "${CMAKE_SOURCE_DIR}/src")
+	set (LUGGCGL_DOC_EXCLUDE ${CMAKE_SOURCE_DIR}/src/external" "${CMAKE_SOURCE_DIR}/src/EDA221_Assignment1)
+	set (LUGGCGL_DOC_OUTPUT "${CMAKE_BINARY_DIR}/doc")
+	if (NOT EXISTS "${LUGGCGL_DOC_OUTPUT}")
+		file (MAKE_DIRECTORY "${LUGGCGL_DOC_OUTPUT}")
+	endif ()
+	configure_file ("${CMAKE_SOURCE_DIR}/Doxyfile.in" "${CMAKE_BINARY_DIR}/doc/Doxyfile" @ONLY)
+	add_custom_target (
+		doc
+		COMMAND ${DOXYGEN_EXECUTABLE} "${CMAKE_BINARY_DIR}/doc/Doxyfile"
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/doc"
+		COMMENT "Generating API documentation with Doxygen"
+	)
+endif ()
+
+
 # Define groups of files for IDEs
 set (PATH_SEP \\)
 source_group (Source\ Files${PATH_SEP}External${PATH_SEP}lodepng FILES ${PROJECT_SOURCE_DIR}/src/lodepng.cpp ${PROJECT_SOURCE_DIR}/src/external/lodepng.h)
@@ -209,3 +232,4 @@ add_dependencies (bonobo project_dep)
 add_dependencies (external_libs project_dep)
 add_dependencies (bonobo external_libs)
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/EDA221_Assignment1")
+add_subdirectory ("${CMAKE_SOURCE_DIR}/src/EDA221")
