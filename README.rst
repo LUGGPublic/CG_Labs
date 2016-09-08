@@ -35,9 +35,13 @@ The project uses CMake to automate the building. It is recommended to build in
 a separate folder but you can as well build directly within the source
 directory. We will use the following directory layout::
 
-  * EDA221_Assignment1
-  |-> * code
-  |-> * build
+  * some_random_folder // Wherever you want to store the project on your
+  |                    // computer.
+  |
+  |-> * code           // This is what you downloaded from GitHub.
+  |
+  |-> * build          // A folder you created, and which will contain all the
+                       // build related files.
 
 First, you need to create the project files, be it for Makefile, Ninja, Xcode,
 Visual Studio::
