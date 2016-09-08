@@ -137,6 +137,30 @@ if (NOT imgui_FOUND)
 	endif ()
 endif ()
 
+set (LUCGL_RES_ZIP_FILE "${CMAKE_SOURCE_DIR}/res.zip")
+if (NOT EXISTS "${LUCGL_RES_ZIP_FILE}")
+	message (STATUS "The resources folder was not found on your computer: downloading it.")
+	file (
+		DOWNLOAD
+		"http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDA221_resources.zip"
+		"${LUCGL_RES_ZIP_FILE}"
+		STATUS RES_DL_STATUS
+		SHOW_PROGRESS
+	)
+	list (GET RES_DL_STATUS 0 RES_DL_CODE)
+	list (GET RES_DL_STATUS 1 RES_DL_STRING)
+	if (NOT (RES_DL_STATUS EQUAL 0))
+		message (WARNING "Could not download the zip file containing the resources: ${RES_DL_STRING}")
+	endif ()
+endif ()
+if ((NOT EXISTS "${CMAKE_SOURCE_DIR}/res") AND (EXISTS "${LUCGL_RES_ZIP_FILE}"))
+	execute_process(
+		COMMAND ${CMAKE_COMMAND} -E tar xf "${LUCGL_RES_ZIP_FILE}"
+		WORKING_DIR "${CMAKE_BINARY_DIR}"
+	)
+	file (RENAME "${CMAKE_BINARY_DIR}/res" "${CMAKE_SOURCE_DIR}/res")
+endif ()
+
 
 set (USE_SYSTEM_ASSIMP ${USE_SYSTEM_ASSIMP} CACHE BOOL "Whether to use the system version of ASSIMP")
 set (USE_SYSTEM_GLFW ${USE_SYSTEM_GLFW} CACHE BOOL "Whether to use the system version of GLFW")
