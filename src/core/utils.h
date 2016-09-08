@@ -23,8 +23,6 @@ minElementIndex(glm::tvec3<T, P> const& vector)
 
 
 namespace bonobo {
-	template<typename T>
-	constexpr T pi = T(3.1415926535897932385);
-	template<typename T>
-	constexpr T two_pi = T(2.0 * pi<double>);
+	constexpr float pi = 3.1415926535897932385f;
+	constexpr float two_pi = 2.0f * pi;
 }

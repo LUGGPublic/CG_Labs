@@ -34,9 +34,9 @@
 
 namespace config
 {
-	template<typename T> static constexpr T msaa_rate    = static_cast<T>(   1u);
-	template<typename T> static constexpr T resolution_x = static_cast<T>(1600u);
-	template<typename T> static constexpr T resolution_y = static_cast<T>( 900u);
+	constexpr float msaa_rate    =    1u;
+	constexpr float resolution_x = 1600u;
+	constexpr float resolution_y =  900u;
 }
 
 enum class shader_bindings {
@@ -280,8 +280,8 @@ SolarSystem::SolarSystem()
 {
 	Log::View::Init();
 
-	window = Window::Create("EDA221: Assignment 1", config::resolution_x<unsigned int>,
-	                        config::resolution_y<unsigned int>, config::msaa_rate<unsigned int>, false);
+	window = Window::Create("EDA221: Assignment 1", config::resolution_x,
+	                        config::resolution_y, config::msaa_rate, false);
 	inputHandler = new InputHandler();
 	window->SetInputHandler(inputHandler);
 
@@ -307,8 +307,8 @@ void SolarSystem::run()
 		return;
 
 	// Set up the camera
-	FPSCameraf mCamera(bonobo::pi<float> / 4.0f,
-	                   config::resolution_x<float> / config::resolution_y<float>,
+	FPSCameraf mCamera(bonobo::pi / 4.0f,
+	                   static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
 	                   0.01f, 1000.0f);
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
