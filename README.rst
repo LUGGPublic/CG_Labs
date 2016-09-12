@@ -26,6 +26,10 @@ computer.
 An OpenGL 4.1 context is created by the project. You could possibly lower that
 to an OpenGL 3.3 context, but it is not supported.
 
+C++14 features are used by this project, so you will need a C++14-capable
+compiler; if you are using Visual Studio, that means Visual Studio 2015 or
+later.
+
 The different resources used in the assignments, textures, object files, can
 be found in `this ZIP file`_, which should be automatically retrieved by CMake.
 

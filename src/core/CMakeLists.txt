@@ -26,9 +26,9 @@ target_include_directories (${PROJECT_NAME} PRIVATE ${GLM_INCLUDE_DIRS})
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/external")
 
-if (NOT (CMAKE_CXX_COMPILER_ID MATCHES "MSVC"))
-	target_compile_options (${PROJECT_NAME} PRIVATE "-std=c++14")
-endif ()
+set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
+set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
+set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_EXTENSIONS OFF)
 target_compile_options (${PROJECT_NAME} PRIVATE "-Wall")
 
 target_link_libraries (${PROJECT_NAME} ${IMGUI_LIBRARY} external_libs)
