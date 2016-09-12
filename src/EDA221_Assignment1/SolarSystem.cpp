@@ -33,13 +33,6 @@
 #include <vector>
 
 
-namespace config
-{
-	constexpr unsigned int msaa_rate    =    1u;
-	constexpr unsigned int resolution_x = 1600u;
-	constexpr unsigned int resolution_y =  900u;
-}
-
 enum class shader_bindings {
 	vertices = 0u,
 	normals,
@@ -233,7 +226,7 @@ Node::get_transform() const
 GLuint
 loadTexture2D(std::string const& filename)
 {
-	auto const path = std::string(RESOURCES_PATH("textures/" + filename));
+	auto const path = config::resources_path("textures/" + filename);
 	std::vector<unsigned char> image;
 	u32 w, h;
 	if (lodepng::decode(image, w, h, path, LCT_RGBA) != 0) {
@@ -261,11 +254,11 @@ loadTexture2D(std::string const& filename)
 GLuint
 createProgram(std::string const& vert_shader_source_path, std::string const& frag_shader_source_path)
 {
-	auto const vertex_shader_source = utils::slurp_file(SHADERS_PATH(vert_shader_source_path));
+	auto const vertex_shader_source = utils::slurp_file(config::shaders_path(vert_shader_source_path));
 	GLuint vertex_shader = utils::opengl::shader::generate_shader(GL_VERTEX_SHADER, vertex_shader_source);
 	assert(vertex_shader != 0u);
 
-	auto const fragment_shader_source = utils::slurp_file(SHADERS_PATH(frag_shader_source_path));
+	auto const fragment_shader_source = utils::slurp_file(config::shaders_path(frag_shader_source_path));
 	GLuint fragment_shader = utils::opengl::shader::generate_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
 	assert(fragment_shader != 0u);
 
@@ -424,7 +417,7 @@ loadSphere()
 	sphere_t sphere;
 	sphere.vao = 0u;
 
-	auto const scene_filepath = RESOURCES_PATH("scenes/sphere.obj");
+	auto const scene_filepath = config::resources_path("scenes/sphere.obj");
 	Assimp::Importer importer;
 	auto const assimp_scene = importer.ReadFile(scene_filepath, 0u);
 	if (assimp_scene == nullptr) {

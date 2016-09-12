@@ -169,6 +169,9 @@ set (USE_SYSTEM_GLFW ${USE_SYSTEM_GLFW} CACHE BOOL "Whether to use the system ve
 
 
 # Configure *C++ Environment Variables*
+set (MSAA_RATE "1" CACHE STRING "Window MSAA rate")
+set (WIDTH "1600" CACHE STRING "Window width")
+set (HEIGHT "900" CACHE STRING "Window height")
 set (SHADERS_DIR "${PROJECT_SOURCE_DIR}/shaders")
 set (RESOURCES_DIR "${PROJECT_SOURCE_DIR}/res")
 configure_file ("${PROJECT_SOURCE_DIR}/src/core/config.hpp.in" "${PROJECT_BINARY_DIR}/config.hpp")
