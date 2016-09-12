@@ -33,7 +33,6 @@ target_include_directories (${PROJECT_NAME} PRIVATE ${ASSIMP_INCLUDE_DIRS})
 set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
 set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_EXTENSIONS OFF)
-target_compile_options (${PROJECT_NAME} PRIVATE "-Wall")
 
 add_dependencies (${PROJECT_NAME} bonobo)
 
