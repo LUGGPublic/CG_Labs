@@ -75,24 +75,19 @@ endif ()
 find_package (glfw3 QUIET)
 if (NOT glfw3_FOUND)
 	message (STATUS "As GLFW was not found on your computer, we will fetch it from the source.")
-	EXTERNALPROJECT_ADD (
-		glfw
-		PREFIX "glfw"
-		GIT_REPOSITORY "https://github.com/glfw/glfw.git"
-		GIT_TAG 3.2.1
-		BINARY_DIR "glfw/build"
-		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DBUILD_SHARED_LIBS=OFF
+
+	file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glfw")
+	execute_process (
+		COMMAND git clone -b "3.2.1" "https://github.com/glfw/glfw.git" "code"
+		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/glfw"
 	)
+	set (GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+	set (GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+	set (GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+	file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glfw/build")
+	add_subdirectory ("${CMAKE_BINARY_DIR}/glfw/code" "${CMAKE_BINARY_DIR}/glfw/binary")
 	set (USE_SYSTEM_GLFW FALSE)
 	set (glfw_FOUND TRUE CACHE BOOL "Whether glfw was found")
-	include_directories( "${CMAKE_BINARY_DIR}/glfw/include" )
-	if (CMAKE_HOST_WIN32)
-		set (GLFW_LIBRARY "${CMAKE_BINARY_DIR}/glfw/lib/glfw3.lib" CACHE STRING "glfw lib path")
-	elseif (CMAKE_HOST_APPLE)
-		set (GLFW_LIBRARY "${CMAKE_BINARY_DIR}/glfw/lib/libglfw3.a" CACHE STRING "glfw lib path")
-	else ()
-		set (GLFW_LIBRARY "${CMAKE_BINARY_DIR}/glfw/lib/libglfw3.a" CACHE STRING "glfw lib path")
-	endif ()
 endif ()
 
 
@@ -156,9 +151,8 @@ endif ()
 if ((NOT EXISTS "${CMAKE_SOURCE_DIR}/res") AND (EXISTS "${LUCGL_RES_ZIP_FILE}"))
 	execute_process(
 		COMMAND ${CMAKE_COMMAND} -E tar xf "${LUCGL_RES_ZIP_FILE}"
-		WORKING_DIR "${CMAKE_BINARY_DIR}"
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	)
-	file (RENAME "${CMAKE_BINARY_DIR}/res" "${CMAKE_SOURCE_DIR}/res")
 endif ()
 
 
@@ -184,13 +178,20 @@ add_custom_target (project_dep ALL)
 if (NOT USE_SYSTEM_ASSIMP)
 	add_dependencies (project_dep assimp)
 endif ()
-if (NOT USE_SYSTEM_GLFW)
-	add_dependencies (project_dep glfw)
-endif ()
 if (NOT USE_SYSTEM_GLM)
 	add_dependencies (project_dep glm)
 endif ()
 add_dependencies (project_dep imgui)
+
+if (APPLE)
+	find_library (COCOA_LIBRARY Cocoa)
+	find_library (IOKIT_LIBRARY IOKit)
+	find_library (CORE_VIDEO_LIBRARY CoreVideo)
+	find_library (CORE_FOUNDATION_LIBRARY CoreFoundation)
+	set (LUGGCGL_EXTRA_LIBS ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${CORE_VIDEO_LIBRARY} ${CORE_FOUNDATION_LIBRARY})
+elseif (UNIX)
+	set (LUGGCGL_EXTRA_LIBS dl)
+endif ()
 
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/external")
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/core")

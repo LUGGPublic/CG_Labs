@@ -28,15 +28,16 @@
 #include <cstdlib>
 #include <unordered_map>
 #include <stack>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
 
 namespace config
 {
-	constexpr float msaa_rate    =    1u;
-	constexpr float resolution_x = 1600u;
-	constexpr float resolution_y =  900u;
+	constexpr unsigned int msaa_rate    =    1u;
+	constexpr unsigned int resolution_x = 1600u;
+	constexpr unsigned int resolution_y =  900u;
 }
 
 enum class shader_bindings {
@@ -282,6 +283,10 @@ SolarSystem::SolarSystem()
 
 	window = Window::Create("EDA221: Assignment 1", config::resolution_x,
 	                        config::resolution_y, config::msaa_rate, false);
+	if (window == nullptr) {
+		Log::View::Destroy();
+		throw std::runtime_error("Failed to get a window: aborting!");
+	}
 	inputHandler = new InputHandler();
 	window->SetInputHandler(inputHandler);
 

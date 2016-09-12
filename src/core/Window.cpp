@@ -12,11 +12,13 @@
 #include "external/imgui_impl_glfw_gl3.h"
 
 static std::unordered_map<std::string, Window *> *windowMap = nullptr;
+static int default_opengl_major_version = 4;
+static int default_opengl_minor_version = 1;
 
 void Window::ErrorCallback(int error, char const* description)
 {
   if (error == 65545 || error == 65543)
-    LogInfo("Couldn't setup OpenGL, trying a lower version\n");
+    LogInfo("Couldn't create an OpenGL %d.%d context.\n", default_opengl_major_version, default_opengl_minor_version);
   else
     LogError("GLFW error %d was thrown:\n\t%s\n", error, description);
 }
@@ -81,6 +83,10 @@ Window *Window::Create(std::string mTitle, unsigned int w, unsigned int h, unsig
 		return nullptr;
 	}
 	Window *window = new Window(mTitle, w, h, msaa, fullscreen, swap);
+	if (window->mWindowGLFW == nullptr) {
+		delete window;
+		return nullptr;
+	}
 	(*windowMap)[mTitle] = window;
 	return window;
 }
@@ -119,8 +125,8 @@ bool Window::Show()
 		glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, default_opengl_major_version);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, default_opengl_minor_version);
 
 		glfwWindowHint(GLFW_SAMPLES, static_cast<int>(mMSAA));
 
@@ -142,6 +148,8 @@ bool Window::Show()
 
 	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
 		LogError("[GLAD]: Failed to initialise OpenGL context.");
+		glfwDestroyWindow(mWindowGLFW);
+		mWindowGLFW = nullptr;
 		return false;
 	}
 
@@ -200,7 +208,11 @@ void Window::SetFullscreen(bool state)
 	if (mWindowGLFW)
 		glfwDestroyWindow(mWindowGLFW);
 	mFullscreen = state;
-	Show();
+	if (!Show()) {
+		LogError("Failed to change fullscreen state: reverting back.");
+		mFullscreen = !state;
+		Show();
+	}
 }
 
 void Window::Init()
