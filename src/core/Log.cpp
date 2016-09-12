@@ -34,7 +34,7 @@ LogSettings logSettings[] = {
 	{ TYPE_SUCCESS		, "Success: "			, LOUD_UNSITUATED	, OK		},
 	{ TYPE_INFO			, ""					, LOUD_UNSITUATED	, OK		},
 	{ TYPE_NEUTRAL		, ""					, LOUD_UNSITUATED	, OK		},
-	{ TYPE_WARNING		, "Warning: "			, LOUD				, BAD		},
+	{ TYPE_WARNING		, "Warning: "			, LOUD				, OK 		},
 	{ TYPE_ERROR		, "Error: "				, LOUD				, BAD	},
 	{ TYPE_FILE			, ""					, LOUD_UNSITUATED	, OK		},
 	{ TYPE_ASSERT		, "Assert: "			, LOUD				, BAD		},
