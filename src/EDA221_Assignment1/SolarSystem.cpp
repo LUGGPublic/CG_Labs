@@ -28,6 +28,7 @@
 #include <cstdlib>
 #include <unordered_map>
 #include <stack>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -282,6 +283,10 @@ SolarSystem::SolarSystem()
 
 	window = Window::Create("EDA221: Assignment 1", config::resolution_x,
 	                        config::resolution_y, config::msaa_rate, false);
+	if (window == nullptr) {
+		Log::View::Destroy();
+		throw std::runtime_error("Failed to get a window: aborting!");
+	}
 	inputHandler = new InputHandler();
 	window->SetInputHandler(inputHandler);
 

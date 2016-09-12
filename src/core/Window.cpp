@@ -83,6 +83,10 @@ Window *Window::Create(std::string mTitle, unsigned int w, unsigned int h, unsig
 		return nullptr;
 	}
 	Window *window = new Window(mTitle, w, h, msaa, fullscreen, swap);
+	if (window->mWindowGLFW == nullptr) {
+		delete window;
+		return nullptr;
+	}
 	(*windowMap)[mTitle] = window;
 	return window;
 }
@@ -144,6 +148,8 @@ bool Window::Show()
 
 	if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
 		LogError("[GLAD]: Failed to initialise OpenGL context.");
+		glfwDestroyWindow(mWindowGLFW);
+		mWindowGLFW = nullptr;
 		return false;
 	}
 
@@ -202,7 +208,11 @@ void Window::SetFullscreen(bool state)
 	if (mWindowGLFW)
 		glfwDestroyWindow(mWindowGLFW);
 	mFullscreen = state;
-	Show();
+	if (!Show()) {
+		LogError("Failed to change fullscreen state: reverting back.");
+		mFullscreen = !state;
+		Show();
+	}
 }
 
 void Window::Init()
