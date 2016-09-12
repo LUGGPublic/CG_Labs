@@ -34,9 +34,9 @@
 
 namespace config
 {
-	constexpr float msaa_rate    =    1u;
-	constexpr float resolution_x = 1600u;
-	constexpr float resolution_y =  900u;
+	constexpr unsigned int msaa_rate    =    1u;
+	constexpr unsigned int resolution_x = 1600u;
+	constexpr unsigned int resolution_y =  900u;
 }
 
 enum class shader_bindings {
