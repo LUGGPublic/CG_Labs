@@ -27,7 +27,7 @@ An OpenGL 4.1 context is created by the project. You could possibly lower that
 to an OpenGL 3.3 context, but it is not supported.
 
 The different resources used in the assignments, textures, object files, can
-be found in `this ZIP file`_.
+be found in `this ZIP file`_, which should be automatically retrieved by CMake.
 
 Building
 ========
@@ -60,9 +60,9 @@ build the project, you can either use your IDE’s interface, or run
 ``cmake --build .`` from the ``build`` folder. You can pass
 ``--config Debug|RelWithDebInfo|Release`` to build in a specific configuration.
 
-Before running the project, make sure to extract the zip containing the
-resources into ``code``; this should result in the creation of a folder
-``res`` under ``code``.
+If CMake fails to retrieve the resource archive, you will need to make sure to
+extract the zip containing the resources into ``code``; this should result in
+the creation of a folder ``res`` under ``code``.
 
 Licence
 =======
