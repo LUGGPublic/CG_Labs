@@ -156,9 +156,8 @@ endif ()
 if ((NOT EXISTS "${CMAKE_SOURCE_DIR}/res") AND (EXISTS "${LUCGL_RES_ZIP_FILE}"))
 	execute_process(
 		COMMAND ${CMAKE_COMMAND} -E tar xf "${LUCGL_RES_ZIP_FILE}"
-		WORKING_DIR "${CMAKE_BINARY_DIR}"
+		WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
 	)
-	file (RENAME "${CMAKE_BINARY_DIR}/res" "${CMAKE_SOURCE_DIR}/res")
 endif ()
 
 
