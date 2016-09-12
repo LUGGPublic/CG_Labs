@@ -30,25 +30,10 @@ set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
 set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_EXTENSIONS OFF)
 
-target_link_libraries (${PROJECT_NAME} ${IMGUI_LIBRARY} external_libs)
+target_link_libraries (${PROJECT_NAME} ${IMGUI_LIBRARY} external_libs ${LUGGCGL_EXTRA_LIBS})
 if (USE_SYSTEM_GLFW)
 	target_link_libraries (${PROJECT_NAME} glfw)
 else ()
 	target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_BINARY_DIR}/glfw/include")
 	target_link_libraries (${PROJECT_NAME} ${GLFW_LIBRARY})
-endif ()
-if (APPLE)
-	find_library (COCOA_LIBRARY Cocoa)
-	find_library (IOKIT_LIBRARY IOKit)
-	find_library (CORE_VIDEO_LIBRARY CoreVideo)
-	find_library (CORE_FOUNDATION_LIBRARY CoreFoundation)
-
-	target_link_libraries (
-		${PROJECT_NAME}
-
-		${COCOA_LIBRARY}
-		${IOKIT_LIBRARY}
-		${CORE_VIDEO_LIBRARY}
-		${CORE_FOUNDATION_LIBRARY}
-	)
 endif ()
