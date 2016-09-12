@@ -73,6 +73,7 @@ Licence
 
 * Dear ImGui is released under an MIT licence, see `Dear ImGui’s licence`_.
 * lodepng’s licence can be found at the top of every lodepng file.
+* This project is unlicenced, see `the UNLICENCE file`_.
 
 .. _Lund University: http://www.lu.se/
 .. _EDA221: http://cs.lth.se/eda221
@@ -87,3 +88,4 @@ Licence
 .. _lodepng: http://lodev.org/lodepng/
 .. _Dear ImGui’s licence: Dear_ImGui_LICENCE
 .. _this ZIP file: http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDA221_resources.zip
+.. _the UNLICENCE file: UNLICENCE
