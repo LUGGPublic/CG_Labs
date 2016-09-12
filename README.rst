@@ -10,6 +10,7 @@ Dependencies
 LU_Computer_Graphics_Labs uses the following dependencies:
 
 * CMake_: to generate project files and handle dependencies;
+* Git_: to clone missing dependencies;
 * GLFW_: to create a window and an OpenGL context, as well as handle inputs;
 * GLAD_: to load OpenGL extensions;
 * GLM_: for linear algebra operations;
@@ -73,6 +74,7 @@ Licence
 .. _EDA221: http://cs.lth.se/eda221
 .. _EDAN35: http://cs.lth.se/edan35
 .. _CMake: https://cmake.org/
+.. _Git: https://git-scm.com/
 .. _GLFW: http://www.glfw.org/
 .. _GLAD: https://github.com/Dav1dde/glad
 .. _GLM: http://glm.g-truc.net/
