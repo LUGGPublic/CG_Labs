@@ -74,17 +74,23 @@ endif ()
 # GLFW is used for inputs and windows handling
 find_package (glfw3 QUIET)
 if (NOT glfw3_FOUND)
-	message (STATUS "As GLFW was not found on your computer, we will fetch it from the source.")
+	if (NOT EXISTS "${CMAKE_BINARY_DIR}/glfw")
+		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glfw")
+	endif ()
+	if (NOT EXISTS "${CMAKE_BINARY_DIR}/glfw/code")
+		message (STATUS "As GLFW was not found on your computer, we will fetch it from the source.")
 
-	file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glfw")
-	execute_process (
-		COMMAND git clone -b "3.2.1" "https://github.com/glfw/glfw.git" "code"
-		WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/glfw"
-	)
+		execute_process (
+			COMMAND git clone -b "3.2.1" "https://github.com/glfw/glfw.git" "code"
+			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/glfw"
+		)
+	endif ()
+	if (NOT EXISTS "${CMAKE_BINARY_DIR}/glfw/build")
+		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glfw/build")
+	endif ()
 	set (GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 	set (GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 	set (GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-	file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glfw/build")
 	add_subdirectory ("${CMAKE_BINARY_DIR}/glfw/code" "${CMAKE_BINARY_DIR}/glfw/binary")
 	set (USE_SYSTEM_GLFW FALSE)
 	set (glfw_FOUND TRUE CACHE BOOL "Whether glfw was found")
