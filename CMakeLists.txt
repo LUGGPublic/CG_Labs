@@ -55,7 +55,7 @@ if (NOT assimp_FOUND)
 	elseif (CMAKE_HOST_APPLE)
 		set (ASSIMP_LIBRARIES "${CMAKE_BINARY_DIR}/assimp/lib/libassimp.dylib" CACHE STRING "assimp lib path")
 	else ()
-		set (ASSIMP_LIBRARY "${CMAKE_BINARY_DIR}/assimp/lib/libassimp.so" CACHE STRING "assimp lib path")
+		set (ASSIMP_LIBRARIES "${CMAKE_BINARY_DIR}/assimp/lib/libassimp.so" CACHE STRING "assimp lib path")
 	endif ()
 endif ()
 
