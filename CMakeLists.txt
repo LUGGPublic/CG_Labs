@@ -80,8 +80,9 @@ if (NOT glfw3_FOUND)
 	if (NOT EXISTS "${CMAKE_BINARY_DIR}/glfw/code")
 		message (STATUS "As GLFW was not found on your computer, we will fetch it from the source.")
 
+		find_package (Git REQUIRED)
 		execute_process (
-			COMMAND git clone -b "3.2.1" "https://github.com/glfw/glfw.git" "code"
+			COMMAND ${GIT_EXECUTABLE} clone -b "3.2.1" "https://github.com/glfw/glfw.git" "code"
 			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/glfw"
 		)
 	endif ()
