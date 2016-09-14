@@ -1,5 +1,19 @@
 #pragma once
 
+#include <string>
 
-#define SHADERS_PATH(n)   (std::string("@SHADERS_DIR@/") + std::string(n))
-#define RESOURCES_PATH(n) (std::string("@RESOURCES_DIR@/") + std::string(n))
+namespace config
+{
+	constexpr unsigned int msaa_rate = @MSAA_RATE@;
+	constexpr unsigned int resolution_x = @WIDTH@;
+	constexpr unsigned int resolution_y = @HEIGHT@;
+
+	inline std::string shaders_path(std::string const& path)
+	{
+		return std::string("@SHADERS_DIR@/") + path;
+	}
+	inline std::string resources_path(std::string const& path)
+	{
+		return std::string("@RESOURCES_DIR@/") + path;
+	}
+}
