@@ -6,6 +6,7 @@ ipch/
 
 # Resources folder
 res/
+res.zip
 
 # Application produced files
 imgui.ini
