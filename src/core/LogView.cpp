@@ -36,29 +36,17 @@ void Log::View::Destroy()
 
 void Log::View::Render()
 {
-	bool opened = false;
-	mOutput[0] = 0;
-	int len = 0;
-	ImGui::Begin("Log", &opened, ImVec2(600, 400), -1.0f, 0);
-	for (int i = 0; i < BUFFER_ROWS; i++) {
-		int pos = (BUFFER_ROWS + (mBufferPtr + i)) % BUFFER_ROWS;
-		if (mLen[pos] == 0)
-			continue;
-		strcat(mOutput, "> ");
-		len += 2;
-		if (mLen[pos] >= BUFFER_WIDTH - 2) {
-			strncat(mOutput, mBuffer[pos], BUFFER_WIDTH - 2);
-			len += BUFFER_WIDTH - 2;
-		} else {
-			strcat(mOutput, mBuffer[pos]);
-			len += mLen[pos];
-		}
-		if (mOutput[len - 1] != '\n') {
-			mOutput[len] = '\n';
-			len++;
+	bool opened = ImGui::Begin("Log", nullptr, ImVec2(600, 400), -1.0f, 0);
+	if (opened) {
+		for (int i = 0; i < BUFFER_ROWS; i++) {
+			int pos = (BUFFER_ROWS + (mBufferPtr + i)) % BUFFER_ROWS;
+			if (mLen[pos] == 0)
+				continue;
+			ImGui::PushStyleColor(ImGuiCol_Text, logViewTypeColor[mType[pos]]);
+			ImGui::TextWrapped(mBuffer[pos]);
+			ImGui::PopStyleColor();
 		}
 	}
-	ImGui::TextWrapped(mOutput);
 	ImGui::End();
 }
 
