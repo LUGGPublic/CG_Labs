@@ -26,6 +26,18 @@ Node::render(glm::mat4 const& WVP, glm::mat4 const& world) const
 	glUniformMatrix4fv(glGetUniformLocation(_program, "normal_model_to_world"), 1, GL_FALSE, glm::value_ptr(normal_model_to_world));
 	glUniformMatrix4fv(glGetUniformLocation(_program, "vertex_world_to_clip"), 1, GL_FALSE, glm::value_ptr(WVP));
 
+	glUniform1i(glGetUniformLocation(_program, "has_textures"), !_textures.empty());
+	bool has_diffuse_texture = false;
+	for (size_t i = 0u; i < _textures.size(); ++i) {
+		auto const texture = _textures[i];
+		glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(i));
+		glBindTexture(std::get<2>(texture), std::get<1>(texture));
+		glUniform1i(glGetUniformLocation(_program, std::get<0>(texture).c_str()), static_cast<GLint>(i));
+		if (std::get<0>(texture) == "diffuse_texture")
+			has_diffuse_texture = true;
+	}
+	glUniform1i(glGetUniformLocation(_program, "has_diffuse_texture"), has_diffuse_texture);
+
 	glBindVertexArray(_vao);
 	glDrawElements(GL_TRIANGLES, _indices_nb, GL_UNSIGNED_INT, reinterpret_cast<GLvoid const*>(0x0));
 	glBindVertexArray(0u);
@@ -60,10 +72,10 @@ Node::set_indices_nb(size_t const& indices_nb)
 }
 
 void
-Node::add_texture(std::string const& name, GLuint tex_id)
+Node::add_texture(std::string const& name, GLuint tex_id, GLenum type)
 {
 	if (tex_id != 0u)
-		_textures.emplace_back(name, tex_id);
+		_textures.emplace_back(name, tex_id, type);
 }
 
 void

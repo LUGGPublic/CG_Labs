@@ -33,6 +33,22 @@ namespace eda221
 	//! @return the name of the OpenGL 2D-texture
 	GLuint loadTexture2D(std::string const& filename);
 
+	//! \brief Load six PNG images into an OpenGL cubemap-texture.
+	//!
+	//! @param [in] posx path to the texture on the left of the cubemap
+	//! @param [in] negx path to the texture on the right of the cubemap
+	//! @param [in] posy path to the texture on the top of the cubemap
+	//! @param [in] negy path to the texture on the bottom of the cubemap
+	//! @param [in] negz path to the texture on the front of the cubemap
+	//! @param [in] posz path to the texture on the back of the cubemap
+	//! @return the name of the OpenGL cubemap-texture
+	//!
+	//! All paths are relative to the `res/cubemaps` folder.
+	GLuint loadTextureCubeMap(std::string const& posx, std::string const& negx,
+                                  std::string const& posy, std::string const& negy,
+                                  std::string const& negz, std::string const& posz,
+                                  bool generate_mipmap = false);
+
 	//! \brief Create an OpenGL program consisting of a vertex and a
 	//!        fragment shader.
 	//!

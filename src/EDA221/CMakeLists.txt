@@ -45,12 +45,32 @@ source_group (
 	FILES
 	${PROJECT_SOURCE_DIR}/interpolation.cpp
 	${PROJECT_SOURCE_DIR}/interpolation.hpp
-	${PROJECT_SOURCE_DIR}/parametric.cpp
-	${PROJECT_SOURCE_DIR}/parametric.hpp
+	${PROJECT_SOURCE_DIR}/assignment2.cpp
+	${PROJECT_SOURCE_DIR}/assignment2.hpp
 	${PROJECT_SOURCE_DIR}/parametric_shapes.cpp
 	${PROJECT_SOURCE_DIR}/parametric_shapes.hpp
-	${SHADERS_DIR}/${PROJECT_NAME}/LambertTexture.vert
-	${SHADERS_DIR}/${PROJECT_NAME}/LambertTexture.frag
+	${SHADERS_DIR}/EDA221/LambertTexture.vert
+	${SHADERS_DIR}/EDA221/LambertTexture.frag
+)
+
+set (
+	ASSIGNMENT3_SOURCES
+
+	"assignment3.cpp"
+	"assignment3.hpp"
+	"parametric_shapes.cpp"
+	"parametric_shapes.hpp"
+)
+
+source_group (
+	EDA221${PATH_SEP}Assignment3
+
+	FILES
+	${PROJECT_SOURCE_DIR}/assignment3.cpp
+	${PROJECT_SOURCE_DIR}/assignment3.hpp
+	${SHADERS_DIR}/EDA221/LambertTexture.vert
+	${SHADERS_DIR}/EDA221/LambertTexture.frag
 )
 
 luggcgl_new_assignment ("Assignment2" "${ASSIGNMENT2_SOURCES}" "${COMMON_SOURCES}")
+luggcgl_new_assignment ("Assignment3" "${ASSIGNMENT3_SOURCES}" "${COMMON_SOURCES}")

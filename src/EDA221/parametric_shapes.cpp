@@ -1,4 +1,5 @@
 #include "parametric_shapes.hpp"
+#include "core/Log.h"
 #include "core/utils.h"
 
 #include <glm/glm.hpp>
@@ -119,7 +120,8 @@ eda221::mesh_data
 parametric_shapes::createSphere(unsigned int const res_theta,
                                 unsigned int const res_phi, float const radius)
 {
-	//! \todo Implement this function
+
+	//! \todo (Optional) Implement this function
 	return eda221::mesh_data{0u, 0u, 0u, 0u};
 }
 

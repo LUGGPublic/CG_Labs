@@ -11,6 +11,6 @@ out vec4 frag_color;
 
 void main()
 {
-	vec3 view = light_position - fs_in.vertex;
-	frag_color = vec4(1.0) * clamp(dot(fs_in.normal, view), 0.0, 1.0);
+	vec3 view = normalize(light_position - fs_in.vertex);
+	frag_color = vec4(1.0) * clamp(dot(normalize(fs_in.normal), view), 0.0, 1.0);
 }

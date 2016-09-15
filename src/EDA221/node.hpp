@@ -5,7 +5,7 @@
 #include <glm/glm.hpp>
 
 #include <functional>
-#include <utility>
+#include <tuple>
 #include <vector>
 
 namespace eda221
@@ -62,7 +62,8 @@ public:
 	//!                  shader program; in assignment 1, this will be
 	//!                  `diffuse_texture`
 	//! @param [in] tex_id the name of an OpenGL 2D-texture
-	void add_texture(std::string const& name, GLuint tex_id);
+	//! @param [in] type the type of texture; defaults to GL_TEXTURE_2D
+	void add_texture(std::string const& name, GLuint tex_id, GLenum type = GL_TEXTURE_2D);
 
 	//! \brief Add a child to this node.
 	//!
@@ -160,7 +161,7 @@ private:
 	std::function<void (GLuint)> _set_uniforms;
 
 	// Textures data
-	std::vector<std::pair<std::string, GLuint>> _textures;
+	std::vector<std::tuple<std::string, GLuint, GLenum>> _textures;
 
 	// Transformation data
 	glm::vec3 _scaling;
