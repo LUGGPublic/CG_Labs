@@ -189,6 +189,7 @@ eda221::Assignment2::run()
 
 		circle_rings.render(mCamera.GetWorldToClipMatrix(), circle_rings.get_transform());
 
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		Log::View::Render();
 		ImGui::Render();
 
