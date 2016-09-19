@@ -35,6 +35,16 @@ public:
 	//! @param [in] shape OpenGL data to use as geometry
 	void set_geometry(eda221::mesh_data const& shape);
 
+	//! \brief Get the number of indices to use.
+	//!
+	//! @return how many indices to use when rendering
+	size_t get_indices_nb() const;
+
+	//! \brief Set the number of indices to use.
+	//!
+	//! @param [in] indices_nb how many indices to use when rendering
+	void set_indices_nb(size_t const& indices_nb);
+
 	//! \brief Set the program of this node.
 	//!
 	//! A node without a program will not render itself, but its children

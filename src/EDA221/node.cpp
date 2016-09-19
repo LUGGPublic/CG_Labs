@@ -47,6 +47,18 @@ Node::set_program(GLuint program, std::function<void (GLuint)> const& set_unifor
 	_set_uniforms = set_uniforms;
 }
 
+size_t
+Node::get_indices_nb() const
+{
+	return static_cast<size_t>(_indices_nb);
+}
+
+void
+Node::set_indices_nb(size_t const& indices_nb)
+{
+	_indices_nb = static_cast<GLsizei>(indices_nb);
+}
+
 void
 Node::add_texture(std::string const& name, GLuint tex_id)
 {
