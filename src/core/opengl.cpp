@@ -94,14 +94,9 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
                      )
 {
 	std::ostringstream oss;
-	oss << std::endl
-	    << "\t" << "************Debug Output************"           << std::endl
-	    << "\t" << "source: "     << getStringForSource(source)     << std::endl
-	    << "\t" << "id: "         << id                             << std::endl
-	    << "\t" << "type: "       << getStringForType(type)         << std::endl
-	    << "\t" << "severity: "   << getStringForSeverity(severity) << std::endl
-	    << "\t" << "debug call: " << msg                            << std::endl
-	    << "\t" << "************************************";
+	oss << "[id: " << id << "] of type " << getStringForType(type)
+	    << ", from " << getStringForSource(source) << ":" << std::endl;
+	oss << "\t" << msg << std::endl;
 
 	auto const s_msg = oss.str();
 	auto const c_msg = s_msg.c_str();
@@ -113,10 +108,11 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
 			LogInfo(c_msg);
 		break;
 	case GL_DEBUG_SEVERITY_LOW:
-		LogWarning("%s", c_msg);
+		LogWarning(c_msg);
 		break;
-	default:
-		LogError("%s", c_msg);
+	case GL_DEBUG_SEVERITY_MEDIUM: // fallthrough
+	case GL_DEBUG_SEVERITY_HIGH:
+		LogError(c_msg);
 		break;
 	}
 }
@@ -146,10 +142,8 @@ source_and_build_shader(GLuint id, std::string const& source)
 			std::unique_ptr<GLchar[]> log = std::make_unique<GLchar[]>(static_cast<size_t>(log_length));
 			glGetShaderInfoLog(id, log_length, NULL, log.get());
 			std::ostringstream oss;
-			oss << "Shader compiling error:"
-			    << std::endl
-			    << "\t" << log.get()
-			    << std::endl;
+			oss << "Shader compiling error:" << std::endl
+			    << log.get();
 			auto const s_msg = oss.str();
 			auto const c_msg = s_msg.c_str();
 			LogError("%s", c_msg);
@@ -182,10 +176,8 @@ link_program(GLuint id)
 		std::unique_ptr<GLchar[]> log = std::make_unique<GLchar[]>(static_cast<size_t>(log_length));
 		glGetProgramInfoLog(id, log_length, NULL, log.get());
 		std::ostringstream oss;
-		oss << "Program linking error:"
-		    << std::endl
-		    << "\t" << log.get()
-		    << std::endl;
+		oss << "Program linking error:" << std::endl
+		    << log.get();
 		auto const s_msg = oss.str();
 		auto const c_msg = s_msg.c_str();
 		LogError("%s", c_msg);
