@@ -121,7 +121,9 @@ eda221::Assignment2::run()
 	glEnable(GL_DEPTH_TEST);
 
 	// Enable face culling to improve performance
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
+	//glCullFace(GL_FRONT);
+	//glCullFace(GL_BACK);
 
 
 	f64 ddeltatime;
