@@ -21,8 +21,8 @@ parametric_shapes::createQuad(unsigned int width, unsigned int height)
 	};
 
 	auto const indices = std::array<glm::uvec3, 2>{
-		glm::vec3(0u, 1u, 2u),
-		glm::vec3(0u, 2u, 3u)
+		glm::uvec3(0u, 1u, 2u),
+		glm::uvec3(0u, 2u, 3u)
 	};
 
 	eda221::mesh_data data;
