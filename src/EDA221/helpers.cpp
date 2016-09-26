@@ -80,7 +80,7 @@ eda221::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 	// Set the minification and magnification properties of the textures;
 	// you can have a look on http://docs.gl to lear more about them, or
 	// attend EDAN35 in the next period ;-)
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, generate_mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// We need to fill in the cube map using the images passed in as
