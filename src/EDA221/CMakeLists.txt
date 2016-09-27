@@ -72,5 +72,37 @@ source_group (
 	${SHADERS_DIR}/EDA221/LambertTexture.frag
 )
 
+set (
+	ASSIGNMENT4_SOURCES
+
+	"assignment4.cpp"
+	"assignment4.hpp"
+)
+
+source_group (
+	EDA221${PATH_SEP}Assignment4
+
+	FILES
+	${PROJECT_SOURCE_DIR}/assignment4.cpp
+	${PROJECT_SOURCE_DIR}/assignment4.hpp
+)
+
+set (
+	ASSIGNMENT5_SOURCES
+
+	"assignment5.cpp"
+	"assignment5.hpp"
+)
+
+source_group (
+	EDA221${PATH_SEP}Assignment5
+
+	FILES
+	${PROJECT_SOURCE_DIR}/assignment5.cpp
+	${PROJECT_SOURCE_DIR}/assignment5.hpp
+)
+
 luggcgl_new_assignment ("Assignment2" "${ASSIGNMENT2_SOURCES}" "${COMMON_SOURCES}")
 luggcgl_new_assignment ("Assignment3" "${ASSIGNMENT3_SOURCES}" "${COMMON_SOURCES}")
+luggcgl_new_assignment ("Assignment4" "${ASSIGNMENT4_SOURCES}" "${COMMON_SOURCES}")
+luggcgl_new_assignment ("Assignment5" "${ASSIGNMENT5_SOURCES}" "${COMMON_SOURCES}")
