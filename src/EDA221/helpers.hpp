@@ -11,11 +11,11 @@ namespace eda221
 	//! \brief Formalise mapping between an OpenGL VAO attribute binding,
 	//!        and the meaning of that attribute.
 	enum class shader_bindings : unsigned int{
-		vertices = 0u,
-		normals,
-		texcoords,
-		tangents,
-		binormals
+		vertices = 0u, //!< = 0, value of the binding point for vertices
+		normals,       //!< = 1, value of the binding point for normals
+		texcoords,     //!< = 2, value of the binding point for texcoords
+		tangents,      //!< = 3, value of the binding point for tangents
+		binormals      //!< = 4, value of the binding point for binormals
 	};
 
 	//! \brief Contains the data for a mesh in OpenGL.
