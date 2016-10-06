@@ -264,6 +264,7 @@ bool    ImGui_ImplGlfwGL3_Init(GLFWwindow* window, bool install_callbacks)
     g_Window = window;
 
     ImGuiIO& io = ImGui::GetIO();
+    io.MouseDrawCursor = false;
     io.KeyMap[ImGuiKey_Tab] = GLFW_KEY_TAB;                         // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
     io.KeyMap[ImGuiKey_LeftArrow] = GLFW_KEY_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = GLFW_KEY_RIGHT;
@@ -372,9 +373,6 @@ void ImGui_ImplGlfwGL3_NewFrame()
 
     io.MouseWheel = g_MouseWheel;
     g_MouseWheel = 0.0f;
-
-    // Hide OS mouse cursor if ImGui is drawing it
-    glfwSetInputMode(g_Window, GLFW_CURSOR, io.MouseDrawCursor ? GLFW_CURSOR_HIDDEN : GLFW_CURSOR_NORMAL);
 
     // Start the frame
     ImGui::NewFrame();
