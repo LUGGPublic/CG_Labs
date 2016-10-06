@@ -160,7 +160,6 @@ bool Window::Show()
 	glfwSetMouseButtonCallback(mWindowGLFW, Window::MouseCallback);
 	glfwSetCursorPosCallback(mWindowGLFW, Window::CursorCallback);
 	glfwSetFramebufferSizeCallback(mWindowGLFW, Window::FramebufferSizeCallback);
-	//glfwSetInputMode(mWindowGLFW, GLFW_CURSOR, GLFW_CURSOR_disable()D);
 	glfwSetWindowUserPointer(mWindowGLFW, static_cast<void*>(this));
 
 	glfwSetScrollCallback(mWindowGLFW, ImGui_ImplGlfwGL3_ScrollCallback);
