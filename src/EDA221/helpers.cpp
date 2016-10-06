@@ -7,8 +7,11 @@
 #include "core/various.hpp"
 #include "external/lodepng.h"
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include <cassert>
-#include <vector>
 
 static std::vector<u8>
 getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
@@ -28,6 +31,132 @@ getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
 		memcpy(flipBuffer.data() + (height - 1 - y) * width * channels_nb, &image[y * width * channels_nb], width * channels_nb);
 
 	return flipBuffer;
+}
+
+std::vector<eda221::mesh_data>
+eda221::loadObjects(std::string const& filename)
+{
+	std::vector<eda221::mesh_data> objects;
+
+	auto const scene_filepath = config::resources_path("scenes/" + filename);
+	Assimp::Importer importer;
+	auto const assimp_scene = importer.ReadFile(scene_filepath, 0u);
+	if (assimp_scene == nullptr) {
+		LogError("Assimp failed to load \"%s\": %s", scene_filepath.c_str(), importer.GetErrorString());
+		return objects;
+	}
+
+	if (assimp_scene->mNumMeshes == 0u) {
+		LogError("No mesh available; loading \"%s\" must have had issues", scene_filepath.c_str());
+		return objects;
+	}
+
+	objects.reserve(assimp_scene->mNumMeshes);
+	for (size_t j = 0; j < assimp_scene->mNumMeshes; ++j) {
+		auto const assimp_object_mesh = assimp_scene->mMeshes[j];
+
+		if (!assimp_object_mesh->HasFaces()) {
+			LogError("Unsupported object \"%s\" has no faces", assimp_object_mesh->mName.C_Str());
+			continue;
+		}
+		if ((assimp_object_mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE) != aiPrimitiveType_TRIANGLE) {
+			LogError("Unsupported object \"%s\" uses non-triangle faces", assimp_object_mesh->mName.C_Str());
+			continue;
+		}
+		if (!assimp_object_mesh->HasPositions()) {
+			LogError("Unsupported object \"%s\" has no positions", assimp_object_mesh->mName.C_Str());
+			continue;
+		}
+
+		eda221::mesh_data object;
+		object.vao = 0u;
+
+		glGenVertexArrays(1, &object.vao);
+		assert(object.vao != 0u);
+		glBindVertexArray(object.vao);
+
+		auto const vertices_offset = 0u;
+		auto const vertices_size = static_cast<GLsizeiptr>(assimp_object_mesh->mNumVertices * sizeof(glm::vec3));
+
+		auto const normals_offset = vertices_size;
+		auto const normals_size = assimp_object_mesh->HasNormals() ? vertices_size : 0u;
+
+		auto const texcoords_offset = normals_offset + normals_size;
+		auto const texcoords_size = assimp_object_mesh->HasTextureCoords(0u) ? vertices_size : 0u;
+
+		auto const tangents_offset = texcoords_offset + texcoords_size;
+		auto const tangents_size = assimp_object_mesh->HasTangentsAndBitangents() ? vertices_size : 0u;
+
+		auto const binormals_offset = tangents_offset + tangents_size;
+		auto const binormals_size = assimp_object_mesh->HasTangentsAndBitangents() ? vertices_size : 0u;
+
+		auto const bo_size = static_cast<GLsizeiptr>(vertices_size
+		                                            +normals_size
+		                                            +texcoords_size
+		                                            +tangents_size
+		                                            +binormals_size
+		                                            );
+		glGenBuffers(1, &object.bo);
+		assert(object.bo != 0u);
+		glBindBuffer(GL_ARRAY_BUFFER, object.bo);
+		glBufferData(GL_ARRAY_BUFFER, bo_size, nullptr, GL_STATIC_DRAW);
+
+		glBufferSubData(GL_ARRAY_BUFFER, vertices_offset, vertices_size, static_cast<GLvoid const*>(assimp_object_mesh->mVertices));
+		glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::vertices));
+		glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::vertices), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
+
+		if (assimp_object_mesh->HasNormals()) {
+			glBufferSubData(GL_ARRAY_BUFFER, normals_offset, normals_size, static_cast<GLvoid const*>(assimp_object_mesh->mNormals));
+			glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::normals));
+			glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::normals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(normals_offset));
+		}
+
+		if (assimp_object_mesh->HasTextureCoords(0u)) {
+			glBufferSubData(GL_ARRAY_BUFFER, texcoords_offset, texcoords_size, static_cast<GLvoid const*>(assimp_object_mesh->mTextureCoords[0u]));
+			glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::texcoords));
+			glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::texcoords), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(texcoords_offset));
+		}
+
+		if (assimp_object_mesh->HasTangentsAndBitangents()) {
+			glBufferSubData(GL_ARRAY_BUFFER, tangents_offset, tangents_size, static_cast<GLvoid const*>(assimp_object_mesh->mTangents));
+			glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::tangents));
+			glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::tangents), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(tangents_offset));
+
+			glBufferSubData(GL_ARRAY_BUFFER, binormals_offset, binormals_size, static_cast<GLvoid const*>(assimp_object_mesh->mBitangents));
+			glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::binormals));
+			glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::binormals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(binormals_offset));
+		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0u);
+
+		object.indices_nb = assimp_object_mesh->mNumFaces * 3u;
+		auto object_indices = std::make_unique<GLuint[]>(static_cast<size_t>(object.indices_nb));
+		for (size_t i = 0u; i < assimp_object_mesh->mNumFaces; ++i) {
+			auto const& face = assimp_object_mesh->mFaces[i];
+			assert(face.mNumIndices == 3u);
+			object_indices[3u * i + 0u] = face.mIndices[0u];
+			object_indices[3u * i + 1u] = face.mIndices[1u];
+			object_indices[3u * i + 2u] = face.mIndices[2u];
+		}
+		object.ibo = 0u;
+		glGenBuffers(1, &object.ibo);
+		assert(object.ibo != 0u);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object.ibo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<unsigned int>(object.indices_nb) * sizeof(GL_UNSIGNED_INT), reinterpret_cast<GLvoid const*>(object_indices.get()), GL_STATIC_DRAW);
+		object_indices.reset(nullptr);
+
+		glBindVertexArray(0u);
+		glBindBuffer(GL_ARRAY_BUFFER, 0u);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
+
+		objects.push_back(object);
+
+		LogInfo("Loaded object \"%s\" with normals:%d, tangents&bitangents:%d, texcoords:%d",
+		        assimp_object_mesh->mName.C_Str(), assimp_object_mesh->HasNormals(),
+		        assimp_object_mesh->HasTangentsAndBitangents(), assimp_object_mesh->HasTextureCoords(0));
+	}
+
+	return objects;
 }
 
 GLuint

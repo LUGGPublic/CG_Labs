@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <string>
+#include <vector>
 
 //! \brief Namespace containing a few helpers for the EDA221 labs.
 namespace eda221
@@ -25,6 +26,14 @@ namespace eda221
 		GLuint ibo;        //!< OpenGL name of the Buffer Object for indices
 		size_t indices_nb; //!< number of indices stored in ibo
 	};
+
+	//! \brief Load objects found in an object/scene file, using assimp.
+	//!
+	//! @param [in] filename of the object/scene file to load, relative to
+	//!             the `res/scenes` folder
+	//! @return a vector of filled in `mesh_data` structures, one per
+	//!         object found in the input file
+	std::vector<mesh_data> loadObjects(std::string const& filename);
 
 	//! \brief Load a PNG image into an OpenGL 2D-texture.
 	//!
