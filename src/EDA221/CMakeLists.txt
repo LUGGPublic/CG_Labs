@@ -26,17 +26,17 @@ set (
 	"node.hpp"
 	"helpers.cpp"
 	"helpers.hpp"
+	"interpolation.cpp"
+	"interpolation.hpp"
+	"parametric_shapes.cpp"
+	"parametric_shapes.hpp"
 )
 
 set (
 	ASSIGNMENT2_SOURCES
 
-	"interpolation.cpp"
-	"interpolation.hpp"
 	"assignment2.cpp"
 	"assignment2.hpp"
-	"parametric_shapes.cpp"
-	"parametric_shapes.hpp"
 )
 
 source_group (
@@ -58,8 +58,6 @@ set (
 
 	"assignment3.cpp"
 	"assignment3.hpp"
-	"parametric_shapes.cpp"
-	"parametric_shapes.hpp"
 )
 
 source_group (
