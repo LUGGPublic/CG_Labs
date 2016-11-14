@@ -149,18 +149,24 @@ eda221::loadObjects(std::string const& filename)
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 
+		auto const material_id = assimp_object_mesh->mMaterialIndex;
+		if (material_id >= materials_bindings.size())
+			LogError("Object \"%s\" has a material index of %u, but only %u materials were retrieved.", assimp_object_mesh->mName.C_Str(), material_id, materials_bindings.size());
+		else
+			object.bindings = materials_bindings[material_id];
+
 		objects.push_back(object);
 
-		LogInfo("Loaded object \"%s\" with normals:%d, tangents&bitangents:%d, texcoords:%d",
-		        assimp_object_mesh->mName.C_Str(), assimp_object_mesh->HasNormals(),
-		        assimp_object_mesh->HasTangentsAndBitangents(), assimp_object_mesh->HasTextureCoords(0));
+//		LogInfo("Loaded object \"%s\" with normals:%d, tangents&bitangents:%d, texcoords:%d",
+//		        assimp_object_mesh->mName.C_Str(), assimp_object_mesh->HasNormals(),
+//		        assimp_object_mesh->HasTangentsAndBitangents(), assimp_object_mesh->HasTextureCoords(0));
 	}
 
 	return objects;
 }
 
 GLuint
-eda221::loadTexture2D(std::string const& filename)
+eda221::loadTexture2D(std::string const& filename, bool generate_mipmap)
 {
 	u32 width, height;
 	auto const data = getTextureData("textures/" + filename, width, height, true);
@@ -171,9 +177,11 @@ eda221::loadTexture2D(std::string const& filename)
 	glGenTextures(1, &texture);
 	assert(texture != 0u);
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generate_mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<GLvoid const*>(data.data()));
+	if (generate_mipmap)
+		glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0u);
 
 	return texture;

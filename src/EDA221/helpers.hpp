@@ -39,8 +39,10 @@ namespace eda221
 	//!
 	//! @param [in] filename of the PNG image, relative to the `textures`
 	//!             folder within the `resources` folder.
+	//! @param [in] generate_mipmap whether or not to generate a mipmap hierarchy
 	//! @return the name of the OpenGL 2D-texture
-	GLuint loadTexture2D(std::string const& filename);
+	GLuint loadTexture2D(std::string const& filename,
+	                     bool generate_mipmap = true);
 
 	//! \brief Load six PNG images into an OpenGL cubemap-texture.
 	//!
