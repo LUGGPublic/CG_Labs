@@ -13,30 +13,36 @@ Node::Node() : _vao(0u), _indices_nb(0u), _program(0u), _textures(), _scaling(1.
 void
 Node::render(glm::mat4 const& WVP, glm::mat4 const& world) const
 {
-	if (_vao == 0u || _program == 0u)
+	render(WVP, world, _program, _set_uniforms);
+}
+
+void
+Node::render(glm::mat4 const& WVP, glm::mat4 const& world, GLuint program, std::function<void (GLuint)> const& set_uniforms) const
+{
+	if (_vao == 0u || program == 0u)
 		return;
 
-	glUseProgram(_program);
+	glUseProgram(program);
 
 	auto const normal_model_to_world = glm::transpose(glm::inverse(world));
 
-	_set_uniforms(_program);
+	set_uniforms(program);
 
-	glUniformMatrix4fv(glGetUniformLocation(_program, "vertex_model_to_world"), 1, GL_FALSE, glm::value_ptr(world));
-	glUniformMatrix4fv(glGetUniformLocation(_program, "normal_model_to_world"), 1, GL_FALSE, glm::value_ptr(normal_model_to_world));
-	glUniformMatrix4fv(glGetUniformLocation(_program, "vertex_world_to_clip"), 1, GL_FALSE, glm::value_ptr(WVP));
+	glUniformMatrix4fv(glGetUniformLocation(program, "vertex_model_to_world"), 1, GL_FALSE, glm::value_ptr(world));
+	glUniformMatrix4fv(glGetUniformLocation(program, "normal_model_to_world"), 1, GL_FALSE, glm::value_ptr(normal_model_to_world));
+	glUniformMatrix4fv(glGetUniformLocation(program, "vertex_world_to_clip"), 1, GL_FALSE, glm::value_ptr(WVP));
 
-	glUniform1i(glGetUniformLocation(_program, "has_textures"), !_textures.empty());
+	glUniform1i(glGetUniformLocation(program, "has_textures"), !_textures.empty());
 	bool has_diffuse_texture = false;
 	for (size_t i = 0u; i < _textures.size(); ++i) {
 		auto const texture = _textures[i];
 		glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(i));
 		glBindTexture(std::get<2>(texture), std::get<1>(texture));
-		glUniform1i(glGetUniformLocation(_program, std::get<0>(texture).c_str()), static_cast<GLint>(i));
+		glUniform1i(glGetUniformLocation(program, std::get<0>(texture).c_str()), static_cast<GLint>(i));
 		if (std::get<0>(texture) == "diffuse_texture")
 			has_diffuse_texture = true;
 	}
-	glUniform1i(glGetUniformLocation(_program, "has_diffuse_texture"), has_diffuse_texture);
+	glUniform1i(glGetUniformLocation(program, "has_diffuse_texture"), has_diffuse_texture);
 
 	glBindVertexArray(_vao);
 	glDrawElements(GL_TRIANGLES, _indices_nb, GL_UNSIGNED_INT, reinterpret_cast<GLvoid const*>(0x0));
