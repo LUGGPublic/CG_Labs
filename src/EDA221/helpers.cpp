@@ -39,9 +39,10 @@ eda221::loadObjects(std::string const& filename)
 	std::vector<eda221::mesh_data> objects;
 
 	auto const scene_filepath = config::resources_path("scenes/" + filename);
+	LogInfo("Loading \"%s\"", scene_filepath.c_str());
 	Assimp::Importer importer;
-	auto const assimp_scene = importer.ReadFile(scene_filepath, 0u);
-	if (assimp_scene == nullptr) {
+	auto const assimp_scene = importer.ReadFile(scene_filepath, aiProcess_Triangulate);
+	if (assimp_scene == nullptr || assimp_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || assimp_scene->mRootNode == nullptr) {
 		LogError("Assimp failed to load \"%s\": %s", scene_filepath.c_str(), importer.GetErrorString());
 		return objects;
 	}
@@ -51,6 +52,35 @@ eda221::loadObjects(std::string const& filename)
 		return objects;
 	}
 
+	std::vector<texture_bindings> materials_bindings;
+	materials_bindings.reserve(assimp_scene->mNumMaterials);
+
+	LogInfo("\t* materials");
+	for (size_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
+		texture_bindings bindings;
+		auto const material = assimp_scene->mMaterials[i];
+
+		auto const process_texture = [&bindings,&material,i](aiTextureType type, std::string const& type_as_str, std::string const& name){
+			if (material->GetTextureCount(type)) {
+				if (material->GetTextureCount(type) > 1)
+					LogWarning("Material %d has more than one %s texture: discarding all but the first one.", i, type_as_str.c_str());
+				aiString path;
+				material->GetTexture(type, 0, &path);
+				auto const id = eda221::loadTexture2D("../crysponza/" + std::string(path.C_Str()), type_as_str != "opacity");
+				if (id != 0u)
+					bindings.emplace(name, id);
+			}
+		};
+
+		process_texture(aiTextureType_DIFFUSE,  "diffuse",  "diffuse_texture");
+		process_texture(aiTextureType_SPECULAR, "specular", "specular_texture");
+		process_texture(aiTextureType_NORMALS,  "normals",  "normals_texture");
+		process_texture(aiTextureType_OPACITY,  "opacity",  "opacity_texture");
+
+		materials_bindings.push_back(bindings);
+	}
+
+	LogInfo("\t* meshes");
 	objects.reserve(assimp_scene->mNumMeshes);
 	for (size_t j = 0; j < assimp_scene->mNumMeshes; ++j) {
 		auto const assimp_object_mesh = assimp_scene->mMeshes[j];
