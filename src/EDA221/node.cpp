@@ -50,6 +50,11 @@ Node::set_geometry(eda221::mesh_data const& shape)
 {
 	_vao = shape.vao;
 	_indices_nb = static_cast<GLsizei>(shape.indices_nb);
+
+	if (!shape.bindings.empty()) {
+		for (auto const& binding : shape.bindings)
+			add_texture(binding.first, binding.second, GL_TEXTURE_2D);
+	}
 }
 
 void
