@@ -52,6 +52,7 @@ namespace eda221
 	//! @param [in] negy path to the texture on the bottom of the cubemap
 	//! @param [in] negz path to the texture on the front of the cubemap
 	//! @param [in] posz path to the texture on the back of the cubemap
+	//! @param [in] generate_mipmap whether or not to generate a mipmap hierarchy
 	//! @return the name of the OpenGL cubemap-texture
 	//!
 	//! All paths are relative to the `res/cubemaps` folder.
