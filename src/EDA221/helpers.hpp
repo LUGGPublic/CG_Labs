@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 //! \brief Namespace containing a few helpers for the EDA221 labs.
 namespace eda221
@@ -19,12 +20,17 @@ namespace eda221
 		binormals      //!< = 4, value of the binding point for binormals
 	};
 
+	//! \brief Association of a sampler name used in GLSL to a
+	//!        corresponding texture ID.
+	using texture_bindings = std::unordered_map<std::string, GLuint>;
+
 	//! \brief Contains the data for a mesh in OpenGL.
 	struct mesh_data {
-		GLuint vao;        //!< OpenGL name of the Vertex Array Object
-		GLuint bo;         //!< OpenGL name of the Buffer Object
-		GLuint ibo;        //!< OpenGL name of the Buffer Object for indices
-		size_t indices_nb; //!< number of indices stored in ibo
+		GLuint vao;                //!< OpenGL name of the Vertex Array Object
+		GLuint bo;                 //!< OpenGL name of the Buffer Object
+		GLuint ibo;                //!< OpenGL name of the Buffer Object for indices
+		size_t indices_nb;         //!< number of indices stored in ibo
+		texture_bindings bindings; //!< texture bindings for this mesh
 	};
 
 	//! \brief Load objects found in an object/scene file, using assimp.
