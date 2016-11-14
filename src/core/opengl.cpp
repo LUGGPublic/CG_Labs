@@ -103,7 +103,7 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
 	switch (severity) {
 	case GL_DEBUG_SEVERITY_NOTIFICATION:
 		if (id == 131185) // Will use VIDEO memory
-			LogMsgOnce(Log::Type::TYPE_INFO, c_msg);
+			break;
 		else
 			LogInfo(c_msg);
 		break;
