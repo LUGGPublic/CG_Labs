@@ -266,15 +266,16 @@ eda221::createProgram(std::string const& vert_shader_source_path, std::string co
 {
 	auto const vertex_shader_source = utils::slurp_file(config::shaders_path("EDA221/" + vert_shader_source_path));
 	GLuint vertex_shader = utils::opengl::shader::generate_shader(GL_VERTEX_SHADER, vertex_shader_source);
-	assert(vertex_shader != 0u);
+	if (vertex_shader == 0u)
+		return 0u;
 
 	auto const fragment_shader_source = utils::slurp_file(config::shaders_path("EDA221/" + frag_shader_source_path));
 	GLuint fragment_shader = utils::opengl::shader::generate_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
-	assert(fragment_shader != 0u);
+	if (fragment_shader == 0u)
+		return 0u;
 
 	GLuint program = utils::opengl::shader::generate_program({ vertex_shader, fragment_shader });
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
-	assert(program != 0u);
 	return program;
 }

@@ -122,7 +122,7 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
 namespace shader
 {
 
-void
+bool
 source_and_build_shader(GLuint id, std::string const& source)
 {
 	assert(id > 0u && !source.empty());
@@ -150,7 +150,11 @@ source_and_build_shader(GLuint id, std::string const& source)
 		} else {
 			LogError("Shader failed to compile but no log available.");
 		}
+
+		return false;
 	}
+
+	return true;
 }
 
 GLuint
@@ -158,12 +162,16 @@ generate_shader(GLenum type, std::string const& source)
 {
 	GLuint id = glCreateShader(type);
 
-	source_and_build_shader(id, source);
-
-	return id;
+	auto const success = source_and_build_shader(id, source);
+	if (success) {
+		return id;
+	} else {
+		glDeleteShader(id);
+		return 0u;
+	}
 }
 
-void
+bool
 link_program(GLuint id)
 {
 	glLinkProgram(id);
@@ -181,7 +189,11 @@ link_program(GLuint id)
 		auto const s_msg = oss.str();
 		auto const c_msg = s_msg.c_str();
 		LogError("%s", c_msg);
+
+		return false;
 	}
+
+	return true;
 }
 
 void
@@ -201,9 +213,13 @@ generate_program(std::vector<GLuint> const& shaders_id)
 	for (auto shader_id : shaders_id)
 		glAttachShader(id, shader_id);
 
-	link_program(id);
-
-	return id;
+	auto const success = link_program(id);
+	if (success) {
+		return id;
+	} else {
+		glDeleteProgram(id);
+		return 0u;
+	}
 }
 
 } // end of namespace shader

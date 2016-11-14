@@ -33,9 +33,9 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id
 namespace shader
 {
 
-void source_and_build_shader(GLuint id, std::string const& source);
+bool source_and_build_shader(GLuint id, std::string const& source);
 GLuint generate_shader(GLenum type, std::string const& source);
-void link_program(GLuint id);
+bool link_program(GLuint id);
 void reload_program(GLuint id, std::vector<GLuint> const& ids, std::vector<std::string> const& sources);
 GLuint generate_program(std::vector<GLuint> const& shaders_id);
 
