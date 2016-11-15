@@ -378,6 +378,29 @@ eda221::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right
 	glUseProgram(0);
 }
 
+GLuint
+eda221::createFBO(std::vector<GLuint> const& color_attachments, GLuint depth_attachment)
+{
+	auto const attach = [](GLenum attach_point, GLuint attachment){
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attach_point, GL_TEXTURE_2D, attachment, 0);
+		auto const status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+			LogError("Failed to attach %u at %u", attachment, attach_point);
+	};
+
+	GLuint fbo = 0u;
+	glGenFramebuffers(1, &fbo);
+	assert(fbo != 0u);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	for (size_t i = 0; i < color_attachments.size(); ++i)
+		attach(static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i), color_attachments[i]);
+	if (depth_attachment != 0u)
+		attach(GL_DEPTH_ATTACHMENT, depth_attachment);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	return fbo;
+}
+
 void
 eda221::drawFullscreen()
 {

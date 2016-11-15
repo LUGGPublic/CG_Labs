@@ -126,6 +126,17 @@ namespace eda221
 	                    glm::vec2 const& upper_right, GLuint texture,
 	                    GLuint samper, glm::ivec4 const& swizzle);
 
+	//! \brief Create an OpenGL FrameBuffer Object using the specified
+	//!        attachments.
+	//!
+	//! @param [in] color_attachments a vector of all the texture to bind
+	//!             as color attachment, i.e. not as depth texture
+	//! @param [in] depth_attachment a texture, if any, to use as depth
+	//!             attachment
+	//! @return the name of the OpenGL FBO
+	GLuint createFBO(std::vector<GLuint> const& color_attachments,
+	                 GLuint depth_attachment = 0u);
+
 	//! \brief Draw full screen.
 	void drawFullscreen();
 }
