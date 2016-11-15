@@ -122,7 +122,7 @@ parametric_shapes::createSphere(unsigned int const res_theta,
 {
 
 	//! \todo (Optional) Implement this function
-	return eda221::mesh_data{0u, 0u, 0u, 0u};
+	return eda221::mesh_data();
 }
 
 eda221::mesh_data
@@ -131,7 +131,7 @@ parametric_shapes::createTorus(unsigned int const res_theta,
                                float const rB)
 {
 	//! \todo (Optional) Implement this function
-	return eda221::mesh_data{0u, 0u, 0u, 0u};
+	return eda221::mesh_data();
 }
 
 eda221::mesh_data
