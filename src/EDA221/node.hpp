@@ -167,7 +167,10 @@ public:
 private:
 	// Geometry data
 	GLuint _vao;
+	GLsizei _vertices_nb;
 	GLsizei _indices_nb;
+	GLenum _drawing_mode;
+	bool _has_indices;
 
 	// Program data
 	GLuint _program;
