@@ -31,6 +31,10 @@ namespace eda221
 		GLuint ibo;                //!< OpenGL name of the Buffer Object for indices
 		size_t indices_nb;         //!< number of indices stored in ibo
 		texture_bindings bindings; //!< texture bindings for this mesh
+
+		mesh_data() : vao(0u), bo(0u), ibo(0u), indices_nb(0u), bindings()
+		{
+		}
 	};
 
 	//! \brief Load objects found in an object/scene file, using assimp.
