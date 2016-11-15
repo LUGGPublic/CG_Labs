@@ -29,10 +29,12 @@ namespace eda221
 		GLuint vao;                //!< OpenGL name of the Vertex Array Object
 		GLuint bo;                 //!< OpenGL name of the Buffer Object
 		GLuint ibo;                //!< OpenGL name of the Buffer Object for indices
+		size_t vertices_nb;        //!< number of vertices stored in bo
 		size_t indices_nb;         //!< number of indices stored in ibo
 		texture_bindings bindings; //!< texture bindings for this mesh
+		GLenum drawing_mode;       //!< OpenGL drawing mode, i.e. GL_TRIANGLES, GL_LINES, etc.
 
-		mesh_data() : vao(0u), bo(0u), ibo(0u), indices_nb(0u), bindings()
+		mesh_data() : vao(0u), bo(0u), ibo(0u), vertices_nb(0u), indices_nb(0u), bindings(), drawing_mode(GL_TRIANGLES)
 		{
 		}
 	};
