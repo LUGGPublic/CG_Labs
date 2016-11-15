@@ -41,7 +41,7 @@ eda221::loadObjects(std::string const& filename)
 	auto const scene_filepath = config::resources_path("scenes/" + filename);
 	LogInfo("Loading \"%s\"", scene_filepath.c_str());
 	Assimp::Importer importer;
-	auto const assimp_scene = importer.ReadFile(scene_filepath, aiProcess_Triangulate);
+	auto const assimp_scene = importer.ReadFile(scene_filepath, aiProcess_Triangulate | aiProcess_SortByPType);
 	if (assimp_scene == nullptr || assimp_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || assimp_scene->mRootNode == nullptr) {
 		LogError("Assimp failed to load \"%s\": %s", scene_filepath.c_str(), importer.GetErrorString());
 		return objects;
@@ -86,20 +86,25 @@ eda221::loadObjects(std::string const& filename)
 		auto const assimp_object_mesh = assimp_scene->mMeshes[j];
 
 		if (!assimp_object_mesh->HasFaces()) {
-			LogError("Unsupported object \"%s\" has no faces", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported object \"%s\": has no faces", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
-		if ((assimp_object_mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE) != aiPrimitiveType_TRIANGLE) {
-			LogError("Unsupported object \"%s\" uses non-triangle faces", assimp_object_mesh->mName.C_Str());
+		if ((assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_POINT))    != 0u
+		 && (assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_LINE))     != 0u
+		 && (assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_TRIANGLE)) != 0u) {
+			LogError("Unsupported object \"%s\": uses multiple primitive types", assimp_object_mesh->mName.C_Str());
+			continue;
+		}
+		if ((assimp_object_mesh->mPrimitiveTypes & static_cast<uint32_t>(aiPrimitiveType_POLYGON)) == static_cast<uint32_t>(aiPrimitiveType_POLYGON)) {
+			LogError("Unsupported object \"%s\": uses polygons", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 		if (!assimp_object_mesh->HasPositions()) {
-			LogError("Unsupported object \"%s\" has no positions", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported object \"%s\": has no positions", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 
 		eda221::mesh_data object;
-		object.vao = 0u;
 
 		glGenVertexArrays(1, &object.vao);
 		assert(object.vao != 0u);
@@ -159,16 +164,18 @@ eda221::loadObjects(std::string const& filename)
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 
-		object.indices_nb = assimp_object_mesh->mNumFaces * 3u;
+		auto const num_vertices_per_face = assimp_object_mesh->mFaces[0u].mNumIndices;
+		object.indices_nb = assimp_object_mesh->mNumFaces * num_vertices_per_face;
 		auto object_indices = std::make_unique<GLuint[]>(static_cast<size_t>(object.indices_nb));
 		for (size_t i = 0u; i < assimp_object_mesh->mNumFaces; ++i) {
 			auto const& face = assimp_object_mesh->mFaces[i];
-			assert(face.mNumIndices == 3u);
-			object_indices[3u * i + 0u] = face.mIndices[0u];
-			object_indices[3u * i + 1u] = face.mIndices[1u];
-			object_indices[3u * i + 2u] = face.mIndices[2u];
+			assert(face.mNumIndices <= 3);
+			object_indices[num_vertices_per_face * i + 0u] = face.mIndices[0u];
+			if (num_vertices_per_face >= 1u)
+				object_indices[num_vertices_per_face * i + 1u] = face.mIndices[1u];
+			if (num_vertices_per_face >= 2u)
+				object_indices[num_vertices_per_face * i + 2u] = face.mIndices[2u];
 		}
-		object.ibo = 0u;
 		glGenBuffers(1, &object.ibo);
 		assert(object.ibo != 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object.ibo);
