@@ -10,11 +10,13 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <cassert>
 
 namespace local
 {
+	static GLuint fullscreen_shader;
 	static GLuint display_vao;
 }
 
@@ -23,6 +25,9 @@ eda221::init()
 {
 	glGenVertexArrays(1, &local::display_vao);
 	assert(local::display_vao != 0u);
+	local::fullscreen_shader = eda221::createProgram("fullscreen.vert", "fullscreen.frag");
+	if (local::fullscreen_shader == 0u)
+		LogError("Failed to load \"fullscreen.vert\" and \"fullscreen.frag\"");
 }
 
 void
@@ -333,6 +338,32 @@ eda221::createProgram(std::string const& vert_shader_source_path, std::string co
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
 	return program;
+}
+
+void
+eda221::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right, GLuint texture, GLuint sampler, glm::ivec4 const& swizzle)
+{
+	auto const relative_to_absolute = [](float coord, int size) {
+		return static_cast<GLint>((coord + 1.0f) / 2.0f * size);
+	};
+	auto const viewport_origin = glm::ivec2(relative_to_absolute(lower_left.x, config::resolution_x),
+	                                        relative_to_absolute(lower_left.y, config::resolution_y));
+	auto const viewport_size = glm::ivec2(relative_to_absolute(upper_right.x, config::resolution_x),
+	                                      relative_to_absolute(upper_right.y, config::resolution_y))
+	                         - viewport_origin;
+
+	glViewport(viewport_origin.x, viewport_origin.y, viewport_size.x, viewport_size.y);
+	glUseProgram(local::fullscreen_shader);
+	glBindVertexArray(local::display_vao);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindSampler(0, sampler);
+	glUniform1i(glGetUniformLocation(local::fullscreen_shader, "tex"), 0);
+	glUniform4iv(glGetUniformLocation(local::fullscreen_shader, "swizzle"), 1, glm::value_ptr(swizzle));
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindSampler(0, 0u);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glUseProgram(0);
 }
 
 void

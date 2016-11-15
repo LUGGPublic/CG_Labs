@@ -2,6 +2,7 @@
 
 #include "external/glad/glad.h"
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include <string>
 #include <vector>
@@ -89,6 +90,22 @@ namespace eda221
 	//! @return the name of the OpenGL shader program
 	GLuint createProgram(std::string const& vert_shader_source_path,
 	                     std::string const& frag_shader_source_path);
+
+	//! \brief Display the current texture in the specified rectangle.
+	//!
+	//! @param [in] lower_left the lower left corner of the rectangle
+	//!             containing the texture
+	//! @param [in] upper_right the upper rigth corner of the rectangle
+	//!             containing the texture
+	//! @param [in] texture the OpenGL name of the texture to display
+	//! @param [in] sampler the OpenGL name of the sampler to use
+	//! @param [in] swizzle how to mix in the different channels, for
+	//!             example (0, 2, 1, -1) will swap the green and blue
+	//!             channels as well as invalidating (setting it to 1) the
+	//!             alpha channel
+	void displayTexture(glm::vec2 const& lower_left,
+	                    glm::vec2 const& upper_right, GLuint texture,
+	                    GLuint samper, glm::ivec4 const& swizzle);
 
 	//! \brief Draw full screen.
 	void drawFullscreen();
