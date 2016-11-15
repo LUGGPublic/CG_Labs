@@ -54,6 +54,25 @@ namespace eda221
 	//!         object found in the input file
 	std::vector<mesh_data> loadObjects(std::string const& filename);
 
+	//! \brief Creates an OpenGL texture without any content nor parameterised.
+	//!
+	//! @param [in] width width of the texture to create
+	//! @param [in] height height of the texture to create
+	//! @param [in] target OpenGL texture target to create, i.e.
+	//!             GL_TEXTURE_2D & co.
+	//! @param [in] internal_format formatting of the texture, i.e. how many
+	//!             channels
+	//! @param [in] format formatting of the pixel data, i.e. in which
+	//!             layout are the channels stored
+	//! @param [in] type data type of the pixel data
+	//! @param [in] data what to put in the texture
+	GLuint createTexture(uint32_t width, uint32_t height,
+	                     GLenum target = GL_TEXTURE_2D,
+	                     GLint internal_format = GL_RGBA,
+	                     GLenum format = GL_RGBA,
+	                     GLenum type = GL_UNSIGNED_BYTE,
+	                     GLvoid const* data = nullptr);
+
 	//! \brief Load a PNG image into an OpenGL 2D-texture.
 	//!
 	//! @param [in] filename of the PNG image, relative to the `textures`

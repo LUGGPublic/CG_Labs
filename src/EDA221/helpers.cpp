@@ -226,6 +226,21 @@ eda221::loadObjects(std::string const& filename)
 }
 
 GLuint
+eda221::createTexture(uint32_t width, uint32_t height, GLenum target, GLint internal_format, GLenum format, GLenum type, GLvoid const* data)
+{
+	GLuint texture = 0u;
+	glGenTextures(1, &texture);
+	assert(texture != 0u);
+	glBindTexture(target, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(target, 0, internal_format, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
+	glBindTexture(target, 0u);
+
+	return texture;
+}
+
+GLuint
 eda221::loadTexture2D(std::string const& filename, bool generate_mipmap)
 {
 	u32 width, height;
@@ -233,13 +248,10 @@ eda221::loadTexture2D(std::string const& filename, bool generate_mipmap)
 	if (data.empty())
 		return 0u;
 
-	GLuint texture = 0u;
-	glGenTextures(1, &texture);
-	assert(texture != 0u);
+	GLuint texture = eda221::createTexture(width, height, GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<GLvoid const*>(data.data()));
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generate_mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<GLvoid const*>(data.data()));
 	if (generate_mipmap)
 		glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0u);
