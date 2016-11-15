@@ -9,6 +9,8 @@ set (
 	SOURCES
 
 	"Bonobo.cpp"
+	"GLStateInspection.cpp"
+	"GLStateInspectionView.cpp"
 	"InputHandler.cpp"
 	"Log.cpp"
 	"LogView.cpp"
