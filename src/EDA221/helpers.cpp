@@ -13,6 +13,24 @@
 
 #include <cassert>
 
+namespace local
+{
+	static GLuint display_vao;
+}
+
+void
+eda221::init()
+{
+	glGenVertexArrays(1, &local::display_vao);
+	assert(local::display_vao != 0u);
+}
+
+void
+eda221::deinit()
+{
+	glDeleteVertexArrays(1, &local::display_vao);
+}
+
 static std::vector<u8>
 getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
 {
@@ -315,4 +333,12 @@ eda221::createProgram(std::string const& vert_shader_source_path, std::string co
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
 	return program;
+}
+
+void
+eda221::drawFullscreen()
+{
+	glBindVertexArray(local::display_vao);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindVertexArray(0u);
 }

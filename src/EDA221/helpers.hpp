@@ -39,6 +39,12 @@ namespace eda221
 		}
 	};
 
+	//! \brief Allocate some objects needed by some helper functions.
+	void init();
+
+	//! \brief Deallocate objects allocated by the `init()` function.
+	void deinit();
+
 	//! \brief Load objects found in an object/scene file, using assimp.
 	//!
 	//! @param [in] filename of the object/scene file to load, relative to
@@ -83,4 +89,7 @@ namespace eda221
 	//! @return the name of the OpenGL shader program
 	GLuint createProgram(std::string const& vert_shader_source_path,
 	                     std::string const& frag_shader_source_path);
+
+	//! \brief Draw full screen.
+	void drawFullscreen();
 }
