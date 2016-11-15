@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include <functional>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -136,6 +137,12 @@ namespace eda221
 	//! @return the name of the OpenGL FBO
 	GLuint createFBO(std::vector<GLuint> const& color_attachments,
 	                 GLuint depth_attachment = 0u);
+
+	//! \brief Create an OpenGL sampler and set it up.
+	//!
+	//! @param [in] setup a lambda function to parameterise the sampler
+	//! @return the name of the OpenGL sampler
+	GLuint createSampler(std::function<void (GLuint)> const& setup);
 
 	//! \brief Draw full screen.
 	void drawFullscreen();

@@ -401,6 +401,16 @@ eda221::createFBO(std::vector<GLuint> const& color_attachments, GLuint depth_att
 	return fbo;
 }
 
+GLuint
+eda221::createSampler(std::function<void (GLuint)> const& setup)
+{
+	GLuint sampler = 0u;
+	glGenSamplers(1, &sampler);
+	assert(sampler != 0u);
+	setup(sampler);
+	return sampler;
+}
+
 void
 eda221::drawFullscreen()
 {
