@@ -21,12 +21,12 @@ public:
 	};
 public:
 	static void Init();
-	static Window *Create(std::string title, unsigned int w, unsigned int h, unsigned int msaa = 4, bool fullscreen = false, SwapStrategy swap = ENABLE_VSYNC);
+	static Window *Create(std::string title, unsigned int w, unsigned int h, unsigned int msaa = 4, bool fullscreen = false, bool resizable_ = true, SwapStrategy swap = ENABLE_VSYNC);
 	static bool Destroy(Window *window);
 	static void Destroy();
 
 protected:
-	Window(std::string title, unsigned int w, unsigned int h, unsigned int msaa, bool fullscreen_, SwapStrategy swap_);
+	Window(std::string title, unsigned int w, unsigned int h, unsigned int msaa, bool fullscreen_, bool resizable_, SwapStrategy swap_);
 	~Window();
 public:
 	void SetFullscreen(bool state);
@@ -48,6 +48,7 @@ private:
 	unsigned int mWidth, mHeight;
 	unsigned int mMSAA;
 	bool mFullscreen;
+	bool mResizable;
 	SwapStrategy mSwap;
 	GLFWwindow *mWindowGLFW;
 	InputHandler *mInputHandler;
