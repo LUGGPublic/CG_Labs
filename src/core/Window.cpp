@@ -69,7 +69,7 @@ void Window::FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 }
 
 
-Window *Window::Create(std::string mTitle, unsigned int w, unsigned int h, unsigned int msaa, bool fullscreen, SwapStrategy swap)
+Window *Window::Create(std::string mTitle, unsigned int w, unsigned int h, unsigned int msaa, bool fullscreen, bool resizable_, SwapStrategy swap)
 {
 	bool ok = Param(w > 0 && h > 0) ||
 		Param(!mTitle.empty());
@@ -82,7 +82,7 @@ Window *Window::Create(std::string mTitle, unsigned int w, unsigned int h, unsig
 		LogWarning("A window named %s already exists", mTitle.c_str());
 		return nullptr;
 	}
-	Window *window = new Window(mTitle, w, h, msaa, fullscreen, swap);
+	Window *window = new Window(mTitle, w, h, msaa, fullscreen, resizable_, swap);
 	if (window->mWindowGLFW == nullptr) {
 		delete window;
 		return nullptr;
@@ -108,8 +108,8 @@ std::string Window::GetTitle() const
 	return mTitle;
 }
 
-Window::Window(std::string mTitle_, unsigned w_, unsigned h_, unsigned int msaa_, bool fullscreen_, SwapStrategy swap_) :
-	mTitle(mTitle_), mWidth(w_), mHeight(h_), mMSAA(msaa_), mFullscreen(fullscreen_), mSwap(swap_), mWindowGLFW(nullptr), mInputHandler(nullptr), mCamera(nullptr)
+Window::Window(std::string mTitle_, unsigned w_, unsigned h_, unsigned int msaa_, bool fullscreen_, bool resizable_, SwapStrategy swap_) :
+	mTitle(mTitle_), mWidth(w_), mHeight(h_), mMSAA(msaa_), mFullscreen(fullscreen_), mResizable(resizable_), mSwap(swap_), mWindowGLFW(nullptr), mInputHandler(nullptr), mCamera(nullptr)
 {
 	Show();
 }
@@ -128,6 +128,7 @@ bool Window::Show()
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, default_opengl_major_version);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, default_opengl_minor_version);
 
+		glfwWindowHint(GLFW_RESIZABLE, mResizable ? GLFW_TRUE : GLFW_FALSE);
 		glfwWindowHint(GLFW_SAMPLES, static_cast<int>(mMSAA));
 
 		GLFWmonitor* const monitor = mFullscreen ? glfwGetPrimaryMonitor()

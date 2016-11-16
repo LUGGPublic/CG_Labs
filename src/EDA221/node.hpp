@@ -27,6 +27,19 @@ public:
 	//!             world-space
 	void render(glm::mat4 const& WVP, glm::mat4 const& world) const;
 
+	//! \brief Render this node with a specific shader program.
+	//!
+	//! @param [in] WVP Matrix transforming from world-space to clip-space
+	//! @param [in] world Matrix transforming from model-space to
+	//!             world-space
+	//! @param [in] program OpenGL shader program to use
+	//! @param [in] set_uniforms function that will take as argument an
+	//!             OpenGL shader program, and will setup that program's
+	//!             uniforms
+	void render(glm::mat4 const& WVP, glm::mat4 const& world,
+	            GLuint program,
+	            std::function<void (GLuint)> const& set_uniforms) const;
+
 	//! \brief Set the geometry of this node.
 	//!
 	//! A node without any geometry will not render itself, but its
@@ -154,7 +167,10 @@ public:
 private:
 	// Geometry data
 	GLuint _vao;
+	GLsizei _vertices_nb;
 	GLsizei _indices_nb;
+	GLenum _drawing_mode;
+	bool _has_indices;
 
 	// Program data
 	GLuint _program;

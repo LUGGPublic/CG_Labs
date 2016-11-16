@@ -10,8 +10,31 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <cassert>
+
+namespace local
+{
+	static GLuint fullscreen_shader;
+	static GLuint display_vao;
+}
+
+void
+eda221::init()
+{
+	glGenVertexArrays(1, &local::display_vao);
+	assert(local::display_vao != 0u);
+	local::fullscreen_shader = eda221::createProgram("fullscreen.vert", "fullscreen.frag");
+	if (local::fullscreen_shader == 0u)
+		LogError("Failed to load \"fullscreen.vert\" and \"fullscreen.frag\"");
+}
+
+void
+eda221::deinit()
+{
+	glDeleteVertexArrays(1, &local::display_vao);
+}
 
 static std::vector<u8>
 getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
@@ -39,9 +62,10 @@ eda221::loadObjects(std::string const& filename)
 	std::vector<eda221::mesh_data> objects;
 
 	auto const scene_filepath = config::resources_path("scenes/" + filename);
+	LogInfo("Loading \"%s\"", scene_filepath.c_str());
 	Assimp::Importer importer;
-	auto const assimp_scene = importer.ReadFile(scene_filepath, 0u);
-	if (assimp_scene == nullptr) {
+	auto const assimp_scene = importer.ReadFile(scene_filepath, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_CalcTangentSpace);
+	if (assimp_scene == nullptr || assimp_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || assimp_scene->mRootNode == nullptr) {
 		LogError("Assimp failed to load \"%s\": %s", scene_filepath.c_str(), importer.GetErrorString());
 		return objects;
 	}
@@ -51,25 +75,59 @@ eda221::loadObjects(std::string const& filename)
 		return objects;
 	}
 
+	std::vector<texture_bindings> materials_bindings;
+	materials_bindings.reserve(assimp_scene->mNumMaterials);
+
+	LogInfo("\t* materials");
+	for (size_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
+		texture_bindings bindings;
+		auto const material = assimp_scene->mMaterials[i];
+
+		auto const process_texture = [&bindings,&material,i](aiTextureType type, std::string const& type_as_str, std::string const& name){
+			if (material->GetTextureCount(type)) {
+				if (material->GetTextureCount(type) > 1)
+					LogWarning("Material %d has more than one %s texture: discarding all but the first one.", i, type_as_str.c_str());
+				aiString path;
+				material->GetTexture(type, 0, &path);
+				auto const id = eda221::loadTexture2D("../crysponza/" + std::string(path.C_Str()), type_as_str != "opacity");
+				if (id != 0u)
+					bindings.emplace(name, id);
+			}
+		};
+
+		process_texture(aiTextureType_DIFFUSE,  "diffuse",  "diffuse_texture");
+		process_texture(aiTextureType_SPECULAR, "specular", "specular_texture");
+		process_texture(aiTextureType_NORMALS,  "normals",  "normals_texture");
+		process_texture(aiTextureType_OPACITY,  "opacity",  "opacity_texture");
+
+		materials_bindings.push_back(bindings);
+	}
+
+	LogInfo("\t* meshes");
 	objects.reserve(assimp_scene->mNumMeshes);
 	for (size_t j = 0; j < assimp_scene->mNumMeshes; ++j) {
 		auto const assimp_object_mesh = assimp_scene->mMeshes[j];
 
 		if (!assimp_object_mesh->HasFaces()) {
-			LogError("Unsupported object \"%s\" has no faces", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported object \"%s\": has no faces", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
-		if ((assimp_object_mesh->mPrimitiveTypes & aiPrimitiveType_TRIANGLE) != aiPrimitiveType_TRIANGLE) {
-			LogError("Unsupported object \"%s\" uses non-triangle faces", assimp_object_mesh->mName.C_Str());
+		if ((assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_POINT))    != 0u
+		 && (assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_LINE))     != 0u
+		 && (assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_TRIANGLE)) != 0u) {
+			LogError("Unsupported object \"%s\": uses multiple primitive types", assimp_object_mesh->mName.C_Str());
+			continue;
+		}
+		if ((assimp_object_mesh->mPrimitiveTypes & static_cast<uint32_t>(aiPrimitiveType_POLYGON)) == static_cast<uint32_t>(aiPrimitiveType_POLYGON)) {
+			LogError("Unsupported object \"%s\": uses polygons", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 		if (!assimp_object_mesh->HasPositions()) {
-			LogError("Unsupported object \"%s\" has no positions", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported object \"%s\": has no positions", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 
 		eda221::mesh_data object;
-		object.vao = 0u;
 
 		glGenVertexArrays(1, &object.vao);
 		assert(object.vao != 0u);
@@ -129,16 +187,18 @@ eda221::loadObjects(std::string const& filename)
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 
-		object.indices_nb = assimp_object_mesh->mNumFaces * 3u;
+		auto const num_vertices_per_face = assimp_object_mesh->mFaces[0u].mNumIndices;
+		object.indices_nb = assimp_object_mesh->mNumFaces * num_vertices_per_face;
 		auto object_indices = std::make_unique<GLuint[]>(static_cast<size_t>(object.indices_nb));
 		for (size_t i = 0u; i < assimp_object_mesh->mNumFaces; ++i) {
 			auto const& face = assimp_object_mesh->mFaces[i];
-			assert(face.mNumIndices == 3u);
-			object_indices[3u * i + 0u] = face.mIndices[0u];
-			object_indices[3u * i + 1u] = face.mIndices[1u];
-			object_indices[3u * i + 2u] = face.mIndices[2u];
+			assert(face.mNumIndices <= 3);
+			object_indices[num_vertices_per_face * i + 0u] = face.mIndices[0u];
+			if (num_vertices_per_face >= 1u)
+				object_indices[num_vertices_per_face * i + 1u] = face.mIndices[1u];
+			if (num_vertices_per_face >= 2u)
+				object_indices[num_vertices_per_face * i + 2u] = face.mIndices[2u];
 		}
-		object.ibo = 0u;
 		glGenBuffers(1, &object.ibo);
 		assert(object.ibo != 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object.ibo);
@@ -149,31 +209,51 @@ eda221::loadObjects(std::string const& filename)
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 
+		auto const material_id = assimp_object_mesh->mMaterialIndex;
+		if (material_id >= materials_bindings.size())
+			LogError("Object \"%s\" has a material index of %u, but only %u materials were retrieved.", assimp_object_mesh->mName.C_Str(), material_id, materials_bindings.size());
+		else
+			object.bindings = materials_bindings[material_id];
+
 		objects.push_back(object);
 
-		LogInfo("Loaded object \"%s\" with normals:%d, tangents&bitangents:%d, texcoords:%d",
-		        assimp_object_mesh->mName.C_Str(), assimp_object_mesh->HasNormals(),
-		        assimp_object_mesh->HasTangentsAndBitangents(), assimp_object_mesh->HasTextureCoords(0));
+//		LogInfo("Loaded object \"%s\" with normals:%d, tangents&bitangents:%d, texcoords:%d",
+//		        assimp_object_mesh->mName.C_Str(), assimp_object_mesh->HasNormals(),
+//		        assimp_object_mesh->HasTangentsAndBitangents(), assimp_object_mesh->HasTextureCoords(0));
 	}
 
 	return objects;
 }
 
 GLuint
-eda221::loadTexture2D(std::string const& filename)
+eda221::createTexture(uint32_t width, uint32_t height, GLenum target, GLint internal_format, GLenum format, GLenum type, GLvoid const* data)
+{
+	GLuint texture = 0u;
+	glGenTextures(1, &texture);
+	assert(texture != 0u);
+	glBindTexture(target, texture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexImage2D(target, 0, internal_format, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
+	glBindTexture(target, 0u);
+
+	return texture;
+}
+
+GLuint
+eda221::loadTexture2D(std::string const& filename, bool generate_mipmap)
 {
 	u32 width, height;
 	auto const data = getTextureData("textures/" + filename, width, height, true);
 	if (data.empty())
 		return 0u;
 
-	GLuint texture = 0u;
-	glGenTextures(1, &texture);
-	assert(texture != 0u);
+	GLuint texture = eda221::createTexture(width, height, GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<GLvoid const*>(data.data()));
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generate_mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<GLvoid const*>(data.data()));
+	if (generate_mipmap)
+		glGenerateMipmap(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, 0u);
 
 	return texture;
@@ -258,15 +338,83 @@ eda221::createProgram(std::string const& vert_shader_source_path, std::string co
 {
 	auto const vertex_shader_source = utils::slurp_file(config::shaders_path("EDA221/" + vert_shader_source_path));
 	GLuint vertex_shader = utils::opengl::shader::generate_shader(GL_VERTEX_SHADER, vertex_shader_source);
-	assert(vertex_shader != 0u);
+	if (vertex_shader == 0u)
+		return 0u;
 
 	auto const fragment_shader_source = utils::slurp_file(config::shaders_path("EDA221/" + frag_shader_source_path));
 	GLuint fragment_shader = utils::opengl::shader::generate_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
-	assert(fragment_shader != 0u);
+	if (fragment_shader == 0u)
+		return 0u;
 
 	GLuint program = utils::opengl::shader::generate_program({ vertex_shader, fragment_shader });
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
-	assert(program != 0u);
 	return program;
+}
+
+void
+eda221::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right, GLuint texture, GLuint sampler, glm::ivec4 const& swizzle)
+{
+	auto const relative_to_absolute = [](float coord, int size) {
+		return static_cast<GLint>((coord + 1.0f) / 2.0f * size);
+	};
+	auto const viewport_origin = glm::ivec2(relative_to_absolute(lower_left.x, config::resolution_x),
+	                                        relative_to_absolute(lower_left.y, config::resolution_y));
+	auto const viewport_size = glm::ivec2(relative_to_absolute(upper_right.x, config::resolution_x),
+	                                      relative_to_absolute(upper_right.y, config::resolution_y))
+	                         - viewport_origin;
+
+	glViewport(viewport_origin.x, viewport_origin.y, viewport_size.x, viewport_size.y);
+	glUseProgram(local::fullscreen_shader);
+	glBindVertexArray(local::display_vao);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindSampler(0, sampler);
+	glUniform1i(glGetUniformLocation(local::fullscreen_shader, "tex"), 0);
+	glUniform4iv(glGetUniformLocation(local::fullscreen_shader, "swizzle"), 1, glm::value_ptr(swizzle));
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindSampler(0, 0u);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glUseProgram(0);
+}
+
+GLuint
+eda221::createFBO(std::vector<GLuint> const& color_attachments, GLuint depth_attachment)
+{
+	auto const attach = [](GLenum attach_point, GLuint attachment){
+		glFramebufferTexture2D(GL_FRAMEBUFFER, attach_point, GL_TEXTURE_2D, attachment, 0);
+		auto const status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+		if (status != GL_FRAMEBUFFER_COMPLETE)
+			LogError("Failed to attach %u at %u", attachment, attach_point);
+	};
+
+	GLuint fbo = 0u;
+	glGenFramebuffers(1, &fbo);
+	assert(fbo != 0u);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	for (size_t i = 0; i < color_attachments.size(); ++i)
+		attach(static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i), color_attachments[i]);
+	if (depth_attachment != 0u)
+		attach(GL_DEPTH_ATTACHMENT, depth_attachment);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	return fbo;
+}
+
+GLuint
+eda221::createSampler(std::function<void (GLuint)> const& setup)
+{
+	GLuint sampler = 0u;
+	glGenSamplers(1, &sampler);
+	assert(sampler != 0u);
+	setup(sampler);
+	return sampler;
+}
+
+void
+eda221::drawFullscreen()
+{
+	glBindVertexArray(local::display_vao);
+	glDrawArrays(GL_TRIANGLES, 0, 3);
+	glBindVertexArray(0u);
 }
