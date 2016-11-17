@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include "core/FPSCamera.h" // As it includes OpenGL headers, import it after glad
+
 #include <functional>
 #include <string>
 #include <vector>
@@ -128,7 +130,8 @@ namespace eda221
 	void displayTexture(glm::vec2 const& lower_left,
 	                    glm::vec2 const& upper_right, GLuint texture,
 	                    GLuint samper, glm::ivec4 const& swizzle,
-	                    glm::ivec2 const& window_size);
+	                    glm::ivec2 const& window_size,
+	                    FPSCameraf const* camera = nullptr);
 
 	//! \brief Create an OpenGL FrameBuffer Object using the specified
 	//!        attachments.
