@@ -110,11 +110,13 @@ edan35::Assignment2::run()
 	Node cone;
 	cone.set_geometry(cone_geometry);
 
+	auto const window_size = window->GetDimensions();
+
 	//
 	// Setup the camera
 	//
 	FPSCameraf mCamera(bonobo::pi / 4.0f,
-	                   static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
+	                   static_cast<float>(window_size.x) / static_cast<float>(window_size.y),
 	                   1.0f, 10000.0f);
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 100.0f, 180.0f));
 	mCamera.mWorld.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -155,12 +157,12 @@ edan35::Assignment2::run()
 	//
 	// Setup textures
 	//
-	auto const diffuse_texture                     = eda221::createTexture(config::resolution_x, config::resolution_y);
-	auto const specular_texture                    = eda221::createTexture(config::resolution_x, config::resolution_y);
-	auto const normal_texture                      = eda221::createTexture(config::resolution_x, config::resolution_y);
-	auto const light_diffuse_contribution_texture  = eda221::createTexture(config::resolution_x, config::resolution_y);
-	auto const light_specular_contribution_texture = eda221::createTexture(config::resolution_x, config::resolution_y);
-	auto const depth_texture                       = eda221::createTexture(config::resolution_x, config::resolution_y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+	auto const diffuse_texture                     = eda221::createTexture(window_size.x, window_size.y);
+	auto const specular_texture                    = eda221::createTexture(window_size.x, window_size.y);
+	auto const normal_texture                      = eda221::createTexture(window_size.x, window_size.y);
+	auto const light_diffuse_contribution_texture  = eda221::createTexture(window_size.x, window_size.y);
+	auto const light_specular_contribution_texture = eda221::createTexture(window_size.x, window_size.y);
+	auto const depth_texture                       = eda221::createTexture(window_size.x, window_size.y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
 	auto const shadowmap_texture                   = eda221::createTexture(constant::shadowmap_res_x, constant::shadowmap_res_y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
 
 
@@ -271,7 +273,7 @@ edan35::Assignment2::run()
 		auto const status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 			LogError("Something went wrong with framebuffer %u", deferred_fbo);
-		glViewport(0, 0, config::resolution_x, config::resolution_y);
+		glViewport(0, 0, window_size.x, window_size.y);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		// XXX: Is any other clearing needed?
 
@@ -289,7 +291,7 @@ edan35::Assignment2::run()
 		glBindFramebuffer(GL_FRAMEBUFFER, light_fbo);
 		GLenum light_draw_buffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		glDrawBuffers(2, light_draw_buffers);
-		glViewport(0, 0, config::resolution_x, config::resolution_y);
+		glViewport(0, 0, window_size.x, window_size.y);
 		// XXX: Is any clearing needed?
 		for (size_t i = 0; i < constant::lights_nb; ++i) {
 			auto& lightTransform = lightTransforms[i];
@@ -320,13 +322,13 @@ edan35::Assignment2::run()
 			glBindFramebuffer(GL_FRAMEBUFFER, light_fbo);
 			glDrawBuffers(2, light_draw_buffers);
 			glUseProgram(accumulate_lights_shader);
-			glViewport(0, 0, config::resolution_x, config::resolution_y);
+			glViewport(0, 0, window_size.x, window_size.y);
 			// XXX: Is any clearing needed?
 
-			auto const spotlight_set_uniforms = [&mCamera,&light_matrix,&lightColors,&lightTransform,&i](GLuint program){
+			auto const spotlight_set_uniforms = [&window_size,&mCamera,&light_matrix,&lightColors,&lightTransform,&i](GLuint program){
 				glUniform2f(glGetUniformLocation(program, "inv_res"),
-				            1.0f / static_cast<float>(config::resolution_x),
-				            1.0f / static_cast<float>(config::resolution_y));
+				            1.0f / static_cast<float>(window_size.x),
+				            1.0f / static_cast<float>(window_size.y));
 				glUniformMatrix4fv(glGetUniformLocation(program, "view_projection_inverse"), 1, GL_FALSE,
 				                   glm::value_ptr(mCamera.GetClipToWorldMatrix()));
 				glUniform3fv(glGetUniformLocation(program, "camera_position"), 1,
@@ -370,7 +372,7 @@ edan35::Assignment2::run()
 		//
 		glBindFramebuffer(GL_FRAMEBUFFER, 0u);
 		glUseProgram(resolve_deferred_shader);
-		glViewport(0, 0, config::resolution_x, config::resolution_y);
+		glViewport(0, 0, window_size.x, window_size.y);
 		// XXX: Is any clearing needed?
 
 		bind_texture_with_sampler(GL_TEXTURE_2D, 0, resolve_deferred_shader, "diffuse_texture", diffuse_texture, default_sampler);
@@ -404,17 +406,17 @@ edan35::Assignment2::run()
 		//
 		// Output content of the g-buffer as well as of the shadowmap, for debugging purposes
 		//
-		eda221::displayTexture({-0.95f, -0.95f}, {-0.55f, -0.55f}, diffuse_texture,                     default_sampler, {0, 1, 2, -1});
-		eda221::displayTexture({-0.45f, -0.95f}, {-0.05f, -0.55f}, specular_texture,                    default_sampler, {0, 1, 2, -1});
-		eda221::displayTexture({ 0.05f, -0.95f}, { 0.45f, -0.55f}, normal_texture,                      default_sampler, {0, 1, 2, -1});
-		eda221::displayTexture({ 0.55f, -0.95f}, { 0.95f, -0.55f}, depth_texture,                       default_sampler, {0, 0, 0, -1});
-		eda221::displayTexture({-0.95f,  0.55f}, {-0.55f,  0.95f}, shadowmap_texture,                   default_sampler, {0, 0, 0, -1});
-		eda221::displayTexture({-0.45f,  0.55f}, {-0.05f,  0.95f}, light_diffuse_contribution_texture,  default_sampler, {0, 1, 2, -1});
-		eda221::displayTexture({ 0.05f,  0.55f}, { 0.45f,  0.95f}, light_specular_contribution_texture, default_sampler, {0, 1, 2, -1});
+		eda221::displayTexture({-0.95f, -0.95f}, {-0.55f, -0.55f}, diffuse_texture,                     default_sampler, {0, 1, 2, -1}, window_size);
+		eda221::displayTexture({-0.45f, -0.95f}, {-0.05f, -0.55f}, specular_texture,                    default_sampler, {0, 1, 2, -1}, window_size);
+		eda221::displayTexture({ 0.05f, -0.95f}, { 0.45f, -0.55f}, normal_texture,                      default_sampler, {0, 1, 2, -1}, window_size);
+		eda221::displayTexture({ 0.55f, -0.95f}, { 0.95f, -0.55f}, depth_texture,                       default_sampler, {0, 0, 0, -1}, window_size);
+		eda221::displayTexture({-0.95f,  0.55f}, {-0.55f,  0.95f}, shadowmap_texture,                   default_sampler, {0, 0, 0, -1}, window_size);
+		eda221::displayTexture({-0.45f,  0.55f}, {-0.05f,  0.95f}, light_diffuse_contribution_texture,  default_sampler, {0, 1, 2, -1}, window_size);
+		eda221::displayTexture({ 0.05f,  0.55f}, { 0.45f,  0.95f}, light_specular_contribution_texture, default_sampler, {0, 1, 2, -1}, window_size);
 		//
 		// Reset viewport back to normal
 		//
-		glViewport(0, 0, config::resolution_x, config::resolution_y);
+		glViewport(0, 0, window_size.x, window_size.y);
 
 		GLStateInspection::View::Render();
 		Log::View::Render();

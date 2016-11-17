@@ -353,15 +353,15 @@ eda221::createProgram(std::string const& vert_shader_source_path, std::string co
 }
 
 void
-eda221::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right, GLuint texture, GLuint sampler, glm::ivec4 const& swizzle)
+eda221::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right, GLuint texture, GLuint sampler, glm::ivec4 const& swizzle, glm::ivec2 const& window_size)
 {
 	auto const relative_to_absolute = [](float coord, int size) {
 		return static_cast<GLint>((coord + 1.0f) / 2.0f * size);
 	};
-	auto const viewport_origin = glm::ivec2(relative_to_absolute(lower_left.x, config::resolution_x),
-	                                        relative_to_absolute(lower_left.y, config::resolution_y));
-	auto const viewport_size = glm::ivec2(relative_to_absolute(upper_right.x, config::resolution_x),
-	                                      relative_to_absolute(upper_right.y, config::resolution_y))
+	auto const viewport_origin = glm::ivec2(relative_to_absolute(lower_left.x, window_size.x),
+	                                        relative_to_absolute(lower_left.y, window_size.y));
+	auto const viewport_size = glm::ivec2(relative_to_absolute(upper_right.x, window_size.x),
+	                                      relative_to_absolute(upper_right.y, window_size.y))
 	                         - viewport_origin;
 
 	glViewport(viewport_origin.x, viewport_origin.y, viewport_size.x, viewport_size.y);

@@ -123,9 +123,12 @@ namespace eda221
 	//!             example (0, 2, 1, -1) will swap the green and blue
 	//!             channels as well as invalidating (setting it to 1) the
 	//!             alpha channel
+	//! @param [in] window_size the size in pixels of the main window, the
+	//!             one relative to which you want to draw this texture
 	void displayTexture(glm::vec2 const& lower_left,
 	                    glm::vec2 const& upper_right, GLuint texture,
-	                    GLuint samper, glm::ivec4 const& swizzle);
+	                    GLuint samper, glm::ivec4 const& swizzle,
+	                    glm::ivec2 const& window_size);
 
 	//! \brief Create an OpenGL FrameBuffer Object using the specified
 	//!        attachments.
