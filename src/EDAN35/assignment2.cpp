@@ -234,6 +234,7 @@ edan35::Assignment2::run()
 
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_CULL_FACE);
 
 
 	double ddeltatime;
