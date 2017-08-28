@@ -4,7 +4,7 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 	add_executable (${assignment_name} ${sources} ${common_sources})
 
 	target_include_directories (${assignment_name} PRIVATE "${CMAKE_SOURCE_DIR}/src/external")
-	target_include_directories (${assignment_name} PRIVATE "${CMAKE_SOURCE_DIR}/src/EDA221")
+	target_include_directories (${assignment_name} PRIVATE "${CMAKE_SOURCE_DIR}/src/EDAF80")
 	target_include_directories (${assignment_name} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 	target_include_directories (${assignment_name} PRIVATE "${CMAKE_BINARY_DIR}")
 	target_include_directories (${assignment_name} PRIVATE ${IMGUI_INCLUDE_DIRS})
@@ -23,10 +23,10 @@ endfunction ()
 set (
 	COMMON_SOURCES
 
-	"../EDA221/node.cpp"
-	"../EDA221/node.hpp"
-	"../EDA221/helpers.cpp"
-	"../EDA221/helpers.hpp"
+	"../EDAF80/node.cpp"
+	"../EDAF80/node.hpp"
+	"../EDAF80/helpers.cpp"
+	"../EDAF80/helpers.hpp"
 )
 
 set (

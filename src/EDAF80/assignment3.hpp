@@ -5,7 +5,7 @@ class InputHandler;
 class Window;
 
 
-namespace eda221
+namespace edaf80
 {
 	//! \brief Wrapper class for Assignment 2
 	class Assignment3 {

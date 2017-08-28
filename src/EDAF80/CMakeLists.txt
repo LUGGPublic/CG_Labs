@@ -47,7 +47,7 @@ set (
 )
 
 source_group (
-	EDA221${PATH_SEP}Assignment2
+	EDAF80${PATH_SEP}Assignment2
 
 	FILES
 	${PROJECT_SOURCE_DIR}/interpolation.cpp
@@ -56,8 +56,8 @@ source_group (
 	${PROJECT_SOURCE_DIR}/assignment2.hpp
 	${PROJECT_SOURCE_DIR}/parametric_shapes.cpp
 	${PROJECT_SOURCE_DIR}/parametric_shapes.hpp
-	${SHADERS_DIR}/EDA221/LambertTexture.vert
-	${SHADERS_DIR}/EDA221/LambertTexture.frag
+	${SHADERS_DIR}/EDAF80/LambertTexture.vert
+	${SHADERS_DIR}/EDAF80/LambertTexture.frag
 )
 
 set (
@@ -68,13 +68,13 @@ set (
 )
 
 source_group (
-	EDA221${PATH_SEP}Assignment3
+	EDAF80${PATH_SEP}Assignment3
 
 	FILES
 	${PROJECT_SOURCE_DIR}/assignment3.cpp
 	${PROJECT_SOURCE_DIR}/assignment3.hpp
-	${SHADERS_DIR}/EDA221/LambertTexture.vert
-	${SHADERS_DIR}/EDA221/LambertTexture.frag
+	${SHADERS_DIR}/EDAF80/LambertTexture.vert
+	${SHADERS_DIR}/EDAF80/LambertTexture.frag
 )
 
 set (
@@ -85,7 +85,7 @@ set (
 )
 
 source_group (
-	EDA221${PATH_SEP}Assignment4
+	EDAF80${PATH_SEP}Assignment4
 
 	FILES
 	${PROJECT_SOURCE_DIR}/assignment4.cpp
@@ -100,7 +100,7 @@ set (
 )
 
 source_group (
-	EDA221${PATH_SEP}Assignment5
+	EDAF80${PATH_SEP}Assignment5
 
 	FILES
 	${PROJECT_SOURCE_DIR}/assignment5.cpp

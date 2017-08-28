@@ -30,11 +30,11 @@
 #include <vector>
 
 
-eda221::Assignment1::Assignment1()
+edaf80::Assignment1::Assignment1()
 {
 	Log::View::Init();
 
-	window = Window::Create("EDA221: Assignment 1", config::resolution_x,
+	window = Window::Create("EDAF80: Assignment 1", config::resolution_x,
 	                        config::resolution_y, config::msaa_rate, false);
 	if (window == nullptr) {
 		Log::View::Destroy();
@@ -44,7 +44,7 @@ eda221::Assignment1::Assignment1()
 	window->SetInputHandler(inputHandler);
 }
 
-eda221::Assignment1::~Assignment1()
+edaf80::Assignment1::~Assignment1()
 {
 	delete inputHandler;
 	inputHandler = nullptr;
@@ -56,7 +56,7 @@ eda221::Assignment1::~Assignment1()
 }
 
 void
-eda221::Assignment1::run()
+edaf80::Assignment1::run()
 {
 	// Load the sphere geometry
 	auto const objects = bonobo::loadObjects("sphere.obj");
@@ -175,7 +175,7 @@ int main()
 {
 	Bonobo::Init();
 	try {
-		eda221::Assignment1 assignment1;
+		edaf80::Assignment1 assignment1;
 		assignment1.run();
 	}
 	catch (std::runtime_error const& e) {

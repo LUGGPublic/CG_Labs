@@ -39,11 +39,11 @@ static polygon_mode_t get_next_mode(polygon_mode_t mode)
 	return static_cast<polygon_mode_t>((static_cast<unsigned int>(mode) + 1u) % 3u);
 }
 
-eda221::Assignment3::Assignment3()
+edaf80::Assignment3::Assignment3()
 {
 	Log::View::Init();
 
-	window = Window::Create("EDA221: Assignment 3", config::resolution_x,
+	window = Window::Create("EDAF80: Assignment 3", config::resolution_x,
 	                        config::resolution_y, config::msaa_rate, false);
 	if (window == nullptr) {
 		Log::View::Destroy();
@@ -53,7 +53,7 @@ eda221::Assignment3::Assignment3()
 	window->SetInputHandler(inputHandler);
 }
 
-eda221::Assignment3::~Assignment3()
+edaf80::Assignment3::~Assignment3()
 {
 	delete inputHandler;
 	inputHandler = nullptr;
@@ -65,7 +65,7 @@ eda221::Assignment3::~Assignment3()
 }
 
 void
-eda221::Assignment3::run()
+edaf80::Assignment3::run()
 {
 	// Load the sphere geometry
 	auto circle_ring_shape = parametric_shapes::createCircleRing(4u, 60u, 1.0f, 2.0f);
@@ -244,7 +244,7 @@ int main()
 {
 	Bonobo::Init();
 	try {
-		eda221::Assignment3 assignment3;
+		edaf80::Assignment3 assignment3;
 		assignment3.run();
 	} catch (std::runtime_error const& e) {
 		LogError(e.what());
