@@ -107,8 +107,8 @@ source_group (
 	${PROJECT_SOURCE_DIR}/assignment5.hpp
 )
 
-luggcgl_new_assignment ("Assignment1" "${ASSIGNMENT1_SOURCES}" "${COMMON_SOURCES}")
-luggcgl_new_assignment ("Assignment2" "${ASSIGNMENT2_SOURCES}" "${COMMON_SOURCES}")
-luggcgl_new_assignment ("Assignment3" "${ASSIGNMENT3_SOURCES}" "${COMMON_SOURCES}")
-luggcgl_new_assignment ("Assignment4" "${ASSIGNMENT4_SOURCES}" "${COMMON_SOURCES}")
-luggcgl_new_assignment ("Assignment5" "${ASSIGNMENT5_SOURCES}" "${COMMON_SOURCES}")
+luggcgl_new_assignment ("EDAF80_Assignment1" "${ASSIGNMENT1_SOURCES}" "${COMMON_SOURCES}")
+luggcgl_new_assignment ("EDAF80_Assignment2" "${ASSIGNMENT2_SOURCES}" "${COMMON_SOURCES}")
+luggcgl_new_assignment ("EDAF80_Assignment3" "${ASSIGNMENT3_SOURCES}" "${COMMON_SOURCES}")
+luggcgl_new_assignment ("EDAF80_Assignment4" "${ASSIGNMENT4_SOURCES}" "${COMMON_SOURCES}")
+luggcgl_new_assignment ("EDAF80_Assignment5" "${ASSIGNMENT5_SOURCES}" "${COMMON_SOURCES}")
