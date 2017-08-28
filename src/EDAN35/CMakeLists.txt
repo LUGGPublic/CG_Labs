@@ -37,7 +37,7 @@ set (
 )
 
 source_group (
-	EDA221${PATH_SEP}Assignment2
+	EDAN35${PATH_SEP}Assignment2
 
 	FILES
 	${PROJECT_SOURCE_DIR}/assignment2.cpp
