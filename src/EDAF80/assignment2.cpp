@@ -108,6 +108,14 @@ edaf80::Assignment2::run()
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 	};
 
+	// Set the default tensions value; it can always be changed at runtime
+	// through the "Scene Controls" window.
+	float catmull_rom_tension = 0.0f;
+
+	// Set whether the default interpolation algorithm should be the linear one;
+	// it can always be changed at runtime through the "Scene Controls" window.
+	bool use_linear = true;
+
 	auto circle_rings = Node();
 	circle_rings.set_geometry(shape);
 	circle_rings.set_program(fallback_shader, set_uniforms);
@@ -191,6 +199,13 @@ edaf80::Assignment2::run()
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
 		circle_rings.render(mCamera.GetWorldToClipMatrix(), circle_rings.get_transform());
+
+		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(300, 100), -1.0f, 0);
+		if (opened) {
+			ImGui::SliderFloat("Catmull-Rom tension", &catmull_rom_tension, 0.0f, 1.0f);
+			ImGui::Checkbox("Use linear interpolation", &use_linear);
+		}
+		ImGui::End();
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		Log::View::Render();
