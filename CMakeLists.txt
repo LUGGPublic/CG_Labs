@@ -34,38 +34,29 @@ find_package (OpenGL REQUIRED)
 
 
 # assimp is used for loading the objects’s models
-find_package (assimp QUIET 4.0.1)
+set (LUGGCGL_MIN_ASSIMP_VERSION 4.0.1)
+find_package (assimp QUIET ${LUGGCGL_MIN_ASSIMP_VERSION})
 if (NOT assimp_FOUND)
-	message (STATUS "As assimp was not found on your computer, we will fetch it from the source.")
-	EXTERNALPROJECT_ADD (
-		assimp
-		PREFIX "assimp"
-		GIT_REPOSITORY "https://github.com/assimp/assimp.git"
-		GIT_TAG v4.0.1
-		BINARY_DIR "assimp/build"
-		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DASSIMP_NO_EXPORT=ON -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_TESTS=OFF
-	)
-	set (USE_SYSTEM_ASSIMP FALSE)
-	set (assimp_FOUND TRUE CACHE BOOL "Whether assimp was found")
-	set (ASSIMP_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/assimp/include" CACHE STRING "assimp include dir")
-	if (CMAKE_HOST_WIN32)
-		string (REGEX REPLACE "v([0-9][0-9])([0-9])" "vc\\1\\2" VS_TOOLSET_VERSION "${CMAKE_VS_PLATFORM_TOOLSET}" )
-		set (ASSIMP_LIBRARIES "${CMAKE_BINARY_DIR}/assimp/lib/assimp-${VS_TOOLSET_VERSION}-mt.lib" CACHE STRING "assimp lib path")
-		set (ASSIMP_DLL_PATH "${CMAKE_BINARY_DIR}/assimp/bin/assimp-${VS_TOOLSET_VERSION}-mt.dll" CACHE STRING "assimp dll path")
-		file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/src/EDAF80/Debug)
-		file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/src/EDAF80/Release)
-		add_custom_command (TARGET assimp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_DLL_PATH} ${CMAKE_BINARY_DIR}/src/EDAF80/Debug)
-		add_custom_command (TARGET assimp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_DLL_PATH} ${CMAKE_BINARY_DIR}/src/EDAF80/Release)
-		file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/src/EDAN35/Debug)
-		file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/src/EDAN35/Release)
-		add_custom_command (TARGET assimp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_DLL_PATH} ${CMAKE_BINARY_DIR}/src/EDAN35/Debug)
-		add_custom_command (TARGET assimp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_DLL_PATH} ${CMAKE_BINARY_DIR}/src/EDAN35/Release)
-		install (FILES ${ASSIMP_DLL_PATH} DESTINATION bin)
-	elseif (CMAKE_HOST_APPLE)
-		set (ASSIMP_LIBRARIES "${CMAKE_BINARY_DIR}/assimp/lib/libassimp.dylib" CACHE STRING "assimp lib path")
-	else ()
-		set (ASSIMP_LIBRARIES "${CMAKE_BINARY_DIR}/assimp/lib/libassimp.so" CACHE STRING "assimp lib path")
+	if (NOT EXISTS "${CMAKE_BINARY_DIR}/assimp")
+		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/assimp")
 	endif ()
+	if (NOT EXISTS "${CMAKE_BINARY_DIR}/assimp/code")
+		message (STATUS "As ASSIMP >= ${LUGGCGL_MIN_ASSIMP_VERSION} was not found on your computer, we will fetch it from the source.")
+
+		find_package (Git REQUIRED)
+		execute_process (
+			COMMAND ${GIT_EXECUTABLE} clone -b "v${LUGGCGL_MIN_ASSIMP_VERSION}" "https://github.com/assimp/assimp.git" "code"
+			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/assimp"
+		)
+		set (ASSIMP_NO_EXPORT ON)
+		set (ASSIMP_BUILD_ASSIMP_TOOLS OFF)
+		set (ASSIMP_BUILD_TESTS OFF)
+	endif ()
+	if (NOT EXISTS "${CMAKE_BINARY_DIR}/assimp/build")
+		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/assimp/build")
+	endif ()
+	add_subdirectory ("${CMAKE_BINARY_DIR}/assimp/code" "${CMAKE_BINARY_DIR}/assimp/binary")
+	set (USE_SYSTEM_ASSIMP FALSE)
 endif ()
 
 
@@ -75,77 +66,85 @@ endif ()
 if (NOT (DEFINED USE_SYSTEM_GLFW))
 	set (USE_SYSTEM_GLFW TRUE)
 endif ()
+if (NOT (DEFINED USE_SYSTEM_IMGUI))
+	set (USE_SYSTEM_IMGUI TRUE)
+endif ()
 if (NOT (DEFINED USE_SYSTEM_GLM))
 	set (USE_SYSTEM_GLM TRUE)
 endif ()
 
 
 # GLFW is used for inputs and windows handling
-find_package (glfw3 QUIET 3.2.1)
+set (LUGGCGL_MIN_GLFW_VERSION 3.2.1)
+find_package (glfw3 QUIET ${LUGGCGL_MIN_GLFW_VERSION})
 if (NOT glfw3_FOUND)
 	if (NOT EXISTS "${CMAKE_BINARY_DIR}/glfw")
 		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glfw")
 	endif ()
 	if (NOT EXISTS "${CMAKE_BINARY_DIR}/glfw/code")
-		message (STATUS "As GLFW was not found on your computer, we will fetch it from the source.")
+		message (STATUS "As GLFW >= ${LUGGCGL_MIN_GLFW_VERSION} was not found on your computer, we will fetch it from the source.")
 
 		find_package (Git REQUIRED)
 		execute_process (
-			COMMAND ${GIT_EXECUTABLE} clone -b "3.2.1" "https://github.com/glfw/glfw.git" "code"
+			COMMAND ${GIT_EXECUTABLE} clone -b "${LUGGCGL_MIN_GLFW_VERSION}" "https://github.com/glfw/glfw.git" "code"
 			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/glfw"
 		)
+		set (GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+		set (GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+		set (GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 	endif ()
 	if (NOT EXISTS "${CMAKE_BINARY_DIR}/glfw/build")
 		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glfw/build")
 	endif ()
-	set (GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-	set (GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-	set (GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 	add_subdirectory ("${CMAKE_BINARY_DIR}/glfw/code" "${CMAKE_BINARY_DIR}/glfw/binary")
 	set (USE_SYSTEM_GLFW FALSE)
-	set (glfw_FOUND TRUE CACHE BOOL "Whether glfw was found")
 endif ()
 
 
 # GLM is used for matrices, vectors and camera handling
-find_package (glm QUIET 0.9.8.5)
+set (LUGGCGL_MIN_GLM_VERSION 0.9.8.5)
+find_package (glm QUIET ${LUGGCGL_MIN_GLM_VERSION})
 if (NOT glm_FOUND)
-	MESSAGE (STATUS "As GLM was not found on your computer, we will fetch it from the source.")
+	MESSAGE (STATUS "As GLM >= ${LUGGCGL_MIN_GLM_VERSION} was not found on your computer, we will fetch it from the source.")
 	EXTERNALPROJECT_ADD (
 		glm
 		PREFIX "glm"
 		GIT_REPOSITORY "https://github.com/g-truc/glm"
-		GIT_TAG 0.9.8.5
+		GIT_TAG ${LUGGCGL_MIN_GLM_VERSION}
 		BUILD_COMMAND ""
 		INSTALL_COMMAND ""
 	)
 	set (USE_SYSTEM_GLM FALSE)
-	set (glm_FOUND TRUE CACHE BOOL "Whether glm was found")
 	set (GLM_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/glm/src/glm" CACHE STRING "glm include dir")
 endif ()
 
 
 # ImGui is used for the windowing system inside the application
-find_package (imgui QUIET 1.51)
+set (LUGGCGL_MIN_IMGUI_VERSION 1.51)
+find_package (imgui QUIET ${LUGGCGL_MIN_IMGUI_VERSION})
 if (NOT imgui_FOUND)
-	MESSAGE (STATUS "As Dear ImGUI was not found on your computer, we will fetch it from the source.")
-	EXTERNALPROJECT_ADD (
-		imgui
-		PREFIX "imgui"
-		GIT_REPOSITORY "https://github.com/ocornut/imgui.git"
-		GIT_TAG v1.51
-		BINARY_DIR "imgui/build"
-		UPDATE_COMMAND ${CMAKE_COMMAND} -E copy
-		${PROJECT_SOURCE_DIR}/Dear_ImGui_CMakeLists.txt
-		${CMAKE_BINARY_DIR}/imgui/src/imgui/CMakeLists.txt
-		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
-	)
-	set (IMGUI_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/imgui/include")
-	if (BUILD_SHARED_LIBS)
-		set (IMGUI_LIBRARY "${CMAKE_BINARY_DIR}/imgui/lib/${CMAKE_SHARED_LIBRARY_PREFIX}imgui${CMAKE_SHARED_LIBRARY_SUFFIX}")
-	else ()
-		set (IMGUI_LIBRARY "${CMAKE_BINARY_DIR}/imgui/lib/${CMAKE_STATIC_LIBRARY_PREFIX}imgui${CMAKE_STATIC_LIBRARY_SUFFIX}")
+	if (NOT EXISTS "${CMAKE_BINARY_DIR}/imgui")
+		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/imgui")
 	endif ()
+	if (NOT EXISTS "${CMAKE_BINARY_DIR}/imgui/code")
+		message (STATUS "As Dear ImGUI >= ${LUGGCGL_MIN_IMGUI_VERSION} was not found on your computer, we will fetch it from the source.")
+
+		find_package (Git REQUIRED)
+		execute_process (
+			COMMAND ${GIT_EXECUTABLE} clone -b "v${LUGGCGL_MIN_IMGUI_VERSION}" "https://github.com/ocornut/imgui.git" "code"
+			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/imgui"
+		)
+		execute_process (
+			COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/Dear_ImGui_CMakeLists.txt code/CMakeLists.txt
+			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/imgui"
+		)
+	endif ()
+	if (NOT EXISTS "${CMAKE_BINARY_DIR}/imgui/build")
+		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/imgui/build")
+	endif ()
+	add_subdirectory ("${CMAKE_BINARY_DIR}/imgui/code" "${CMAKE_BINARY_DIR}/imgui/binary")
+	set (USE_SYSTEM_IMGUI FALSE)
+	set (IMGUI_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/imgui/code")
 endif ()
 
 set (LUCGL_RES_ZIP_FILE "${CMAKE_SOURCE_DIR}/res.zip")
@@ -218,9 +217,13 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 	set_property (TARGET ${assignment_name} PROPERTY CXX_STANDARD_REQUIRED ON)
 	set_property (TARGET ${assignment_name} PROPERTY CXX_EXTENSIONS OFF)
 
+	set_target_properties (${assignment_name} PROPERTIES
+		INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
+		INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 	add_dependencies (${assignment_name} bonobo)
 
-	target_link_libraries (${assignment_name} bonobo ${OPENGL_gl_LIBRARY} ${IMGUI_LIBRARY} ${LUGGCGL_EXTRA_LIBS})
+	target_link_libraries (${assignment_name} bonobo ${OPENGL_gl_LIBRARY} imgui ${LUGGCGL_EXTRA_LIBS})
 
 	install (TARGETS ${assignment_name} DESTINATION bin)
 endfunction ()
