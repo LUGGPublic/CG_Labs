@@ -76,7 +76,7 @@ public:
 	//!                  `diffuse_texture`
 	//! @param [in] tex_id the name of an OpenGL 2D-texture
 	//! @param [in] type the type of texture; defaults to GL_TEXTURE_2D
-	void add_texture(std::string const& name, GLuint tex_id, GLenum type = GL_TEXTURE_2D);
+	void add_texture(std::string const& name, GLuint tex_id, GLenum type);
 
 	//! \brief Add a child to this node.
 	//!
