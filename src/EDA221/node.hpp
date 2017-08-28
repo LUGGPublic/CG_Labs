@@ -8,7 +8,7 @@
 #include <tuple>
 #include <vector>
 
-namespace eda221
+namespace bonobo
 {
 	struct mesh_data;
 }
@@ -46,7 +46,7 @@ public:
 	//! children will be rendered if they have any geometry.
 	//!
 	//! @param [in] shape OpenGL data to use as geometry
-	void set_geometry(eda221::mesh_data const& shape);
+	void set_geometry(bonobo::mesh_data const& shape);
 
 	//! \brief Get the number of indices to use.
 	//!

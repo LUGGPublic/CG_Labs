@@ -59,7 +59,7 @@ void
 eda221::Assignment1::run()
 {
 	// Load the sphere geometry
-	auto const objects = eda221::loadObjects("sphere.obj");
+	auto const objects = bonobo::loadObjects("sphere.obj");
 	if (objects.empty())
 		return;
 	auto const& sphere = objects.front();
@@ -74,14 +74,14 @@ eda221::Assignment1::run()
 	window->SetCamera(&mCamera);
 
 	// Create the shader program
-	auto shader = eda221::createProgram("default.vert", "default.frag");
+	auto shader = bonobo::createProgram("default.vert", "default.frag");
 	if (shader == 0u) {
 		LogError("Failed to load shader");
 		return;
 	}
 
 	// Load the sun's texture
-	auto sun_texture = eda221::loadTexture2D("sunmap.png");
+	auto sun_texture = bonobo::loadTexture2D("sunmap.png");
 
 	auto sun = Node();
 	sun.set_geometry(sphere);

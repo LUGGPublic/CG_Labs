@@ -11,8 +11,8 @@
 #include <vector>
 #include <unordered_map>
 
-//! \brief Namespace containing a few helpers for the EDA221 labs.
-namespace eda221
+//! \brief Namespace containing a few helpers for the LUGG computer graphics labs.
+namespace bonobo
 {
 	//! \brief Formalise mapping between an OpenGL VAO attribute binding,
 	//!        and the meaning of that attribute.

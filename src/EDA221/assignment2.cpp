@@ -82,22 +82,22 @@ eda221::Assignment2::run()
 	window->SetCamera(&mCamera);
 
 	// Create the shader programs
-	auto fallback_shader = eda221::createProgram("fallback.vert", "fallback.frag");
+	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
 		return;
 	}
-	auto diffuse_shader = eda221::createProgram("diffuse.vert", "diffuse.frag");
+	auto diffuse_shader = bonobo::createProgram("diffuse.vert", "diffuse.frag");
 	if (diffuse_shader == 0u) {
 		LogError("Failed to load diffuse shader");
 		return;
 	}
-	auto normal_shader = eda221::createProgram("normal.vert", "normal.frag");
+	auto normal_shader = bonobo::createProgram("normal.vert", "normal.frag");
 	if (normal_shader == 0u) {
 		LogError("Failed to load normal shader");
 		return;
 	}
-	auto texcoord_shader = eda221::createProgram("texcoord.vert", "texcoord.frag");
+	auto texcoord_shader = bonobo::createProgram("texcoord.vert", "texcoord.frag");
 	if (texcoord_shader == 0u) {
 		LogError("Failed to load texcoord shader");
 		return;

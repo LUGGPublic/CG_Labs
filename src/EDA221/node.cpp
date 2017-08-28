@@ -58,7 +58,7 @@ Node::render(glm::mat4 const& WVP, glm::mat4 const& world, GLuint program, std::
 }
 
 void
-Node::set_geometry(eda221::mesh_data const& shape)
+Node::set_geometry(bonobo::mesh_data const& shape)
 {
 	_vao = shape.vao;
 	_vertices_nb = static_cast<GLsizei>(shape.vertices_nb);

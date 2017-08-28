@@ -84,7 +84,7 @@ eda221::Assignment3::run()
 	window->SetCamera(&mCamera);
 
 	// Create the shader programs
-	auto fallback_shader = eda221::createProgram("fallback.vert", "fallback.frag");
+	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
 		return;
@@ -93,19 +93,19 @@ eda221::Assignment3::run()
 	auto const reload_shaders = [&diffuse_shader,&normal_shader,&texcoord_shader](){
 		if (diffuse_shader != 0u)
 			glDeleteProgram(diffuse_shader);
-		diffuse_shader = eda221::createProgram("diffuse.vert", "diffuse.frag");
+		diffuse_shader = bonobo::createProgram("diffuse.vert", "diffuse.frag");
 		if (diffuse_shader == 0u)
 			LogError("Failed to load diffuse shader");
 
 		if (normal_shader != 0u)
 			glDeleteProgram(normal_shader);
-		normal_shader = eda221::createProgram("normal.vert", "normal.frag");
+		normal_shader = bonobo::createProgram("normal.vert", "normal.frag");
 		if (normal_shader == 0u)
 			LogError("Failed to load normal shader");
 
 		if (texcoord_shader != 0u)
 			glDeleteProgram(texcoord_shader);
-		texcoord_shader = eda221::createProgram("texcoord.vert", "texcoord.frag");
+		texcoord_shader = bonobo::createProgram("texcoord.vert", "texcoord.frag");
 		if (texcoord_shader == 0u)
 			LogError("Failed to load texcoord shader");
 	};
