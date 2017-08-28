@@ -1,6 +1,6 @@
 #pragma once
 
-#include "helpers.hpp"
+#include "core/helpers.hpp"
 
 namespace parametric_shapes
 {

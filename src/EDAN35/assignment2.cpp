@@ -1,6 +1,4 @@
 #include "assignment2.hpp"
-#include "helpers.hpp"
-#include "node.hpp"
 
 #include "config.hpp"
 #include "external/glad/glad.h"
@@ -8,18 +6,17 @@
 #include "core/FPSCamera.h"
 #include "core/GLStateInspection.h"
 #include "core/GLStateInspectionView.h"
+#include "core/helpers.hpp"
 #include "core/InputHandler.h"
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
+#include "core/node.hpp"
 #include "core/utils.h"
 #include "core/Window.h"
 #include <imgui.h>
 #include "external/imgui_impl_glfw_gl3.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include "external/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>

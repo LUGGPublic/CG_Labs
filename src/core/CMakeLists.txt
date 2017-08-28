@@ -19,17 +19,24 @@ set (
 	"Types.cpp"
 	"various.cpp"
 	"Window.cpp"
+
+	"node.cpp"
+	"node.hpp"
+	"helpers.cpp"
+	"helpers.hpp"
 )
 
 add_library (${PROJECT_NAME} ${SOURCES})
 
+target_include_directories (${PROJECT_NAME} PRIVATE ${ASSIMP_INCLUDE_DIRS})
 target_include_directories (${PROJECT_NAME} PRIVATE ${IMGUI_INCLUDE_DIRS})
 target_include_directories (${PROJECT_NAME} PRIVATE ${GLM_INCLUDE_DIRS})
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/external")
+target_include_directories (${PROJECT_NAME} PRIVATE "${CMAKE_BINARY_DIR}")
 
 set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
 set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD_REQUIRED ON)
 set_property (TARGET ${PROJECT_NAME} PROPERTY CXX_EXTENSIONS OFF)
 
-target_link_libraries (${PROJECT_NAME} ${IMGUI_LIBRARY} external_libs glfw ${LUGGCGL_EXTRA_LIBS})
+target_link_libraries (${PROJECT_NAME} ${IMGUI_LIBRARY} external_libs glfw ${ASSIMP_LIBRARIES} ${LUGGCGL_EXTRA_LIBS})

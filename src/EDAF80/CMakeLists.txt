@@ -8,7 +8,6 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 	target_include_directories (${assignment_name} PRIVATE "${CMAKE_BINARY_DIR}")
 	target_include_directories (${assignment_name} PRIVATE ${IMGUI_INCLUDE_DIRS})
 	target_include_directories (${assignment_name} PRIVATE ${GLM_INCLUDE_DIRS})
-	target_include_directories (${assignment_name} PRIVATE ${ASSIMP_INCLUDE_DIRS})
 
 	set_property (TARGET ${assignment_name} PROPERTY CXX_STANDARD 14)
 	set_property (TARGET ${assignment_name} PROPERTY CXX_STANDARD_REQUIRED ON)
@@ -16,16 +15,12 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 
 	add_dependencies (${assignment_name} bonobo)
 
-	target_link_libraries (${assignment_name} bonobo ${OPENGL_gl_LIBRARY} ${IMGUI_LIBRARY} ${ASSIMP_LIBRARIES} ${LUGGCGL_EXTRA_LIBS})
+	target_link_libraries (${assignment_name} bonobo ${OPENGL_gl_LIBRARY} ${IMGUI_LIBRARY} ${LUGGCGL_EXTRA_LIBS})
 endfunction ()
 
 set (
 	COMMON_SOURCES
 
-	"node.cpp"
-	"node.hpp"
-	"helpers.cpp"
-	"helpers.hpp"
 	"interpolation.cpp"
 	"interpolation.hpp"
 	"parametric_shapes.cpp"

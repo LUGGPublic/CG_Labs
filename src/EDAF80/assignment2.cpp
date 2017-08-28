@@ -1,6 +1,5 @@
 #include "assignment2.hpp"
 #include "interpolation.hpp"
-#include "node.hpp"
 #include "parametric_shapes.hpp"
 
 #include "config.hpp"
@@ -11,14 +10,12 @@
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
+#include "core/node.hpp"
 #include "core/utils.h"
 #include "core/Window.h"
 #include <imgui.h>
 #include "external/imgui_impl_glfw_gl3.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include "external/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
