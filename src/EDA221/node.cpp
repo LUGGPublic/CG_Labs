@@ -154,5 +154,5 @@ Node::get_transform() const
 	auto const rotating = rotation_z * rotation_y * rotation_x;
 
 	// Todo: Compute the correct transform matrix
-	return translating * rotating;
+	return translating;
 }
