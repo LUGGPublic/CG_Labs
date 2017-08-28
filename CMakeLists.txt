@@ -34,16 +34,14 @@ find_package (OpenGL REQUIRED)
 
 
 # assimp is used for loading the objects’s models
-# 3.3 is required as it is the first version to have (experimental) glTF
-# support
-find_package (assimp QUIET)
+find_package (assimp QUIET 4.0.1)
 if (NOT assimp_FOUND)
 	message (STATUS "As assimp was not found on your computer, we will fetch it from the source.")
 	EXTERNALPROJECT_ADD (
 		assimp
 		PREFIX "assimp"
 		GIT_REPOSITORY "https://github.com/assimp/assimp.git"
-		GIT_TAG v3.3.1
+		GIT_TAG v4.0.1
 		BINARY_DIR "assimp/build"
 		CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR> -DASSIMP_NO_EXPORT=ON -DASSIMP_BUILD_ASSIMP_TOOLS=OFF -DASSIMP_BUILD_TESTS=OFF
 	)
