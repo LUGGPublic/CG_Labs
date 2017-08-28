@@ -100,7 +100,7 @@ namespace eda221
 	GLuint loadTextureCubeMap(std::string const& posx, std::string const& negx,
                                   std::string const& posy, std::string const& negy,
                                   std::string const& posz, std::string const& negz,
-                                  bool generate_mipmap = false);
+                                  bool generate_mipmap = true);
 
 	//! \brief Create an OpenGL program consisting of a vertex and a
 	//!        fragment shader.
