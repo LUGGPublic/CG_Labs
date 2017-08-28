@@ -80,7 +80,7 @@ endif ()
 
 
 # GLFW is used for inputs and windows handling
-find_package (glfw3 QUIET)
+find_package (glfw3 QUIET 3.2.1)
 if (NOT glfw3_FOUND)
 	if (NOT EXISTS "${CMAKE_BINARY_DIR}/glfw")
 		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/glfw")
