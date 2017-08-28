@@ -125,14 +125,14 @@ endif ()
 
 
 # ImGui is used for the windowing system inside the application
-find_package (imgui QUIET)
+find_package (imgui QUIET 1.51)
 if (NOT imgui_FOUND)
 	MESSAGE (STATUS "As Dear ImGUI was not found on your computer, we will fetch it from the source.")
 	EXTERNALPROJECT_ADD (
 		imgui
 		PREFIX "imgui"
 		GIT_REPOSITORY "https://github.com/ocornut/imgui.git"
-		GIT_TAG v1.46
+		GIT_TAG v1.51
 		BINARY_DIR "imgui/build"
 		UPDATE_COMMAND ${CMAKE_COMMAND} -E copy
 		${PROJECT_SOURCE_DIR}/Dear_ImGui_CMakeLists.txt
