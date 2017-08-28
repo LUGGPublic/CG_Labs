@@ -107,14 +107,14 @@ endif ()
 
 
 # GLM is used for matrices, vectors and camera handling
-find_package (glm QUIET)
+find_package (glm QUIET 0.9.8.5)
 if (NOT glm_FOUND)
 	MESSAGE (STATUS "As GLM was not found on your computer, we will fetch it from the source.")
 	EXTERNALPROJECT_ADD (
 		glm
 		PREFIX "glm"
 		GIT_REPOSITORY "https://github.com/g-truc/glm"
-		GIT_TAG 0.9.7.1
+		GIT_TAG 0.9.8.5
 		BUILD_COMMAND ""
 		INSTALL_COMMAND ""
 	)
