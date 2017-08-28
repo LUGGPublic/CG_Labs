@@ -60,6 +60,7 @@ if (NOT assimp_FOUND)
 		file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/src/EDAN35/Release)
 		add_custom_command (TARGET assimp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_DLL_PATH} ${CMAKE_BINARY_DIR}/src/EDAN35/Debug)
 		add_custom_command (TARGET assimp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_DLL_PATH} ${CMAKE_BINARY_DIR}/src/EDAN35/Release)
+		install (FILES ${ASSIMP_DLL_PATH} DESTINATION bin)
 	elseif (CMAKE_HOST_APPLE)
 		set (ASSIMP_LIBRARIES "${CMAKE_BINARY_DIR}/assimp/lib/libassimp.dylib" CACHE STRING "assimp lib path")
 	else ()
@@ -180,8 +181,7 @@ set (USE_SYSTEM_GLFW ${USE_SYSTEM_GLFW} CACHE BOOL "Whether to use the system ve
 set (MSAA_RATE "1" CACHE STRING "Window MSAA rate")
 set (WIDTH "1600" CACHE STRING "Window width")
 set (HEIGHT "900" CACHE STRING "Window height")
-set (SHADERS_DIR "${PROJECT_SOURCE_DIR}/shaders")
-set (RESOURCES_DIR "${PROJECT_SOURCE_DIR}/res")
+set (ROOT_DIR "${PROJECT_SOURCE_DIR}")
 configure_file ("${PROJECT_SOURCE_DIR}/src/core/config.hpp.in" "${PROJECT_BINARY_DIR}/config.hpp")
 
 
@@ -221,6 +221,8 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 	add_dependencies (${assignment_name} bonobo)
 
 	target_link_libraries (${assignment_name} bonobo ${OPENGL_gl_LIBRARY} ${IMGUI_LIBRARY} ${LUGGCGL_EXTRA_LIBS})
+
+	install (TARGETS ${assignment_name} DESTINATION bin)
 endfunction ()
 
 
@@ -257,3 +259,5 @@ add_dependencies (external_libs project_dep)
 add_dependencies (bonobo external_libs)
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/EDAF80")
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/EDAN35")
+
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/shaders DESTINATION bin)
