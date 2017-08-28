@@ -91,15 +91,15 @@ namespace eda221
 	//! @param [in] negx path to the texture on the right of the cubemap
 	//! @param [in] posy path to the texture on the top of the cubemap
 	//! @param [in] negy path to the texture on the bottom of the cubemap
-	//! @param [in] negz path to the texture on the front of the cubemap
 	//! @param [in] posz path to the texture on the back of the cubemap
+	//! @param [in] negz path to the texture on the front of the cubemap
 	//! @param [in] generate_mipmap whether or not to generate a mipmap hierarchy
 	//! @return the name of the OpenGL cubemap-texture
 	//!
 	//! All paths are relative to the `res/cubemaps` folder.
 	GLuint loadTextureCubeMap(std::string const& posx, std::string const& negx,
                                   std::string const& posy, std::string const& negy,
-                                  std::string const& negz, std::string const& posz,
+                                  std::string const& posz, std::string const& negz,
                                   bool generate_mipmap = false);
 
 	//! \brief Create an OpenGL program consisting of a vertex and a

@@ -262,7 +262,7 @@ eda221::loadTexture2D(std::string const& filename, bool generate_mipmap)
 GLuint
 eda221::loadTextureCubeMap(std::string const& posx, std::string const& negx,
                            std::string const& posy, std::string const& negy,
-                           std::string const& negz, std::string const& posz,
+                           std::string const& posz, std::string const& negz,
                            bool generate_mipmap)
 {
 	GLuint texture = 0u;
