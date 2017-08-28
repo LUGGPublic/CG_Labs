@@ -5,6 +5,8 @@
 
 InputHandler::InputHandler()
 {
+	mMouseCapturedByUI = false;
+	mKeyboardCapturedByUI = false;
 }
 
 void InputHandler::Advance()
@@ -131,4 +133,20 @@ glm::vec2 InputHandler::GetMousePositionAtStateShift(u32 button)
 glm::vec2 InputHandler::GetMousePosition()
 {
 	return mMousePosition;
+}
+
+bool InputHandler::IsMouseCapturedByUI() const
+{
+	return mMouseCapturedByUI;
+}
+
+bool InputHandler::IsKeyboardCapturedByUI() const
+{
+	return mKeyboardCapturedByUI;
+}
+
+void InputHandler::SetUICapture(bool mouseCapture, bool keyboardCapture)
+{
+	mMouseCapturedByUI = mouseCapture;
+	mKeyboardCapturedByUI = keyboardCapture;
 }

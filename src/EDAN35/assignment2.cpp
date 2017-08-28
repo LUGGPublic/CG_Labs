@@ -252,6 +252,9 @@ edan35::Assignment2::run()
 		fpsSamples++;
 		seconds_nb += static_cast<float>(ddeltatime / 1000.0);
 
+		auto& io = ImGui::GetIO();
+		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureMouse);
+
 		glfwPollEvents();
 		inputHandler->Advance();
 		mCamera.Update(ddeltatime, *inputHandler);

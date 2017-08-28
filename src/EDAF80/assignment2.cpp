@@ -140,6 +140,9 @@ edaf80::Assignment2::run()
 		}
 		fpsSamples++;
 
+		auto& io = ImGui::GetIO();
+		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureMouse);
+
 		glfwPollEvents();
 		inputHandler->Advance();
 		mCamera.Update(ddeltatime, *inputHandler);
