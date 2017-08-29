@@ -29,6 +29,11 @@ endif (NOT CMAKE_BUILD_TYPE)
 set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPES})
 
 
+if (WIN32)
+	set (BUILD_SHARED_LIBS OFF)
+endif ()
+
+
 # OpenGL is used for the rendering
 find_package (OpenGL REQUIRED)
 
@@ -57,6 +62,7 @@ if (NOT assimp_FOUND)
 	endif ()
 	add_subdirectory ("${CMAKE_BINARY_DIR}/assimp/code" "${CMAKE_BINARY_DIR}/assimp/binary")
 	set (USE_SYSTEM_ASSIMP FALSE)
+	set (ASSIMP_INCLUDE_DIRS "${CMAKE_BINARY_DIR}/assimp/code/include" "${CMAKE_BINARY_DIR}/assimp/binary/include")
 endif ()
 
 
@@ -173,7 +179,8 @@ endif ()
 
 set (USE_SYSTEM_ASSIMP ${USE_SYSTEM_ASSIMP} CACHE BOOL "Whether to use the system version of ASSIMP")
 set (USE_SYSTEM_GLFW ${USE_SYSTEM_GLFW} CACHE BOOL "Whether to use the system version of GLFW")
-#set (USE_SYSTEM_GLM ${USE_SYSTEM_GLM} CACHE BOOL "Whether to use the system version of GLFW")
+set (USE_SYSTEM_GLM ${USE_SYSTEM_GLM} CACHE BOOL "Whether to use the system version of GLM")
+set (USE_SYSTEM_IMGUI ${USE_SYSTEM_IMGUI} CACHE BOOL "Whether to use the system version of Dear ImGUI")
 
 
 # Configure *C++ Environment Variables*
@@ -264,3 +271,4 @@ add_subdirectory ("${CMAKE_SOURCE_DIR}/src/EDAF80")
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/EDAN35")
 
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/shaders DESTINATION bin)
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/res DESTINATION bin)
