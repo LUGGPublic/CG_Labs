@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fstream>
 #include <string>
 
 namespace config
@@ -10,10 +11,14 @@ namespace config
 
 	inline std::string shaders_path(std::string const& path)
 	{
-		return std::string("@SHADERS_DIR@/") + path;
+		std::string const tmp_path = std::string("shaders/") + path;
+		std::string const root = std::ifstream(tmp_path) ? "." : "@ROOT_DIR@";
+		return root + std::string("/") + tmp_path;
 	}
 	inline std::string resources_path(std::string const& path)
 	{
-		return std::string("@RESOURCES_DIR@/") + path;
+		std::string const tmp_path = std::string("res/") + path;
+		std::string const root = std::ifstream(tmp_path) ? "." : "@ROOT_DIR@";
+		return root + std::string("/") + tmp_path;
 	}
 }

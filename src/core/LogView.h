@@ -5,7 +5,7 @@
 #include "Log.h"
 
 #define BUFFER_WIDTH	512
-#define BUFFER_ROWS		16
+#define BUFFER_ROWS		64
 
 namespace Log {
 
@@ -18,6 +18,7 @@ public:
 
 private:
 	static void Feed(Log::Type type, const char *msg);
+	static void ClearLog();
 
 private:
 	static char mOutput[BUFFER_ROWS * BUFFER_WIDTH * 2];
@@ -25,6 +26,7 @@ private:
 	static int mLen[BUFFER_ROWS];
 	static Log::Type mType[BUFFER_ROWS];
 	static int mBufferPtr;
+	static bool mScrollToBottom;
 };
 
-};
+}

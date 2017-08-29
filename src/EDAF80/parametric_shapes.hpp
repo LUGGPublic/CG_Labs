@@ -1,8 +1,6 @@
 #pragma once
 
-#include "helpers.hpp"
-
-#include <cstdint>
+#include "core/helpers.hpp"
 
 namespace parametric_shapes
 {
@@ -13,7 +11,7 @@ namespace parametric_shapes
 	//! @param height the height of the quad
 	//! @return wrapper around OpenGL objects' name containing the geometry
 	//!         data
-	eda221::mesh_data createQuad(unsigned int width, unsigned int height);
+	bonobo::mesh_data createQuad(unsigned int width, unsigned int height);
 
 	//! \brief Create a sphere for some tesselation level and make it
 	//!        available to OpenGL.
@@ -23,7 +21,7 @@ namespace parametric_shapes
 	//! @param radius radius of the sphere
 	//! @return wrapper around OpenGL objects' name containing the geometry
 	//!         data
-	eda221::mesh_data createSphere(unsigned int const res_theta, unsigned int const res_phi, float const radius);
+	bonobo::mesh_data createSphere(unsigned int const res_theta, unsigned int const res_phi, float const radius);
 
 	//! \brief Create a torus for some tesselation level and make it
 	//!        available to OpenGL.
@@ -34,7 +32,7 @@ namespace parametric_shapes
 	//! @param rB radius of the outermost border of the torus
 	//! @return wrapper around OpenGL objects' name containing the geometry
 	//!         data
-	eda221::mesh_data createTorus(unsigned int const res_theta, unsigned int const res_phi, float const rA, float const rB);
+	bonobo::mesh_data createTorus(unsigned int const res_theta, unsigned int const res_phi, float const rA, float const rB);
 
 	//! \brief Create a circle ring for some tesselation level and make it
 	//!        available to OpenGL.
@@ -45,5 +43,5 @@ namespace parametric_shapes
 	//! @param outer_radius radius of the outermost border of the ring
 	//! @return wrapper around OpenGL objects' name containing the geometry
 	//!         data
-	eda221::mesh_data createCircleRing(unsigned int const radius_res, unsigned int const theta_res, float const inner_radius, float const outer_radius);
+	bonobo::mesh_data createCircleRing(unsigned int const radius_res, unsigned int const theta_res, float const inner_radius, float const outer_radius);
 }

@@ -21,17 +21,17 @@ namespace local
 }
 
 void
-eda221::init()
+bonobo::init()
 {
 	glGenVertexArrays(1, &local::display_vao);
 	assert(local::display_vao != 0u);
-	local::fullscreen_shader = eda221::createProgram("fullscreen.vert", "fullscreen.frag");
+	local::fullscreen_shader = bonobo::createProgram("fullscreen.vert", "fullscreen.frag");
 	if (local::fullscreen_shader == 0u)
 		LogError("Failed to load \"fullscreen.vert\" and \"fullscreen.frag\"");
 }
 
 void
-eda221::deinit()
+bonobo::deinit()
 {
 	glDeleteVertexArrays(1, &local::display_vao);
 }
@@ -56,10 +56,10 @@ getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
 	return flipBuffer;
 }
 
-std::vector<eda221::mesh_data>
-eda221::loadObjects(std::string const& filename)
+std::vector<bonobo::mesh_data>
+bonobo::loadObjects(std::string const& filename)
 {
-	std::vector<eda221::mesh_data> objects;
+	std::vector<bonobo::mesh_data> objects;
 
 	auto const scene_filepath = config::resources_path("scenes/" + filename);
 	LogInfo("Loading \"%s\"", scene_filepath.c_str());
@@ -89,7 +89,7 @@ eda221::loadObjects(std::string const& filename)
 					LogWarning("Material %d has more than one %s texture: discarding all but the first one.", i, type_as_str.c_str());
 				aiString path;
 				material->GetTexture(type, 0, &path);
-				auto const id = eda221::loadTexture2D("../crysponza/" + std::string(path.C_Str()), type_as_str != "opacity");
+				auto const id = bonobo::loadTexture2D("../crysponza/" + std::string(path.C_Str()), type_as_str != "opacity");
 				if (id != 0u)
 					bindings.emplace(name, id);
 			}
@@ -127,7 +127,7 @@ eda221::loadObjects(std::string const& filename)
 			continue;
 		}
 
-		eda221::mesh_data object;
+		bonobo::mesh_data object;
 
 		glGenVertexArrays(1, &object.vao);
 		assert(object.vao != 0u);
@@ -160,29 +160,29 @@ eda221::loadObjects(std::string const& filename)
 		glBufferData(GL_ARRAY_BUFFER, bo_size, nullptr, GL_STATIC_DRAW);
 
 		glBufferSubData(GL_ARRAY_BUFFER, vertices_offset, vertices_size, static_cast<GLvoid const*>(assimp_object_mesh->mVertices));
-		glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::vertices));
-		glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::vertices), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
+		glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::vertices));
+		glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::vertices), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
 
 		if (assimp_object_mesh->HasNormals()) {
 			glBufferSubData(GL_ARRAY_BUFFER, normals_offset, normals_size, static_cast<GLvoid const*>(assimp_object_mesh->mNormals));
-			glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::normals));
-			glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::normals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(normals_offset));
+			glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::normals));
+			glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::normals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(normals_offset));
 		}
 
 		if (assimp_object_mesh->HasTextureCoords(0u)) {
 			glBufferSubData(GL_ARRAY_BUFFER, texcoords_offset, texcoords_size, static_cast<GLvoid const*>(assimp_object_mesh->mTextureCoords[0u]));
-			glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::texcoords));
-			glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::texcoords), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(texcoords_offset));
+			glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::texcoords));
+			glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::texcoords), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(texcoords_offset));
 		}
 
 		if (assimp_object_mesh->HasTangentsAndBitangents()) {
 			glBufferSubData(GL_ARRAY_BUFFER, tangents_offset, tangents_size, static_cast<GLvoid const*>(assimp_object_mesh->mTangents));
-			glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::tangents));
-			glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::tangents), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(tangents_offset));
+			glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::tangents));
+			glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::tangents), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(tangents_offset));
 
 			glBufferSubData(GL_ARRAY_BUFFER, binormals_offset, binormals_size, static_cast<GLvoid const*>(assimp_object_mesh->mBitangents));
-			glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::binormals));
-			glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::binormals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(binormals_offset));
+			glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::binormals));
+			glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::binormals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(binormals_offset));
 		}
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
@@ -226,7 +226,7 @@ eda221::loadObjects(std::string const& filename)
 }
 
 GLuint
-eda221::createTexture(uint32_t width, uint32_t height, GLenum target, GLint internal_format, GLenum format, GLenum type, GLvoid const* data)
+bonobo::createTexture(uint32_t width, uint32_t height, GLenum target, GLint internal_format, GLenum format, GLenum type, GLvoid const* data)
 {
 	GLuint texture = 0u;
 	glGenTextures(1, &texture);
@@ -241,14 +241,14 @@ eda221::createTexture(uint32_t width, uint32_t height, GLenum target, GLint inte
 }
 
 GLuint
-eda221::loadTexture2D(std::string const& filename, bool generate_mipmap)
+bonobo::loadTexture2D(std::string const& filename, bool generate_mipmap)
 {
 	u32 width, height;
 	auto const data = getTextureData("textures/" + filename, width, height, true);
 	if (data.empty())
 		return 0u;
 
-	GLuint texture = eda221::createTexture(width, height, GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<GLvoid const*>(data.data()));
+	GLuint texture = bonobo::createTexture(width, height, GL_TEXTURE_2D, GL_RGBA, GL_RGBA, GL_UNSIGNED_BYTE, reinterpret_cast<GLvoid const*>(data.data()));
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, generate_mipmap ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -260,9 +260,9 @@ eda221::loadTexture2D(std::string const& filename, bool generate_mipmap)
 }
 
 GLuint
-eda221::loadTextureCubeMap(std::string const& posx, std::string const& negx,
+bonobo::loadTextureCubeMap(std::string const& posx, std::string const& negx,
                            std::string const& posy, std::string const& negy,
-                           std::string const& negz, std::string const& posz,
+                           std::string const& posz, std::string const& negz,
                            bool generate_mipmap)
 {
 	GLuint texture = 0u;
@@ -276,7 +276,7 @@ eda221::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 	// Similarly to vertex arrays and buffers, we first need to bind the
 	// texture object in orther to use it. Here we will bind it to the
 	// GL_TEXTURE_CUBE_MAP target to indicate we want a cube map. If you
-	// look at `eda221::loadTexture2D()` just above, you will see that
+	// look at `bonobo::loadTexture2D()` just above, you will see that
 	// GL_TEXTURE_2D is used there, as we want a simple 2D-texture.
 	glBindTexture(GL_TEXTURE_CUBE_MAP, texture);
 
@@ -306,7 +306,7 @@ eda221::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 	// to the GPU: this is done using `glTexImage2D()` (among others). You
 	// might have thought that the target used here would be the same as
 	// the one passed to `glBindTexture()` or `glTexParameteri()`, similar
-	// to what is done `eda221::loadTexture2D()`. However, we want to fill
+	// to what is done `bonobo::loadTexture2D()`. However, we want to fill
 	// in a cube map, which has six different faces, so instead we specify
 	// as the target the face we want to fill in. In this case, we will
 	// start by filling the face sitting on the negative side of the
@@ -334,14 +334,14 @@ eda221::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 }
 
 GLuint
-eda221::createProgram(std::string const& vert_shader_source_path, std::string const& frag_shader_source_path)
+bonobo::createProgram(std::string const& vert_shader_source_path, std::string const& frag_shader_source_path)
 {
-	auto const vertex_shader_source = utils::slurp_file(config::shaders_path("EDA221/" + vert_shader_source_path));
+	auto const vertex_shader_source = utils::slurp_file(config::shaders_path("EDAF80/" + vert_shader_source_path));
 	GLuint vertex_shader = utils::opengl::shader::generate_shader(GL_VERTEX_SHADER, vertex_shader_source);
 	if (vertex_shader == 0u)
 		return 0u;
 
-	auto const fragment_shader_source = utils::slurp_file(config::shaders_path("EDA221/" + frag_shader_source_path));
+	auto const fragment_shader_source = utils::slurp_file(config::shaders_path("EDAF80/" + frag_shader_source_path));
 	GLuint fragment_shader = utils::opengl::shader::generate_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
 	if (fragment_shader == 0u)
 		return 0u;
@@ -353,7 +353,7 @@ eda221::createProgram(std::string const& vert_shader_source_path, std::string co
 }
 
 void
-eda221::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right, GLuint texture, GLuint sampler, glm::ivec4 const& swizzle, glm::ivec2 const& window_size, FPSCameraf const* camera)
+bonobo::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right, GLuint texture, GLuint sampler, glm::ivec4 const& swizzle, glm::ivec2 const& window_size, FPSCameraf const* camera)
 {
 	auto const relative_to_absolute = [](float coord, int size) {
 		return static_cast<GLint>((coord + 1.0f) / 2.0f * size);
@@ -384,7 +384,7 @@ eda221::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right
 }
 
 GLuint
-eda221::createFBO(std::vector<GLuint> const& color_attachments, GLuint depth_attachment)
+bonobo::createFBO(std::vector<GLuint> const& color_attachments, GLuint depth_attachment)
 {
 	auto const attach = [](GLenum attach_point, GLuint attachment){
 		glFramebufferTexture2D(GL_FRAMEBUFFER, attach_point, GL_TEXTURE_2D, attachment, 0);
@@ -407,7 +407,7 @@ eda221::createFBO(std::vector<GLuint> const& color_attachments, GLuint depth_att
 }
 
 GLuint
-eda221::createSampler(std::function<void (GLuint)> const& setup)
+bonobo::createSampler(std::function<void (GLuint)> const& setup)
 {
 	GLuint sampler = 0u;
 	glGenSamplers(1, &sampler);
@@ -417,7 +417,7 @@ eda221::createSampler(std::function<void (GLuint)> const& setup)
 }
 
 void
-eda221::drawFullscreen()
+bonobo::drawFullscreen()
 {
 	glBindVertexArray(local::display_vao);
 	glDrawArrays(GL_TRIANGLES, 0, 3);

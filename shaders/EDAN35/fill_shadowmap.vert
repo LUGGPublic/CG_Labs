@@ -9,6 +9,3 @@ void main()
 {
 	gl_Position = vertex_world_to_clip * vertex_model_to_world * vec4(vertex, 1.0);
 }
-
-
-

@@ -1,6 +1,4 @@
 #include "assignment2.hpp"
-#include "helpers.hpp"
-#include "node.hpp"
 
 #include "config.hpp"
 #include "external/glad/glad.h"
@@ -8,18 +6,17 @@
 #include "core/FPSCamera.h"
 #include "core/GLStateInspection.h"
 #include "core/GLStateInspectionView.h"
+#include "core/helpers.hpp"
 #include "core/InputHandler.h"
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
+#include "core/node.hpp"
 #include "core/utils.h"
 #include "core/Window.h"
 #include <imgui.h>
 #include "external/imgui_impl_glfw_gl3.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include "external/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -52,7 +49,7 @@ namespace constant
 	constexpr float  light_cutoff        = 0.05f;
 }
 
-static eda221::mesh_data loadCone();
+static bonobo::mesh_data loadCone();
 
 edan35::Assignment2::Assignment2()
 {
@@ -70,12 +67,12 @@ edan35::Assignment2::Assignment2()
 	GLStateInspection::Init();
 	GLStateInspection::View::Init();
 
-	eda221::init();
+	bonobo::init();
 }
 
 edan35::Assignment2::~Assignment2()
 {
-	eda221::deinit();
+	bonobo::deinit();
 
 	GLStateInspection::View::Destroy();
 	GLStateInspection::Destroy();
@@ -93,7 +90,7 @@ void
 edan35::Assignment2::run()
 {
 	// Load the geometry of Sponza
-	auto const sponza_geometry = eda221::loadObjects("../crysponza/sponza.obj");
+	auto const sponza_geometry = bonobo::loadObjects("../crysponza/sponza.obj");
 	if (sponza_geometry.empty()) {
 		LogError("Failed to load the Sponza model");
 		return;
@@ -127,7 +124,7 @@ edan35::Assignment2::run()
 	//
 	// Load all the shader programs used
 	//
-	auto fallback_shader = eda221::createProgram("fallback.vert", "fallback.frag");
+	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
 		return;
@@ -135,7 +132,7 @@ edan35::Assignment2::run()
 	auto const reload_shader = [fallback_shader](std::string const& vertex_path, std::string const& fragment_path, GLuint& program){
 		if (program != 0u && program != fallback_shader)
 			glDeleteProgram(program);
-		program = eda221::createProgram("../EDAN35/" + vertex_path, "../EDAN35/" + fragment_path);
+		program = bonobo::createProgram("../EDAN35/" + vertex_path, "../EDAN35/" + fragment_path);
 		if (program == 0u) {
 			LogError("Failed to load \"%s\" and \"%s\"", vertex_path.c_str(), fragment_path.c_str());
 			program = fallback_shader;
@@ -157,38 +154,38 @@ edan35::Assignment2::run()
 	//
 	// Setup textures
 	//
-	auto const diffuse_texture                     = eda221::createTexture(window_size.x, window_size.y);
-	auto const specular_texture                    = eda221::createTexture(window_size.x, window_size.y);
-	auto const normal_texture                      = eda221::createTexture(window_size.x, window_size.y);
-	auto const light_diffuse_contribution_texture  = eda221::createTexture(window_size.x, window_size.y);
-	auto const light_specular_contribution_texture = eda221::createTexture(window_size.x, window_size.y);
-	auto const depth_texture                       = eda221::createTexture(window_size.x, window_size.y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
-	auto const shadowmap_texture                   = eda221::createTexture(constant::shadowmap_res_x, constant::shadowmap_res_y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+	auto const diffuse_texture                     = bonobo::createTexture(window_size.x, window_size.y);
+	auto const specular_texture                    = bonobo::createTexture(window_size.x, window_size.y);
+	auto const normal_texture                      = bonobo::createTexture(window_size.x, window_size.y);
+	auto const light_diffuse_contribution_texture  = bonobo::createTexture(window_size.x, window_size.y);
+	auto const light_specular_contribution_texture = bonobo::createTexture(window_size.x, window_size.y);
+	auto const depth_texture                       = bonobo::createTexture(window_size.x, window_size.y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+	auto const shadowmap_texture                   = bonobo::createTexture(constant::shadowmap_res_x, constant::shadowmap_res_y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
 
 
 	//
 	// Setup FBOs
 	//
-	auto const deferred_fbo  = eda221::createFBO({diffuse_texture, specular_texture, normal_texture}, depth_texture);
-	auto const shadowmap_fbo = eda221::createFBO({}, shadowmap_texture);
-	auto const light_fbo     = eda221::createFBO({light_diffuse_contribution_texture, light_specular_contribution_texture}, depth_texture);
+	auto const deferred_fbo  = bonobo::createFBO({diffuse_texture, specular_texture, normal_texture}, depth_texture);
+	auto const shadowmap_fbo = bonobo::createFBO({}, shadowmap_texture);
+	auto const light_fbo     = bonobo::createFBO({light_diffuse_contribution_texture, light_specular_contribution_texture}, depth_texture);
 
 	//
 	// Setup samplers
 	//
-	auto const default_sampler = eda221::createSampler([](GLuint sampler){
+	auto const default_sampler = bonobo::createSampler([](GLuint sampler){
 		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	});
-	auto const depth_sampler = eda221::createSampler([](GLuint sampler){
+	auto const depth_sampler = bonobo::createSampler([](GLuint sampler){
 		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	});
-	auto const shadow_sampler = eda221::createSampler([](GLuint sampler){
+	auto const shadow_sampler = bonobo::createSampler([](GLuint sampler){
 		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glSamplerParameteri(sampler, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -251,6 +248,9 @@ edan35::Assignment2::run()
 		}
 		fpsSamples++;
 		seconds_nb += static_cast<float>(ddeltatime / 1000.0);
+
+		auto& io = ImGui::GetIO();
+		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureMouse);
 
 		glfwPollEvents();
 		inputHandler->Advance();
@@ -383,7 +383,7 @@ edan35::Assignment2::run()
 
 		GLStateInspection::CaptureSnapshot("Resolve Pass");
 
-		eda221::drawFullscreen();
+		bonobo::drawFullscreen();
 
 		glBindSampler(3, 0u);
 		glBindSampler(2, 0u);
@@ -407,13 +407,13 @@ edan35::Assignment2::run()
 		//
 		// Output content of the g-buffer as well as of the shadowmap, for debugging purposes
 		//
-		eda221::displayTexture({-0.95f, -0.95f}, {-0.55f, -0.55f}, diffuse_texture,                     default_sampler, {0, 1, 2, -1}, window_size);
-		eda221::displayTexture({-0.45f, -0.95f}, {-0.05f, -0.55f}, specular_texture,                    default_sampler, {0, 1, 2, -1}, window_size);
-		eda221::displayTexture({ 0.05f, -0.95f}, { 0.45f, -0.55f}, normal_texture,                      default_sampler, {0, 1, 2, -1}, window_size);
-		eda221::displayTexture({ 0.55f, -0.95f}, { 0.95f, -0.55f}, depth_texture,                       default_sampler, {0, 0, 0, -1}, window_size, &mCamera);
-		eda221::displayTexture({-0.95f,  0.55f}, {-0.55f,  0.95f}, shadowmap_texture,                   default_sampler, {0, 0, 0, -1}, window_size, &mCamera);
-		eda221::displayTexture({-0.45f,  0.55f}, {-0.05f,  0.95f}, light_diffuse_contribution_texture,  default_sampler, {0, 1, 2, -1}, window_size);
-		eda221::displayTexture({ 0.05f,  0.55f}, { 0.45f,  0.95f}, light_specular_contribution_texture, default_sampler, {0, 1, 2, -1}, window_size);
+		bonobo::displayTexture({-0.95f, -0.95f}, {-0.55f, -0.55f}, diffuse_texture,                     default_sampler, {0, 1, 2, -1}, window_size);
+		bonobo::displayTexture({-0.45f, -0.95f}, {-0.05f, -0.55f}, specular_texture,                    default_sampler, {0, 1, 2, -1}, window_size);
+		bonobo::displayTexture({ 0.05f, -0.95f}, { 0.45f, -0.55f}, normal_texture,                      default_sampler, {0, 1, 2, -1}, window_size);
+		bonobo::displayTexture({ 0.55f, -0.95f}, { 0.95f, -0.55f}, depth_texture,                       default_sampler, {0, 0, 0, -1}, window_size, &mCamera);
+		bonobo::displayTexture({-0.95f,  0.55f}, {-0.55f,  0.95f}, shadowmap_texture,                   default_sampler, {0, 0, 0, -1}, window_size, &mCamera);
+		bonobo::displayTexture({-0.45f,  0.55f}, {-0.05f,  0.95f}, light_diffuse_contribution_texture,  default_sampler, {0, 1, 2, -1}, window_size);
+		bonobo::displayTexture({ 0.05f,  0.55f}, { 0.45f,  0.95f}, light_specular_contribution_texture, default_sampler, {0, 1, 2, -1}, window_size);
 		//
 		// Reset viewport back to normal
 		//
@@ -458,10 +458,10 @@ int main()
 }
 
 static
-eda221::mesh_data
+bonobo::mesh_data
 loadCone()
 {
-	eda221::mesh_data cone;
+	bonobo::mesh_data cone;
 	cone.vertices_nb = 65;
 	cone.drawing_mode = GL_TRIANGLE_STRIP;
 	float vertexArrayData[65 * 3] = {
@@ -541,8 +541,8 @@ loadCone()
 		glBindBuffer(GL_ARRAY_BUFFER, cone.bo);
 		glBufferData(GL_ARRAY_BUFFER, cone.vertices_nb * 3 * sizeof(float), vertexArrayData, GL_STATIC_DRAW);
 
-		glVertexAttribPointer(static_cast<int>(eda221::shader_bindings::vertices), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
-		glEnableVertexAttribArray(static_cast<int>(eda221::shader_bindings::vertices));
+		glVertexAttribPointer(static_cast<int>(bonobo::shader_bindings::vertices), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
+		glEnableVertexAttribArray(static_cast<int>(bonobo::shader_bindings::vertices));
 
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 	}

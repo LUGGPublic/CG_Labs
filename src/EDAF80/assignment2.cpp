@@ -1,6 +1,5 @@
 #include "assignment2.hpp"
 #include "interpolation.hpp"
-#include "node.hpp"
 #include "parametric_shapes.hpp"
 
 #include "config.hpp"
@@ -11,14 +10,12 @@
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
+#include "core/node.hpp"
 #include "core/utils.h"
 #include "core/Window.h"
 #include <imgui.h>
 #include "external/imgui_impl_glfw_gl3.h"
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
 #include "external/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -39,11 +36,11 @@ static polygon_mode_t get_next_mode(polygon_mode_t mode)
 	return static_cast<polygon_mode_t>((static_cast<unsigned int>(mode) + 1u) % 3u);
 }
 
-eda221::Assignment2::Assignment2()
+edaf80::Assignment2::Assignment2()
 {
 	Log::View::Init();
 
-	window = Window::Create("EDA221: Assignment 2", config::resolution_x,
+	window = Window::Create("EDAF80: Assignment 2", config::resolution_x,
 	                        config::resolution_y, config::msaa_rate, false);
 	if (window == nullptr) {
 		Log::View::Destroy();
@@ -53,7 +50,7 @@ eda221::Assignment2::Assignment2()
 	window->SetInputHandler(inputHandler);
 }
 
-eda221::Assignment2::~Assignment2()
+edaf80::Assignment2::~Assignment2()
 {
 	delete inputHandler;
 	inputHandler = nullptr;
@@ -65,7 +62,7 @@ eda221::Assignment2::~Assignment2()
 }
 
 void
-eda221::Assignment2::run()
+edaf80::Assignment2::run()
 {
 	// Load the sphere geometry
 	auto const shape = parametric_shapes::createCircleRing(4u, 60u, 1.0f, 2.0f);
@@ -82,22 +79,22 @@ eda221::Assignment2::run()
 	window->SetCamera(&mCamera);
 
 	// Create the shader programs
-	auto fallback_shader = eda221::createProgram("fallback.vert", "fallback.frag");
+	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
 		return;
 	}
-	auto diffuse_shader = eda221::createProgram("diffuse.vert", "diffuse.frag");
+	auto diffuse_shader = bonobo::createProgram("diffuse.vert", "diffuse.frag");
 	if (diffuse_shader == 0u) {
 		LogError("Failed to load diffuse shader");
 		return;
 	}
-	auto normal_shader = eda221::createProgram("normal.vert", "normal.frag");
+	auto normal_shader = bonobo::createProgram("normal.vert", "normal.frag");
 	if (normal_shader == 0u) {
 		LogError("Failed to load normal shader");
 		return;
 	}
-	auto texcoord_shader = eda221::createProgram("texcoord.vert", "texcoord.frag");
+	auto texcoord_shader = bonobo::createProgram("texcoord.vert", "texcoord.frag");
 	if (texcoord_shader == 0u) {
 		LogError("Failed to load texcoord shader");
 		return;
@@ -107,6 +104,14 @@ eda221::Assignment2::run()
 	auto const set_uniforms = [&light_position](GLuint program){
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 	};
+
+	// Set the default tensions value; it can always be changed at runtime
+	// through the "Scene Controls" window.
+	float catmull_rom_tension = 0.0f;
+
+	// Set whether the default interpolation algorithm should be the linear one;
+	// it can always be changed at runtime through the "Scene Controls" window.
+	bool use_linear = true;
 
 	auto circle_rings = Node();
 	circle_rings.set_geometry(shape);
@@ -139,6 +144,9 @@ eda221::Assignment2::run()
 			fpsSamples = 0;
 		}
 		fpsSamples++;
+
+		auto& io = ImGui::GetIO();
+		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureMouse);
 
 		glfwPollEvents();
 		inputHandler->Advance();
@@ -189,6 +197,13 @@ eda221::Assignment2::run()
 
 		circle_rings.render(mCamera.GetWorldToClipMatrix(), circle_rings.get_transform());
 
+		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(300, 100), -1.0f, 0);
+		if (opened) {
+			ImGui::SliderFloat("Catmull-Rom tension", &catmull_rom_tension, 0.0f, 1.0f);
+			ImGui::Checkbox("Use linear interpolation", &use_linear);
+		}
+		ImGui::End();
+
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		Log::View::Render();
 		ImGui::Render();
@@ -211,7 +226,7 @@ int main()
 {
 	Bonobo::Init();
 	try {
-		eda221::Assignment2 assignment2;
+		edaf80::Assignment2 assignment2;
 		assignment2.run();
 	} catch (std::runtime_error const& e) {
 		LogError(e.what());

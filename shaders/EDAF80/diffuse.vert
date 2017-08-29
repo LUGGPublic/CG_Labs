@@ -20,7 +20,7 @@ uniform mat4 vertex_world_to_clip;
 // from another shader further down the pipeline, you need to declare the exact
 // same structure as in (for input), with matching name for the structure
 // members and matching structure type. Have a look at
-// shaders/EDA221/diffuse.frag.
+// shaders/EDAF80/diffuse.frag.
 out VS_OUT {
 	vec3 vertex;
 	vec3 normal;

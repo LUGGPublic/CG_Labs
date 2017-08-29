@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.0)
 
 project (
 	"imgui"
-	VERSION 1.46
+	VERSION 1.51
 	LANGUAGES CXX
 )
 
@@ -24,7 +24,6 @@ set (
 	"stb_truetype.h"
 )
 
-include_directories (${PROJECT_SOURCE_DIR})
 add_library (${PROJECT_NAME} ${CPP_SOURCES})
 
 install (TARGETS ${PROJECT_NAME} DESTINATION "lib")

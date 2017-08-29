@@ -39,6 +39,9 @@ public:
 	u32 GetMouseState(u32 button);
 	glm::vec2 GetMousePositionAtStateShift(u32 button);
 	glm::vec2 GetMousePosition();
+	bool IsMouseCapturedByUI() const;
+	bool IsKeyboardCapturedByUI() const;
+	void SetUICapture(bool mouseCapture, bool keyboardCapture);
 
 private:
 	void DownEvent(std::unordered_map<size_t, IState> &map, size_t loc);
@@ -54,6 +57,9 @@ private:
 
 	glm::vec2 mMousePosition;
 	glm::vec2 mMousePositionSwitched[MAX_MOUSE_BUTTONS];
+
+	bool mMouseCapturedByUI;
+	bool mKeyboardCapturedByUI;
 
 	u64 mTick;
 

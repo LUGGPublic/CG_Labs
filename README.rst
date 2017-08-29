@@ -1,6 +1,6 @@
 LU_Computer_Graphics_Labs contains the source code for the various Computer
-Graphics courses taught at `Lund University`_ (EDA221_ and EDAN35_). All
-assignments of EDA221 are available, as well as the second assignment of
+Graphics courses taught at `Lund University`_ (EDAF80_ and EDAN35_). All
+assignments of EDAF80 are available, as well as the second assignment of
 EDAN35.
 
 The public repository is found at https://github.com/LUGGPublic/CG_Labs.
@@ -77,7 +77,7 @@ Licence
 * This project is unlicenced, see `the UNLICENCE file`_.
 
 .. _Lund University: http://www.lu.se/
-.. _EDA221: http://cs.lth.se/eda221
+.. _EDAF80: http://cs.lth.se/edaf80
 .. _EDAN35: http://cs.lth.se/edan35
 .. _CMake: https://cmake.org/
 .. _Git: https://git-scm.com/

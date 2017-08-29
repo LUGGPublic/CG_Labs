@@ -10,6 +10,12 @@ add_library (external_libs ${SOURCES})
 
 # Include directories
 target_include_directories (external_libs PRIVATE ${IMGUI_INCLUDE_DIRS})
-target_include_directories (external_libs PRIVATE "${PROJECT_SOURCE_DIR}/src/external")
+target_include_directories (external_libs PRIVATE "${CMAKE_SOURCE_DIR}/src/external")
 
-target_link_libraries (external_libs glfw ${LUGGCGL_EXTRA_LIBS})
+set_target_properties (external_libs PROPERTIES
+	INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
+	INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+target_link_libraries (external_libs glfw imgui ${LUGGCGL_EXTRA_LIBS})
+
+install (TARGETS external_libs DESTINATION lib)

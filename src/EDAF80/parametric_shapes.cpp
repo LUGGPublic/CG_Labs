@@ -10,7 +10,7 @@
 #include <iostream>
 #include <vector>
 
-eda221::mesh_data
+bonobo::mesh_data
 parametric_shapes::createQuad(unsigned int width, unsigned int height)
 {
 	//! \todo Fill in the blanks
@@ -26,7 +26,7 @@ parametric_shapes::createQuad(unsigned int width, unsigned int height)
 		glm::uvec3(0u, 2u, 3u)
 	};
 
-	eda221::mesh_data data;
+	bonobo::mesh_data data;
 
 	//
 	// NOTE:
@@ -79,14 +79,14 @@ parametric_shapes::createQuad(unsigned int width, unsigned int height)
 	// in a buffer object. We need to tell the Vertex Array which inputs
 	// are enabled, and this is done by the following line of code, which
 	// enables the input for vertices:
-	glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::vertices));
+	glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::vertices));
 
 	// Once an input is enabled, we need to explain where the data comes
 	// from, and how it interpret it. When calling the following function,
 	// the Vertex Array will automatically use the current buffer bound to
 	// GL_ARRAY_BUFFER as its source for the data. How to interpret it is
 	// specified below:
-	glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::vertices),
+	glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::vertices),
 	                      /*! \todo how many components do our vertices have? */0,
 	                      /* what is the type of each component? */GL_FLOAT,
 	                      /* should it automatically normalise the values stored */GL_FALSE,
@@ -116,25 +116,25 @@ parametric_shapes::createQuad(unsigned int width, unsigned int height)
 	return data;
 }
 
-eda221::mesh_data
+bonobo::mesh_data
 parametric_shapes::createSphere(unsigned int const res_theta,
                                 unsigned int const res_phi, float const radius)
 {
 
 	//! \todo (Optional) Implement this function
-	return eda221::mesh_data();
+	return bonobo::mesh_data();
 }
 
-eda221::mesh_data
+bonobo::mesh_data
 parametric_shapes::createTorus(unsigned int const res_theta,
                                unsigned int const res_phi, float const rA,
                                float const rB)
 {
 	//! \todo (Optional) Implement this function
-	return eda221::mesh_data();
+	return bonobo::mesh_data();
 }
 
-eda221::mesh_data
+bonobo::mesh_data
 parametric_shapes::createCircleRing(unsigned int const res_radius,
                                     unsigned int const res_theta,
                                     float const inner_radius,
@@ -215,7 +215,7 @@ parametric_shapes::createCircleRing(unsigned int const res_radius,
 		}
 	}
 
-	eda221::mesh_data data;
+	bonobo::mesh_data data;
 	glGenVertexArrays(1, &data.vao);
 	assert(data.vao != 0u);
 	glBindVertexArray(data.vao);
@@ -242,24 +242,24 @@ parametric_shapes::createCircleRing(unsigned int const res_radius,
 	glBufferData(GL_ARRAY_BUFFER, bo_size, nullptr, GL_STATIC_DRAW);
 
 	glBufferSubData(GL_ARRAY_BUFFER, vertices_offset, vertices_size, static_cast<GLvoid const*>(vertices.data()));
-	glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::vertices));
-	glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::vertices), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
+	glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::vertices));
+	glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::vertices), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
 
 	glBufferSubData(GL_ARRAY_BUFFER, normals_offset, normals_size, static_cast<GLvoid const*>(normals.data()));
-	glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::normals));
-	glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::normals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(normals_offset));
+	glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::normals));
+	glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::normals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(normals_offset));
 
 	glBufferSubData(GL_ARRAY_BUFFER, texcoords_offset, texcoords_size, static_cast<GLvoid const*>(texcoords.data()));
-	glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::texcoords));
-	glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::texcoords), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(texcoords_offset));
+	glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::texcoords));
+	glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::texcoords), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(texcoords_offset));
 
 	glBufferSubData(GL_ARRAY_BUFFER, tangents_offset, tangents_size, static_cast<GLvoid const*>(tangents.data()));
-	glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::tangents));
-	glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::tangents), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(tangents_offset));
+	glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::tangents));
+	glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::tangents), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(tangents_offset));
 
 	glBufferSubData(GL_ARRAY_BUFFER, binormals_offset, binormals_size, static_cast<GLvoid const*>(binormals.data()));
-	glEnableVertexAttribArray(static_cast<unsigned int>(eda221::shader_bindings::binormals));
-	glVertexAttribPointer(static_cast<unsigned int>(eda221::shader_bindings::binormals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(binormals_offset));
+	glEnableVertexAttribArray(static_cast<unsigned int>(bonobo::shader_bindings::binormals));
+	glVertexAttribPointer(static_cast<unsigned int>(bonobo::shader_bindings::binormals), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(binormals_offset));
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0u);
 
