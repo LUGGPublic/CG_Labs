@@ -12,6 +12,7 @@ char Log::View::mBuffer[BUFFER_ROWS][BUFFER_WIDTH];
 int Log::View::mLen[BUFFER_ROWS];
 Log::Type Log::View::mType[BUFFER_ROWS];
 int Log::View::mBufferPtr = 0;
+bool Log::View::mScrollToBottom = true;
 static ImVec4 logViewTypeColor[Log::N_TYPES];
 
 void Log::View::Init()
@@ -27,6 +28,8 @@ void Log::View::Init()
 	logViewTypeColor[Log::TYPE_ASSERT	] = ImVec4(0.7f, 0.0f, 0.0f, 1.0f);
 	logViewTypeColor[Log::TYPE_PARAM	] = ImVec4(0.7f, 0.0f, 0.0f, 1.0f);
 	logViewTypeColor[Log::TYPE_TRIVIA	] = ImVec4(0.8f, 0.8f, 0.8f, 1.0f);
+
+	mScrollToBottom = true;
 }
 
 void Log::View::Destroy()
@@ -36,17 +39,53 @@ void Log::View::Destroy()
 
 void Log::View::Render()
 {
-	bool opened = ImGui::Begin("Log", nullptr, ImVec2(600, 400), -1.0f, 0);
-	if (opened) {
-		for (int i = 0; i < BUFFER_ROWS; i++) {
-			int pos = (BUFFER_ROWS + (mBufferPtr + i)) % BUFFER_ROWS;
-			if (mLen[pos] == 0)
-				continue;
-			ImGui::PushStyleColor(ImGuiCol_Text, logViewTypeColor[mType[pos]]);
-			ImGui::TextWrapped(mBuffer[pos]);
-			ImGui::PopStyleColor();
-		}
+	// Inspired by Dear ImGUI's ExampleAppConsole
+	bool const opened = ImGui::Begin("Log", nullptr, ImVec2(600, 400), -1.0f, 0);
+	if (!opened) {
+		ImGui::End();
+		return;
 	}
+
+	bool const copy_to_clipboard = ImGui::SmallButton("Copy"); ImGui::SameLine();
+	mScrollToBottom |= ImGui::SmallButton("Scroll to bottom"); ImGui::SameLine();
+	if (ImGui::SmallButton("Clear")) ClearLog();
+
+	ImGui::Separator();
+
+	static ImGuiTextFilter filter;
+	filter.Draw("Filter (\"incl,-excl\")", 180);
+
+	ImGui::Separator();
+
+	ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
+	if (ImGui::BeginPopupContextWindow())
+	{
+		if (ImGui::Selectable("Clear")) ClearLog();
+		ImGui::EndPopup();
+	}
+
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
+	if (copy_to_clipboard)
+		ImGui::LogToClipboard();
+
+	for (int i = 0; i < BUFFER_ROWS; i++) {
+		int pos = (BUFFER_ROWS + (mBufferPtr + i)) % BUFFER_ROWS;
+		if (mLen[pos] == 0 || !filter.PassFilter(mBuffer[pos]))
+			continue;
+		ImGui::PushStyleColor(ImGuiCol_Text, logViewTypeColor[mType[pos]]);
+		ImGui::TextWrapped(mBuffer[pos]);
+		ImGui::PopStyleColor();
+	}
+
+	if (copy_to_clipboard)
+		ImGui::LogFinish();
+	if (mScrollToBottom)
+		ImGui::SetScrollHere();
+	mScrollToBottom = false;
+
+	ImGui::PopStyleVar();
+	ImGui::EndChild();
+
 	ImGui::End();
 }
 
@@ -56,4 +95,15 @@ void Log::View::Feed(Log::Type type, const char *msg)
 	mLen[mBufferPtr] = (int) strlen(msg);
 	mType[mBufferPtr] = type;
 	mBufferPtr = (mBufferPtr + 1) % BUFFER_ROWS;
+
+	mScrollToBottom = true;
+}
+
+void Log::View::ClearLog()
+{
+	for (int& length : mLen)
+		length = 0;
+	mBufferPtr = 0;
+
+	mScrollToBottom = true;
 }
