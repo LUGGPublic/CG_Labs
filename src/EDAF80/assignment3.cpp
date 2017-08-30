@@ -215,7 +215,6 @@ edaf80::Assignment3::run()
 			ImGui::ColorEdit3("Specular", glm::value_ptr(specular));
 			ImGui::SliderFloat("Shininess", &shininess, 0.0f, 1000.0f);
 			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -20.0f, 20.0f);
-//			ImGui::SliderInt("Faces Nb", &faces_nb, 1u, 16u);
 		}
 		ImGui::End();
 
