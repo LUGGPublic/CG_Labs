@@ -37,6 +37,33 @@ be found in `this ZIP file`_, which should be automatically retrieved by CMake.
 Building
 ========
 
+Visual Studio 2017
+------------------
+
+We will use the following directory layout::
+
+  * some_random_folder // Wherever you want to store the project on your
+  |                    // computer.
+  |
+  |-> * code           // This is what you downloaded from GitHub.
+
+On the contrary to previous versions, Visual Studio 2017 can use CMake files
+directly, so instead of opening a project, choose “Open a folder” and select
+the “code” folder. After a few seconds, Visual Studio should start processing
+the CMake files and downloading the dependencies: this can take some time.
+
+Once Visual Studio is done with the processing, you should now have a new menu
+called “CMake” in the menu bar. In there you can build and clean the project,
+edit the CMake configuration, and others.
+
+After building, it is now time to run the assignment. In order to do that, you
+need to choose the “Startup Item” by clicking on the combo box preceded by a
+green arrow pointing to the right (similar to the “play” or “start” symbols),
+and select, for example, “EDAF80_Assignment1.exe”.
+
+Others (also works for Visual Studio 2017)
+------------------------------------------
+
 The project uses CMake to automate the building. It is recommended to build in
 a separate folder but you can as well build directly within the source
 directory. We will use the following directory layout::
@@ -64,6 +91,9 @@ You should now have your project files available in the ``build`` folder. To
 build the project, you can either use your IDE’s interface, or run
 ``cmake --build .`` from the ``build`` folder. You can pass
 ``--config Debug|RelWithDebInfo|Release`` to build in a specific configuration.
+
+Issues with retrieving the resource archive
+-------------------------------------------
 
 If CMake fails to retrieve the resource archive, you will need to make sure to
 extract the zip containing the resources into ``code``; this should result in
