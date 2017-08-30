@@ -81,22 +81,22 @@ Visual Studio::
   cd build
   cmake ../code
 
-If you prefer to use CMake GUI, just set the source directory to ``code`` and
-the build directory to ``build``. Then, press the ``Configure`` button, modify
-some of the variables if needed, and press the button again. Finally, press the
-``Generate`` button to create the project files.
+If you prefer to use CMake GUI, just set the source directory to “code” and the
+build directory to “build”. Then, press the “Configure” button, modify some of
+the variables if needed, and press the button again. Finally, press the
+“Generate” button to create the project files.
 
-You should now have your project files available in the ``build`` folder. To
+You should now have your project files available in the “build” folder. To
 build the project, you can either use your IDE’s interface, or run
-``cmake --build .`` from the ``build`` folder. You can pass
+``cmake --build .`` from the “build” folder. You can pass
 ``--config Debug|RelWithDebInfo|Release`` to build in a specific configuration.
 
 Issues with retrieving the resource archive
 -------------------------------------------
 
 If CMake fails to retrieve the resource archive, you will need to make sure to
-extract the zip containing the resources into ``code``; this should result in
-the creation of a folder ``res`` under ``code``.
+extract the zip containing the resources into “code”; this should result in the
+creation of a folder “res” under “code”.
 
 Licence
 =======
