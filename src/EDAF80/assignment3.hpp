@@ -7,7 +7,7 @@ class Window;
 
 namespace edaf80
 {
-	//! \brief Wrapper class for Assignment 2
+	//! \brief Wrapper class for Assignment 3
 	class Assignment3 {
 	public:
 		//! \brief Default constructor.
