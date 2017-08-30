@@ -1,0 +1,36 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d781d1fd..f40d2d2a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -146,8 +146,14 @@ ENDIF(ASSIMP_DOUBLE_PRECISION)
+ # Check for OpenMP support
+ find_package(OpenMP)
+ if (OPENMP_FOUND)
+-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
++    SET (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
++    SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
++
++    IF(MSVC)
++        IF(MSVC_VERSION GREATER 1910)
++            SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:twoPhase-")
++        ENDIF()
++    ENDIF()
+ endif()
+ 
+ configure_file(
+diff --git a/code/X3DImporter.cpp b/code/X3DImporter.cpp
+index 11177356..669f46f9 100644
+--- a/code/X3DImporter.cpp
++++ b/code/X3DImporter.cpp
+@@ -95,8 +95,8 @@ struct WordIterator: public std::iterator<std::input_iterator_tag, const char*>
+         end_ = other.end_;
+         return *this;
+     }
+-    bool operator==(WordIterator &other) const { return start_ == other.start_; }
+-    bool operator!=(WordIterator &other) const { return start_ != other.start_; }
++    bool operator==(const WordIterator &other) const { return start_ == other.start_; }
++    bool operator!=(const WordIterator &other) const { return start_ != other.start_; }
+     WordIterator &operator++() {
+         start_ += strcspn(start_, whitespace);
+         start_ += strspn(start_, whitespace);

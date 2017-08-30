@@ -53,6 +53,12 @@ if (NOT assimp_FOUND)
 			COMMAND ${GIT_EXECUTABLE} clone -b "v${LUGGCGL_MIN_ASSIMP_VERSION}" "https://github.com/assimp/assimp.git" "code"
 			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/assimp"
 		)
+		# assimp will not compile under VS2017.3 without that commit,
+		# which is not part of a release yet.
+		execute_process (
+			COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/0001-fix-compiling-problems-under-vs2017-3.patch
+			WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/assimp/code"
+		)
 	endif ()
 	if (NOT EXISTS "${CMAKE_BINARY_DIR}/assimp/build")
 		file (MAKE_DIRECTORY "${CMAKE_BINARY_DIR}/assimp/build")
