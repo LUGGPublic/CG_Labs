@@ -21,8 +21,8 @@ LU_Computer_Graphics_Labs uses the following dependencies:
 
 The project contains the needed files for GLAD and lodepng, and it will
 download assimp, Dear ImGui, GLM and GLFW if they are not found on your
-computer, so you only need to make sure that CMake is installed on your
-computer.
+computer, so you only need to make sure that CMake and Git are installed on
+your computer.
 
 An OpenGL 4.1 context is created by the project. You could possibly lower that
 to an OpenGL 3.3 context, but it is not supported.
