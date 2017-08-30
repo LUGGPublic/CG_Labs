@@ -1,14 +1,13 @@
-LU_Computer_Graphics_Labs contains the source code for the various Computer
-Graphics courses taught at `Lund University`_ (EDAF80_ and EDAN35_). All
-assignments of EDAF80 are available, as well as the second assignment of
-EDAN35.
+CG_Labs contains the source code for the various Computer Graphics courses
+taught at `Lund University`_ (EDAF80_ and EDAN35_). All assignments of EDAF80
+are available, as well as the second assignment of EDAN35.
 
 The public repository is found at https://github.com/LUGGPublic/CG_Labs.
 
 Dependencies
 ============
 
-LU_Computer_Graphics_Labs uses the following dependencies:
+CG_Labs uses the following dependencies:
 
 * CMake_ (>= 3.0): to generate project files and handle dependencies;
 * Git_: to clone missing dependencies;

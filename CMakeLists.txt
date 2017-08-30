@@ -5,7 +5,7 @@ cmake_minimum_required (VERSION 3.0)
 
 # Set the project name, versions and languages used.
 project (
-	LU_Computer_Graphics_Labs
+	CG_Labs
 	VERSION 0.1
 	LANGUAGES CXX C
 )
