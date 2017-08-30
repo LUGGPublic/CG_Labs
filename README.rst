@@ -10,13 +10,13 @@ Dependencies
 
 LU_Computer_Graphics_Labs uses the following dependencies:
 
-* CMake_: to generate project files and handle dependencies;
+* CMake_ (>= 3.0): to generate project files and handle dependencies;
 * Git_: to clone missing dependencies;
-* GLFW_: to create a window and an OpenGL context, as well as handle inputs;
+* GLFW_ (>= 3.2.1): to create a window and an OpenGL context, as well as handle inputs;
 * GLAD_: to load OpenGL extensions;
-* GLM_: for linear algebra operations;
-* `Dear ImGui`_: to display information on screen, such as logs;
-* assimp_: to load OBJ models;
+* GLM_ (>= 0.9.8.5): for linear algebra operations;
+* `Dear ImGui`_ (>= 1.51): to display information on screen, such as logs;
+* assimp_ (>= 4.0.1): to load OBJ models;
 * lodepng_: to load PNG files;
 
 The project contains the needed files for GLAD and lodepng, and it will
