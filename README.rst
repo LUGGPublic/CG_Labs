@@ -75,11 +75,17 @@ directory. We will use the following directory layout::
   |-> * build          // A folder you created, and which will contain all the
                        // build related files.
 
-First, you need to create the project files, be it for Makefile, Ninja, Xcode,
-Visual Studio::
+First, you need to create the project files, be it for Unix Makefiles, Ninja,
+Xcode, or Visual Studio::
 
   cd build
-  cmake ../code
+  cmake -G $generator ../code
+
+where ``$generator`` can be, among others, ``"Visual Studio 14 2015 Win64"``
+for Visual Studio 2015 on a 64-bit computer, ``"Visual Studio 15 2017 Win64"``
+for Visual Studio 2017 on a 64-bit computer, ``Xcode`` for Xcode,
+``"Unix Makefiles"`` for Unix Makefiles. To see the full list of generators
+supported by CMake, have a look at `cmake-generators(7)`_.
 
 If you prefer to use CMake GUI, just set the source directory to “code” and the
 build directory to “build”. Then, press the “Configure” button, modify some of
@@ -116,6 +122,7 @@ Licence
 .. _Dear ImGui: https://github.com/ocornut/imgui
 .. _assimp: https://github.com/assimp/assimp
 .. _lodepng: http://lodev.org/lodepng/
+.. _cmake-generators(7): https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
 .. _Dear ImGui’s licence: Dear_ImGui_LICENCE
 .. _this ZIP file: http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDA221_resources.zip
 .. _the UNLICENCE file: UNLICENCE
