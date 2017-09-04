@@ -2,6 +2,13 @@
 # project() command, set the minimum required version to 3.0.
 cmake_minimum_required (VERSION 3.0)
 
+if (WIN32)
+	set (LUGGCGL_TMP_DIR ${CMAKE_SOURCE_DIR}/../Temp)
+	if (NOT EXISTS ${LUGGCGL_TMP_DIR})
+		file (MAKE_DIRECTORY ${LUGGCGL_TMP_DIR})
+	endif ()
+	set (ENV{TMP} ${LUGGCGL_TMP_DIR})
+endif ()
 
 # Set the project name, versions and languages used.
 project (
