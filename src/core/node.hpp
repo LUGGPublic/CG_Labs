@@ -75,7 +75,8 @@ public:
 	//!                  shader program; in assignment 1, this will be
 	//!                  `diffuse_texture`
 	//! @param [in] tex_id the name of an OpenGL 2D-texture
-	//! @param [in] type the type of texture; defaults to GL_TEXTURE_2D
+	//! @param [in] type the type of texture, i.e. GL_TEXTURE_2D,
+	//!                  GL_TEXTURE_CUBE_MAP, etc.
 	void add_texture(std::string const& name, GLuint tex_id, GLenum type);
 
 	//! \brief Add a child to this node.
