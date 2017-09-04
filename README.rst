@@ -104,6 +104,13 @@ If CMake fails to retrieve the resource archive, you will need to make sure to
 extract the zip containing the resources into “code”; this should result in the
 creation of a folder “res” under “code”.
 
+Miscellaneous
+=============
+
+If you are on a laptop and would like to force the assignments to run on the
+discrete GPU, set the option ``GLFW_USE_HYBRID_HPG`` to ``ON`` using CMake
+— either from the CMake GUI or using CMake on the command line.
+
 Licence
 =======
 
