@@ -127,9 +127,12 @@ namespace bonobo
 	//!             alpha channel
 	//! @param [in] window_size the size in pixels of the main window, the
 	//!             one relative to which you want to draw this texture
+	//! @param [in] camera the camera used for rendering the texture; this
+	//!             is only useful for displaying a depth map texture, and
+	//!             should be nul for rendering other types of textures.
 	void displayTexture(glm::vec2 const& lower_left,
 	                    glm::vec2 const& upper_right, GLuint texture,
-	                    GLuint samper, glm::ivec4 const& swizzle,
+	                    GLuint sampler, glm::ivec4 const& swizzle,
 	                    glm::ivec2 const& window_size,
 	                    FPSCameraf const* camera = nullptr);
 
