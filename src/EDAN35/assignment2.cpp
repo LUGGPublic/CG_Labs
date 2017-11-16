@@ -208,6 +208,7 @@ edan35::Assignment2::run()
 	//
 	std::array<TRSTransform<float, glm::defaultp>, constant::lights_nb> lightTransforms;
 	std::array<glm::vec3, constant::lights_nb> lightColors;
+	bool are_lights_paused = false;
 
 	for (size_t i = 0; i < constant::lights_nb; ++i) {
 		lightTransforms[i].SetTranslate(glm::vec3(0.0f, 125.0f, 0.0f));
@@ -247,7 +248,8 @@ edan35::Assignment2::run()
 			fpsSamples = 0;
 		}
 		fpsSamples++;
-		seconds_nb += static_cast<float>(ddeltatime / 1000.0);
+		if (!are_lights_paused)
+			seconds_nb += static_cast<float>(ddeltatime / 1000.0);
 
 		auto& io = ImGui::GetIO();
 		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureMouse);
@@ -425,6 +427,12 @@ edan35::Assignment2::run()
 		bool opened = ImGui::Begin("Render Time", nullptr, ImVec2(120, 50), -1.0f, 0);
 		if (opened)
 			ImGui::Text("%.3f ms", ddeltatime);
+		ImGui::End();
+
+		opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(120, 50), -1.0f, 0);
+		if (opened) {
+			ImGui::Checkbox("Pause lights", &are_lights_paused);
+		}
 		ImGui::End();
 
 		ImGui::Render();
