@@ -116,7 +116,6 @@ edan35::Assignment2::run()
 	                   static_cast<float>(window_size.x) / static_cast<float>(window_size.y),
 	                   1.0f, 10000.0f);
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 100.0f, 180.0f));
-	mCamera.mWorld.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 0.25f;
 	window->SetCamera(&mCamera);
