@@ -45,7 +45,7 @@ namespace constant
 
 	constexpr size_t lights_nb           = 4;
 	constexpr float  light_intensity     = 720000.0f;
-	constexpr float  light_angle_falloff = 0.8f;
+	constexpr float  light_angle_falloff = glm::radians(37.0f);
 	constexpr float  light_cutoff        = 0.05f;
 }
 
