@@ -102,15 +102,15 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
 	auto const c_msg = s_msg.c_str();
 	switch (severity) {
 	case GL_DEBUG_SEVERITY_NOTIFICATION:
+	case GL_DEBUG_SEVERITY_LOW: // fallthrough
 		if (id == 131185) // Will use VIDEO memory
 			break;
 		else
 			LogInfo(c_msg);
 		break;
-	case GL_DEBUG_SEVERITY_LOW:
+	case GL_DEBUG_SEVERITY_MEDIUM:
 		LogWarning(c_msg);
 		break;
-	case GL_DEBUG_SEVERITY_MEDIUM: // fallthrough
 	case GL_DEBUG_SEVERITY_HIGH:
 		LogError(c_msg);
 		break;
