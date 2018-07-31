@@ -218,7 +218,7 @@ edan35::Assignment2::run()
 	}
 
 	TRSTransform<f32, glm::defaultp> coneScaleTransform = TRSTransform<f32, glm::defaultp>();
-	coneScaleTransform.SetScale(glm::vec3(sqrt(constant::light_intensity / constant::light_cutoff)));
+	coneScaleTransform.SetScale(glm::vec3(std::sqrt(constant::light_intensity / constant::light_cutoff)));
 
 	TRSTransform<f32, glm::defaultp> lightOffsetTransform = TRSTransform<f32, glm::defaultp>();
 	lightOffsetTransform.SetTranslate(glm::vec3(0.0f, 0.0f, -40.0f));
