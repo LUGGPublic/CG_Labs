@@ -227,19 +227,33 @@ endif ()
 function (luggcgl_new_assignment assignment_name sources common_sources)
 	add_executable (${assignment_name} ${sources} ${common_sources})
 
-	target_include_directories (${assignment_name} PRIVATE "${CMAKE_SOURCE_DIR}/src/external")
-	target_include_directories (${assignment_name} PRIVATE "${CMAKE_SOURCE_DIR}/src")
-	target_include_directories (${assignment_name} PRIVATE "${CMAKE_BINARY_DIR}")
-	target_include_directories (${assignment_name} PRIVATE ${IMGUI_INCLUDE_DIRS})
-	target_include_directories (${assignment_name} PRIVATE ${GLM_INCLUDE_DIRS})
 
-	set_property (TARGET ${assignment_name} PROPERTY CXX_STANDARD 14)
-	set_property (TARGET ${assignment_name} PROPERTY CXX_STANDARD_REQUIRED ON)
-	set_property (TARGET ${assignment_name} PROPERTY CXX_EXTENSIONS OFF)
+	target_include_directories (
+		${assignment_name}
+		PRIVATE
+			"${CMAKE_SOURCE_DIR}/src"
+			"${CMAKE_BINARY_DIR}"
+	)
 
-	set_target_properties (${assignment_name} PROPERTIES
-		INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
-		INSTALL_RPATH_USE_LINK_PATH TRUE)
+	target_include_directories (
+		${assignment_name}
+		SYSTEM PRIVATE
+			${IMGUI_INCLUDE_DIRS}
+			${GLM_INCLUDE_DIRS}
+			"${CMAKE_SOURCE_DIR}/src/external"
+	)
+
+
+	target_compile_options (${assignment_name} PRIVATE "${LUGGCGL_CXX_FLAGS}")
+
+	set_target_properties (
+		${assignment_name}
+		PROPERTIES
+			CXX_STANDARD 14
+			CXX_STANDARD_REQUIRED ON
+			CXX_EXTENSIONS OFF
+			INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
+			INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 	add_dependencies (${assignment_name} bonobo)
 
