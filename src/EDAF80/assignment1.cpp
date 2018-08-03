@@ -154,7 +154,7 @@ edaf80::Assignment1::run()
 		auto node_stack = std::stack<Node const*>();
 		auto matrix_stack = std::stack<glm::mat4>();
 		node_stack.push(&world);
-		matrix_stack.push(glm::mat4());
+		matrix_stack.push(glm::mat4(1.0f));
 		do {
 			auto const* const current_node = node_stack.top();
 			node_stack.pop();

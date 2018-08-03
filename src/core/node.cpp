@@ -6,7 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Node::Node() : _vao(0u), _vertices_nb(0u), _indices_nb(0u), _drawing_mode(GL_TRIANGLES), _has_indices(true), _program(0u), _textures(), _scaling(1.0f, 1.0f, 1.0f), _rotation(), _translation(), _children()
+Node::Node() : _vao(0u), _vertices_nb(0u), _indices_nb(0u), _drawing_mode(GL_TRIANGLES), _has_indices(true), _program(0u), _textures(), _scaling(1.0f), _rotation(), _translation(), _children()
 {
 }
 
@@ -146,11 +146,11 @@ Node::scale(glm::vec3 const& s)
 glm::mat4x4
 Node::get_transform() const
 {
-	auto const scaling =  glm::scale(glm::mat4(), _scaling);
-	auto const translating = glm::translate(glm::mat4(), _translation);
-	auto const rotation_x = glm::rotate(glm::mat4(), _rotation.x, glm::vec3(1.0, 0.0, 0.0));
-	auto const rotation_y = glm::rotate(glm::mat4(), _rotation.y, glm::vec3(0.0, 1.0, 0.0));
-	auto const rotation_z = glm::rotate(glm::mat4(), _rotation.z, glm::vec3(0.0, 0.0, 1.0));
+	auto const scaling =  glm::scale(glm::mat4(1.0f), _scaling);
+	auto const translating = glm::translate(glm::mat4(1.0f), _translation);
+	auto const rotation_x = glm::rotate(glm::mat4(1.0f), _rotation.x, glm::vec3(1.0, 0.0, 0.0));
+	auto const rotation_y = glm::rotate(glm::mat4(1.0f), _rotation.y, glm::vec3(0.0, 1.0, 0.0));
+	auto const rotation_z = glm::rotate(glm::mat4(1.0f), _rotation.z, glm::vec3(0.0, 0.0, 1.0));
 	auto const rotating = rotation_z * rotation_y * rotation_x;
 
 	// Todo: Compute the correct transform matrix

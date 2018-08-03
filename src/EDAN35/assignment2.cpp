@@ -344,7 +344,7 @@ edan35::Assignment2::run()
 			GLStateInspection::CaptureSnapshot("Shadow Map Generation");
 
 			for (auto const& element : sponza_elements)
-				element.render(light_matrix, glm::mat4(), fill_gbuffer_shader, set_uniforms);
+				element.render(light_matrix, glm::mat4(1.0f), fill_gbuffer_shader, set_uniforms);
 
 
 			glEnable(GL_BLEND);
