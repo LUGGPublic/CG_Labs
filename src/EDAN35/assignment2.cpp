@@ -12,6 +12,7 @@
 #include "core/LogView.h"
 #include "core/Misc.h"
 #include "core/node.hpp"
+#include "core/ShaderProgramManager.hpp"
 #include "core/utils.h"
 #include "core/Window.h"
 #include <imgui.h>
@@ -123,29 +124,51 @@ edan35::Assignment2::run()
 	//
 	// Load all the shader programs used
 	//
-	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
+	ShaderProgramManager program_manager;
+	GLuint fallback_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/fallback.vert" },
+	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
+	                                         fallback_shader);
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
 		return;
 	}
-	auto const reload_shader = [fallback_shader](std::string const& vertex_path, std::string const& fragment_path, GLuint& program){
-		if (program != 0u && program != fallback_shader)
-			glDeleteProgram(program);
-		program = bonobo::createProgram("../EDAN35/" + vertex_path, "../EDAN35/" + fragment_path);
-		if (program == 0u) {
-			LogError("Failed to load \"%s\" and \"%s\"", vertex_path.c_str(), fragment_path.c_str());
-			program = fallback_shader;
-		}
-	};
-	GLuint fill_gbuffer_shader = 0u, fill_shadowmap_shader = 0u, accumulate_lights_shader = 0u, resolve_deferred_shader = 0u;
-	auto const reload_shaders = [&reload_shader,&fill_gbuffer_shader,&fill_shadowmap_shader,&accumulate_lights_shader,&resolve_deferred_shader](){
-		LogInfo("Reloading shaders");
-		reload_shader("fill_gbuffer.vert",      "fill_gbuffer.frag",      fill_gbuffer_shader);
-		reload_shader("fill_shadowmap.vert",    "fill_shadowmap.frag",    fill_shadowmap_shader);
-		reload_shader("accumulate_lights.vert", "accumulate_lights.frag", accumulate_lights_shader);
-		reload_shader("resolve_deferred.vert",  "resolve_deferred.frag",  resolve_deferred_shader);
-	};
-	reload_shaders();
+
+	GLuint fill_gbuffer_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/fill_gbuffer.vert" },
+	                                           { ShaderType::fragment, "EDAN35/fill_gbuffer.frag" } },
+	                                         fill_gbuffer_shader);
+	if (fill_gbuffer_shader == 0u) {
+		LogError("Failed to load G-buffer filling shader");
+		return;
+	}
+
+	GLuint fill_shadowmap_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/fill_shadowmap.vert" },
+	                                           { ShaderType::fragment, "EDAN35/fill_shadowmap.frag" } },
+	                                         fill_shadowmap_shader);
+	if (fill_shadowmap_shader == 0u) {
+		LogError("Failed to load shadowmap filling shader");
+		return;
+	}
+
+	GLuint accumulate_lights_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/accumulate_lights.vert" },
+	                                           { ShaderType::fragment, "EDAN35/accumulate_lights.frag" } },
+	                                         accumulate_lights_shader);
+	if (accumulate_lights_shader == 0u) {
+		LogError("Failed to load lights accumulating shader");
+		return;
+	}
+
+	GLuint resolve_deferred_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/resolve_deferred.vert" },
+	                                           { ShaderType::fragment, "EDAN35/resolve_deferred.frag" } },
+	                                         resolve_deferred_shader);
+	if (resolve_deferred_shader == 0u) {
+		LogError("Failed to load deferred resolution shader");
+		return;
+	}
 
 	auto const set_uniforms = [](GLuint /*program*/){};
 
@@ -270,7 +293,7 @@ edan35::Assignment2::run()
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		if (inputHandler->GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
-			reload_shaders();
+			program_manager.ReloadAllPrograms();
 		}
 
 

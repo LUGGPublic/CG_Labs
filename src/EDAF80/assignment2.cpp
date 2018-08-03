@@ -11,6 +11,7 @@
 #include "core/LogView.h"
 #include "core/Misc.h"
 #include "core/node.hpp"
+#include "core/ShaderProgramManager.hpp"
 #include "core/utils.h"
 #include "core/Window.h"
 #include <imgui.h>
@@ -79,26 +80,36 @@ edaf80::Assignment2::run()
 	window->SetCamera(&mCamera);
 
 	// Create the shader programs
-	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
+	ShaderProgramManager program_manager;
+	GLuint fallback_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/fallback.vert" },
+	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
+	                                         fallback_shader);
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
 		return;
 	}
-	auto diffuse_shader = bonobo::createProgram("diffuse.vert", "diffuse.frag");
-	if (diffuse_shader == 0u) {
+
+	GLuint diffuse_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/diffuse.vert" },
+	                                           { ShaderType::fragment, "EDAF80/diffuse.frag" } },
+	                                         diffuse_shader);
+	if (diffuse_shader == 0u)
 		LogError("Failed to load diffuse shader");
-		return;
-	}
-	auto normal_shader = bonobo::createProgram("normal.vert", "normal.frag");
-	if (normal_shader == 0u) {
+
+	GLuint normal_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/normal.vert" },
+	                                           { ShaderType::fragment, "EDAF80/normal.frag" } },
+	                                         normal_shader);
+	if (normal_shader == 0u)
 		LogError("Failed to load normal shader");
-		return;
-	}
-	auto texcoord_shader = bonobo::createProgram("texcoord.vert", "texcoord.frag");
-	if (texcoord_shader == 0u) {
+
+	GLuint texcoord_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/texcoord.vert" },
+	                                           { ShaderType::fragment, "EDAF80/texcoord.frag" } },
+	                                         texcoord_shader);
+	if (texcoord_shader == 0u)
 		LogError("Failed to load texcoord shader");
-		return;
-	}
 
 	auto const light_position = glm::vec3(-2.0f, 4.0f, 2.0f);
 	auto const set_uniforms = [&light_position](GLuint program){
@@ -221,15 +232,6 @@ edaf80::Assignment2::run()
 		window->Swap();
 		lastTime = nowTime;
 	}
-
-	glDeleteProgram(texcoord_shader);
-	normal_shader = 0u;
-	glDeleteProgram(normal_shader);
-	normal_shader = 0u;
-	glDeleteProgram(diffuse_shader);
-	diffuse_shader = 0u;
-	glDeleteProgram(fallback_shader);
-	diffuse_shader = 0u;
 }
 
 int main()

@@ -11,6 +11,7 @@
 #include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/opengl.hpp"
+#include "core/ShaderProgramManager.hpp"
 #include "core/utils.h"
 #include "core/various.hpp"
 #include "core/Window.h"
@@ -74,7 +75,11 @@ edaf80::Assignment1::run()
 	window->SetCamera(&mCamera);
 
 	// Create the shader program
-	auto shader = bonobo::createProgram("default.vert", "default.frag");
+	ShaderProgramManager program_manager;
+	GLuint shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/default.vert" },
+	                                           { ShaderType::fragment, "EDAF80/default.frag" } },
+	                                         shader);
 	if (shader == 0u) {
 		LogError("Failed to load shader");
 		return;
@@ -179,9 +184,6 @@ edaf80::Assignment1::run()
 		window->Swap();
 		lastTime = nowTime;
 	}
-
-	glDeleteProgram(shader);
-	shader = 0u;
 }
 
 int main()

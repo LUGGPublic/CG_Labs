@@ -9,6 +9,7 @@
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
+#include "core/ShaderProgramManager.hpp"
 #include "core/utils.h"
 #include "core/Window.h"
 #include <imgui.h>
@@ -57,18 +58,20 @@ edaf80::Assignment5::run()
 	window->SetCamera(&mCamera);
 
 	// Create the shader programs
-	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
+	ShaderProgramManager program_manager;
+	GLuint fallback_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/fallback.vert" },
+	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
+	                                         fallback_shader);
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
 		return;
 	}
-	auto const reload_shaders = [](){
-		//
-		// Todo: Insert the creation of other shader programs.
-		//       (Check how it was done in assignment 3.)
-		//
-	};
-	reload_shaders();
+
+	//
+	// Todo: Insert the creation of other shader programs.
+	//       (Check how it was done in assignment 3.)
+	//
 
 	//
 	// Todo: Load your geometry
@@ -117,7 +120,7 @@ edaf80::Assignment5::run()
 		// Todo: If you need to handle inputs, you can do it here
 		//
 		if (inputHandler->GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
-			reload_shaders();
+			program_manager.ReloadAllPrograms();
 		}
 
 
@@ -146,11 +149,6 @@ edaf80::Assignment5::run()
 		window->Swap();
 		lastTime = nowTime;
 	}
-
-	//
-	// Todo: Do not forget to delete your shader programs, by calling
-	//       `glDeleteProgram($your_shader_program)` for each of them.
-	//
 }
 
 int main()
