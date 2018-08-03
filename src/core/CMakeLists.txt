@@ -16,6 +16,7 @@ set (
 	"LogView.cpp"
 	"Misc.cpp"
 	"opengl.cpp"
+	"ShaderProgramManager.cpp"
 	"Types.cpp"
 	"various.cpp"
 	"Window.cpp"
