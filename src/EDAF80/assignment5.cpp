@@ -1,11 +1,9 @@
 #include "assignment5.hpp"
 
 #include "config.hpp"
-#include "external/glad/glad.h"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/InputHandler.h"
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
@@ -30,15 +28,11 @@ edaf80::Assignment5::Assignment5()
 		Log::View::Destroy();
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
-	inputHandler = new InputHandler();
-	window->SetInputHandler(inputHandler);
+	window->SetInputHandler(&inputHandler);
 }
 
 edaf80::Assignment5::~Assignment5()
 {
-	delete inputHandler;
-	inputHandler = nullptr;
-
 	Window::Destroy(window);
 	window = nullptr;
 
@@ -103,15 +97,15 @@ edaf80::Assignment5::run()
 		fpsSamples++;
 
 		auto& io = ImGui::GetIO();
-		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
+		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
-		inputHandler->Advance();
-		mCamera.Update(ddeltatime, *inputHandler);
+		inputHandler.Advance();
+		mCamera.Update(ddeltatime, inputHandler);
 
-		if (inputHandler->GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
-		if (inputHandler->GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
 
 		ImGui_ImplGlfwGL3_NewFrame();
@@ -119,7 +113,7 @@ edaf80::Assignment5::run()
 		//
 		// Todo: If you need to handle inputs, you can do it here
 		//
-		if (inputHandler->GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
+		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			program_manager.ReloadAllPrograms();
 		}
 

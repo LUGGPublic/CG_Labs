@@ -1,7 +1,9 @@
 #pragma once
 
+#include "external/glad/glad.h"
+#include "core/InputHandler.h"
 
-class InputHandler;
+
 class Window;
 
 
@@ -27,7 +29,7 @@ namespace edaf80
 		void run();
 
 	private:
-		InputHandler *inputHandler;
+		InputHandler  inputHandler;
 		Window       *window;
 	};
 }

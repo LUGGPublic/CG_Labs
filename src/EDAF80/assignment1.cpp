@@ -1,11 +1,9 @@
 #include "assignment1.hpp"
 
 #include "config.hpp"
-#include "external/glad/glad.h"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/InputHandler.h"
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
@@ -41,15 +39,11 @@ edaf80::Assignment1::Assignment1()
 		Log::View::Destroy();
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
-	inputHandler = new InputHandler();
-	window->SetInputHandler(inputHandler);
+	window->SetInputHandler(&inputHandler);
 }
 
 edaf80::Assignment1::~Assignment1()
 {
-	delete inputHandler;
-	inputHandler = nullptr;
-
 	Window::Destroy(window);
 	window = nullptr;
 
@@ -124,15 +118,15 @@ edaf80::Assignment1::run()
 		fpsSamples++;
 
 		auto& io = ImGui::GetIO();
-		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
+		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
-		inputHandler->Advance();
-		mCamera.Update(ddeltatime, *inputHandler);
+		inputHandler.Advance();
+		mCamera.Update(ddeltatime, inputHandler);
 
-		if (inputHandler->GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
-		if (inputHandler->GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
 
 		ImGui_ImplGlfwGL3_NewFrame();

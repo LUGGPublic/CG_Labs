@@ -3,10 +3,8 @@
 #include "parametric_shapes.hpp"
 
 #include "config.hpp"
-#include "external/glad/glad.h"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
-#include "core/InputHandler.h"
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
@@ -47,15 +45,11 @@ edaf80::Assignment2::Assignment2()
 		Log::View::Destroy();
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
-	inputHandler = new InputHandler();
-	window->SetInputHandler(inputHandler);
+	window->SetInputHandler(&inputHandler);
 }
 
 edaf80::Assignment2::~Assignment2()
 {
-	delete inputHandler;
-	inputHandler = nullptr;
-
 	Window::Destroy(window);
 	window = nullptr;
 
@@ -160,33 +154,33 @@ edaf80::Assignment2::run()
 		fpsSamples++;
 
 		auto& io = ImGui::GetIO();
-		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
+		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
-		inputHandler->Advance();
-		mCamera.Update(ddeltatime, *inputHandler);
+		inputHandler.Advance();
+		mCamera.Update(ddeltatime, inputHandler);
 
-		if (inputHandler->GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
-		if (inputHandler->GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
 
-		if (inputHandler->GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
+		if (inputHandler.GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
 			circle_rings.set_program(fallback_shader, set_uniforms);
 		}
-		if (inputHandler->GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
+		if (inputHandler.GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
 			circle_rings.set_program(diffuse_shader, set_uniforms);
 		}
-		if (inputHandler->GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
+		if (inputHandler.GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
 			circle_rings.set_program(normal_shader, set_uniforms);
 		}
-		if (inputHandler->GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
+		if (inputHandler.GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
 			circle_rings.set_program(texcoord_shader, set_uniforms);
 		}
-		if (inputHandler->GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
+		if (inputHandler.GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
 			polygon_mode = get_next_mode(polygon_mode);
 		}
 		switch (polygon_mode) {
