@@ -106,6 +106,9 @@ edaf80::Assignment1::run()
 	double nowTime, lastTime = GetTimeSeconds();
 	double fpsNextTick = lastTime + 1.0;
 
+	bool show_logs = true;
+	bool show_gui = true;
+
 	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
 		nowTime = GetTimeSeconds();
 		ddeltatime = nowTime - lastTime;
@@ -121,6 +124,11 @@ edaf80::Assignment1::run()
 		glfwPollEvents();
 		inputHandler->Advance();
 		mCamera.Update(ddeltatime, *inputHandler);
+
+		if (inputHandler->GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+			show_logs = !show_logs;
+		if (inputHandler->GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+			show_gui = !show_gui;
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
@@ -163,8 +171,10 @@ edaf80::Assignment1::run()
 			}
 		} while (!node_stack.empty());
 
-		Log::View::Render();
-		ImGui::Render();
+		if (show_logs)
+			Log::View::Render();
+		if (show_gui)
+			ImGui::Render();
 
 		window->Swap();
 		lastTime = nowTime;

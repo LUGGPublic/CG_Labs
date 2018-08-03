@@ -241,6 +241,9 @@ edan35::Assignment2::run()
 	double fpsNextTick = lastTime + 1000.0;
 	bool show_textures = true;
 
+	bool show_logs = true;
+	bool show_gui = true;
+
 	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
 		nowTime = GetTimeMilliseconds();
 		ddeltatime = nowTime - lastTime;
@@ -258,6 +261,11 @@ edan35::Assignment2::run()
 		glfwPollEvents();
 		inputHandler->Advance();
 		mCamera.Update(ddeltatime, *inputHandler);
+
+		if (inputHandler->GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+			show_logs = !show_logs;
+		if (inputHandler->GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+			show_gui = !show_gui;
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
@@ -425,7 +433,6 @@ edan35::Assignment2::run()
 		glViewport(0, 0, window_size.x, window_size.y);
 
 		GLStateInspection::View::Render();
-		Log::View::Render();
 
 		bool opened = ImGui::Begin("Render Time", nullptr, ImVec2(120, 50), -1.0f, 0);
 		if (opened)
@@ -440,7 +447,10 @@ edan35::Assignment2::run()
 		}
 		ImGui::End();
 
-		ImGui::Render();
+		if (show_logs)
+			Log::View::Render();
+		if (show_gui)
+			ImGui::Render();
 
 		window->Swap();
 		lastTime = nowTime;

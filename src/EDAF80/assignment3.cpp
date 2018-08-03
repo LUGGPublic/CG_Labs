@@ -146,6 +146,9 @@ edaf80::Assignment3::run()
 	double nowTime, lastTime = GetTimeMilliseconds();
 	double fpsNextTick = lastTime + 1000.0;
 
+	bool show_logs = true;
+	bool show_gui = true;
+
 	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
 		nowTime = GetTimeMilliseconds();
 		ddeltatime = nowTime - lastTime;
@@ -181,6 +184,10 @@ edaf80::Assignment3::run()
 		}
 		if (inputHandler->GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			reload_shaders();
+		if (inputHandler->GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+			show_logs = !show_logs;
+		if (inputHandler->GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+			show_gui = !show_gui;
 		}
 		switch (polygon_mode) {
 			case polygon_mode_t::fill:
@@ -206,8 +213,6 @@ edaf80::Assignment3::run()
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		Log::View::Render();
-
 		bool opened = ImGui::Begin("Scene Control", &opened, ImVec2(300, 100), -1.0f, 0);
 		if (opened) {
 			ImGui::ColorEdit3("Ambient", glm::value_ptr(ambient));
@@ -223,7 +228,10 @@ edaf80::Assignment3::run()
 			ImGui::Text("%.3f ms", ddeltatime);
 		ImGui::End();
 
-		ImGui::Render();
+		if (show_logs)
+			Log::View::Render();
+		if (show_gui)
+			ImGui::Render();
 
 		window->Swap();
 		lastTime = nowTime;
