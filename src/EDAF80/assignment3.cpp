@@ -72,7 +72,7 @@ edaf80::Assignment3::run()
 	}
 
 	// Set up the camera
-	FPSCameraf mCamera(bonobo::pi / 4.0f,
+	FPSCameraf mCamera(0.5f * glm::half_pi<float>(),
 	                   static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
 	                   0.01f, 1000.0f);
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));

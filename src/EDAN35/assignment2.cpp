@@ -112,7 +112,7 @@ edan35::Assignment2::run()
 	//
 	// Setup the camera
 	//
-	FPSCameraf mCamera(bonobo::pi / 4.0f,
+	FPSCameraf mCamera(0.5f * glm::half_pi<float>(),
 	                   static_cast<float>(window_size.x) / static_cast<float>(window_size.y),
 	                   1.0f, 10000.0f);
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 100.0f, 180.0f));
@@ -223,7 +223,7 @@ edan35::Assignment2::run()
 	TRSTransform<f32, glm::defaultp> lightOffsetTransform = TRSTransform<f32, glm::defaultp>();
 	lightOffsetTransform.SetTranslate(glm::vec3(0.0f, 0.0f, -40.0f));
 
-	auto lightProjection = glm::perspective(bonobo::pi * 0.5f,
+	auto lightProjection = glm::perspective(0.5f * glm::pi<float>(),
 	                                        static_cast<float>(constant::shadowmap_res_x) / static_cast<float>(constant::shadowmap_res_y),
 	                                        1.0f, 10000.0f);
 

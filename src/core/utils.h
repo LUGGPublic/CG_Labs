@@ -20,9 +20,3 @@ minElementIndex(glm::tvec3<T, P> const& vector)
 {
 	return (vector.x < vector.z) ? vector.y >= vector.x : 2 * (vector.z > vector.y);
 }
-
-
-namespace bonobo {
-	constexpr float pi = 3.1415926535897932385f;
-	constexpr float two_pi = 2.0f * pi;
-}
