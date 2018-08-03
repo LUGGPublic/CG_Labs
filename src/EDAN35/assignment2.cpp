@@ -432,7 +432,7 @@ edan35::Assignment2::run()
 			ImGui::Text("%.3f ms", ddeltatime);
 		ImGui::End();
 
-		opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(120, 50), -1.0f, 0);
+		opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(350, 100), -1.0f, 0);
 		if (opened) {
 			ImGui::Checkbox("Pause lights", &are_lights_paused);
 			ImGui::SliderInt("Number of lights", &lights_nb, 1, static_cast<int>(constant::lights_nb));
