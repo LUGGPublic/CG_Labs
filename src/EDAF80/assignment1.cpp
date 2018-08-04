@@ -12,11 +12,9 @@
 #include "core/ShaderProgramManager.hpp"
 #include "core/utils.h"
 #include "core/various.hpp"
-#include "core/Window.h"
 #include <imgui.h>
 #include "external/imgui_impl_glfw_gl3.h"
 
-#include <GLFW/glfw3.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -29,24 +27,30 @@
 #include <vector>
 
 
-edaf80::Assignment1::Assignment1()
+edaf80::Assignment1::Assignment1() :
+	mCamera(0.5f * glm::half_pi<float>(),
+	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
+	        0.01f, 1000.0f),
+	inputHandler(), mWindowManager(), window(nullptr)
 {
 	Log::View::Init();
 
-	window = Window::Create("EDAF80: Assignment 1", config::resolution_x,
-	                        config::resolution_y, config::msaa_rate, false);
+	// Set up the camera
+	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
+	mCamera.mMouseSensitivity = 0.003f;
+	mCamera.mMovementSpeed = 0.25f * 12.0f;
+
+	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
+
+	window = mWindowManager.CreateWindow("EDAF80: Assignment 1", window_datum, config::msaa_rate);
 	if (window == nullptr) {
 		Log::View::Destroy();
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
-	window->SetInputHandler(&inputHandler);
 }
 
 edaf80::Assignment1::~Assignment1()
 {
-	Window::Destroy(window);
-	window = nullptr;
-
 	Log::View::Destroy();
 }
 
@@ -58,15 +62,6 @@ edaf80::Assignment1::run()
 	if (objects.empty())
 		return;
 	auto const& sphere = objects.front();
-
-	// Set up the camera
-	FPSCameraf mCamera(0.5f * glm::half_pi<float>(),
-	                   static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
-	                   0.01f, 1000.0f);
-	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
-	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 0.25f * 12.0f;
-	window->SetCamera(&mCamera);
 
 	// Create the shader program
 	ShaderProgramManager program_manager;
@@ -108,7 +103,7 @@ edaf80::Assignment1::run()
 	bool show_logs = true;
 	bool show_gui = true;
 
-	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
+	while (!glfwWindowShouldClose(window)) {
 		nowTime = GetTimeSeconds();
 		ddeltatime = nowTime - lastTime;
 		if (nowTime > fpsNextTick) {
@@ -128,6 +123,8 @@ edaf80::Assignment1::run()
 			show_logs = !show_logs;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F) & JUST_RELEASED)
+			mWindowManager.ToggleFullscreenStatusForWindow(window);
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
@@ -138,8 +135,9 @@ edaf80::Assignment1::run()
 		sun.set_translation(glm::vec3(std::sin(nowTime), 0.0f, 0.0f));
 
 
-		auto const window_size = window->GetDimensions();
-		glViewport(0, 0, window_size.x, window_size.y);
+		int framebuffer_width, framebuffer_height;
+		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
 		glClearDepthf(1.0f);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -175,7 +173,7 @@ edaf80::Assignment1::run()
 		if (show_gui)
 			ImGui::Render();
 
-		window->Swap();
+		glfwSwapBuffers(window);
 		lastTime = nowTime;
 	}
 }
