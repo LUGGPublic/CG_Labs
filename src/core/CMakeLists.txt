@@ -19,7 +19,6 @@ set (
 	"ShaderProgramManager.cpp"
 	"Types.cpp"
 	"various.cpp"
-	"Window.cpp"
 	"WindowManager.cpp"
 
 	"node.cpp"
