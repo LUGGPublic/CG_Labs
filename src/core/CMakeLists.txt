@@ -20,6 +20,7 @@ set (
 	"Types.cpp"
 	"various.cpp"
 	"Window.cpp"
+	"WindowManager.cpp"
 
 	"node.cpp"
 	"node.hpp"
