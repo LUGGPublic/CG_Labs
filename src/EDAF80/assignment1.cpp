@@ -123,8 +123,6 @@ edaf80::Assignment1::run()
 			show_logs = !show_logs;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
-		if (inputHandler.GetKeycodeState(GLFW_KEY_F) & JUST_RELEASED)
-			mWindowManager.ToggleFullscreenStatusForWindow(window);
 
 		ImGui_ImplGlfwGL3_NewFrame();
 

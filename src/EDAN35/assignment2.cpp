@@ -12,12 +12,9 @@
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 #include "core/utils.h"
-#include "core/Window.h"
 #include <imgui.h>
 #include "external/imgui_impl_glfw_gl3.h"
 
-#include "external/glad/glad.h"
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -50,17 +47,21 @@ namespace constant
 
 static bonobo::mesh_data loadCone();
 
-edan35::Assignment2::Assignment2()
+edan35::Assignment2::Assignment2() :
+	mCamera(0.5f * glm::half_pi<float>(),
+	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
+	        0.01f, 1000.0f),
+	inputHandler(), mWindowManager(), window(nullptr)
 {
 	Log::View::Init();
 
-	window = Window::Create("EDAN35: Assignment 2", config::resolution_x,
-	                        config::resolution_y, config::msaa_rate, false, false);
+	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
+
+	window = mWindowManager.CreateWindow("EDAN35: Assignment 2", window_datum, config::msaa_rate);
 	if (window == nullptr) {
 		Log::View::Destroy();
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
-	window->SetInputHandler(&inputHandler);
 
 	GLStateInspection::Init();
 	GLStateInspection::View::Init();
@@ -74,9 +75,6 @@ edan35::Assignment2::~Assignment2()
 
 	GLStateInspection::View::Destroy();
 	GLStateInspection::Destroy();
-
-	Window::Destroy(window);
-	window = nullptr;
 
 	Log::View::Destroy();
 }
@@ -102,18 +100,12 @@ edan35::Assignment2::run()
 	Node cone;
 	cone.set_geometry(cone_geometry);
 
-	auto const window_size = window->GetDimensions();
-
 	//
 	// Setup the camera
 	//
-	FPSCameraf mCamera(0.5f * glm::half_pi<float>(),
-	                   static_cast<float>(window_size.x) / static_cast<float>(window_size.y),
-	                   1.0f, 10000.0f);
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 100.0f, 180.0f));
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 0.25f;
-	window->SetCamera(&mCamera);
 
 	//
 	// Load all the shader programs used
@@ -166,16 +158,18 @@ edan35::Assignment2::run()
 
 	auto const set_uniforms = [](GLuint /*program*/){};
 
+	int framebuffer_width, framebuffer_height;
+	glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
 
 	//
 	// Setup textures
 	//
-	auto const diffuse_texture                     = bonobo::createTexture(window_size.x, window_size.y);
-	auto const specular_texture                    = bonobo::createTexture(window_size.x, window_size.y);
-	auto const normal_texture                      = bonobo::createTexture(window_size.x, window_size.y);
-	auto const light_diffuse_contribution_texture  = bonobo::createTexture(window_size.x, window_size.y);
-	auto const light_specular_contribution_texture = bonobo::createTexture(window_size.x, window_size.y);
-	auto const depth_texture                       = bonobo::createTexture(window_size.x, window_size.y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+	auto const diffuse_texture                     = bonobo::createTexture(framebuffer_width, framebuffer_height);
+	auto const specular_texture                    = bonobo::createTexture(framebuffer_width, framebuffer_height);
+	auto const normal_texture                      = bonobo::createTexture(framebuffer_width, framebuffer_height);
+	auto const light_diffuse_contribution_texture  = bonobo::createTexture(framebuffer_width, framebuffer_height);
+	auto const light_specular_contribution_texture = bonobo::createTexture(framebuffer_width, framebuffer_height);
+	auto const depth_texture                       = bonobo::createTexture(framebuffer_width, framebuffer_height, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
 	auto const shadowmap_texture                   = bonobo::createTexture(constant::shadowmap_res_x, constant::shadowmap_res_y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
 
 
@@ -261,7 +255,7 @@ edan35::Assignment2::run()
 	bool show_logs = true;
 	bool show_gui = true;
 
-	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
+	while (!glfwWindowShouldClose(window)) {
 		nowTime = GetTimeMilliseconds();
 		ddeltatime = nowTime - lastTime;
 		if (nowTime > fpsNextTick) {
@@ -302,7 +296,9 @@ edan35::Assignment2::run()
 		auto const status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (status != GL_FRAMEBUFFER_COMPLETE)
 			LogError("Something went wrong with framebuffer %u", deferred_fbo);
-		glViewport(0, 0, window_size.x, window_size.y);
+		int framebuffer_width, framebuffer_height;
+		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		// XXX: Is any other clearing needed?
 
@@ -320,7 +316,7 @@ edan35::Assignment2::run()
 		glBindFramebuffer(GL_FRAMEBUFFER, light_fbo);
 		GLenum light_draw_buffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		glDrawBuffers(2, light_draw_buffers);
-		glViewport(0, 0, window_size.x, window_size.y);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
 		// XXX: Is any clearing needed?
 		for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
 			auto& lightTransform = lightTransforms[i];
@@ -351,13 +347,13 @@ edan35::Assignment2::run()
 			glBindFramebuffer(GL_FRAMEBUFFER, light_fbo);
 			glDrawBuffers(2, light_draw_buffers);
 			glUseProgram(accumulate_lights_shader);
-			glViewport(0, 0, window_size.x, window_size.y);
+			glViewport(0, 0, framebuffer_width, framebuffer_height);
 			// XXX: Is any clearing needed?
 
-			auto const spotlight_set_uniforms = [&window_size,&mCamera,&light_matrix,&lightColors,&lightTransform,&i](GLuint program){
+			auto const spotlight_set_uniforms = [framebuffer_width,framebuffer_height,this,&light_matrix,&lightColors,&lightTransform,&i](GLuint program){
 				glUniform2f(glGetUniformLocation(program, "inv_res"),
-				            1.0f / static_cast<float>(window_size.x),
-				            1.0f / static_cast<float>(window_size.y));
+				            1.0f / static_cast<float>(framebuffer_width),
+				            1.0f / static_cast<float>(framebuffer_height));
 				glUniformMatrix4fv(glGetUniformLocation(program, "view_projection_inverse"), 1, GL_FALSE,
 				                   glm::value_ptr(mCamera.GetClipToWorldMatrix()));
 				glUniform3fv(glGetUniformLocation(program, "camera_position"), 1,
@@ -401,7 +397,7 @@ edan35::Assignment2::run()
 		//
 		glBindFramebuffer(GL_FRAMEBUFFER, 0u);
 		glUseProgram(resolve_deferred_shader);
-		glViewport(0, 0, window_size.x, window_size.y);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
 		// XXX: Is any clearing needed?
 
 		bind_texture_with_sampler(GL_TEXTURE_2D, 0, resolve_deferred_shader, "diffuse_texture", diffuse_texture, default_sampler);
@@ -436,18 +432,18 @@ edan35::Assignment2::run()
 		// Output content of the g-buffer as well as of the shadowmap, for debugging purposes
 		//
 		if (show_textures) {
-			bonobo::displayTexture({-0.95f, -0.95f}, {-0.55f, -0.55f}, diffuse_texture,                     default_sampler, {0, 1, 2, -1}, window_size);
-			bonobo::displayTexture({-0.45f, -0.95f}, {-0.05f, -0.55f}, specular_texture,                    default_sampler, {0, 1, 2, -1}, window_size);
-			bonobo::displayTexture({ 0.05f, -0.95f}, { 0.45f, -0.55f}, normal_texture,                      default_sampler, {0, 1, 2, -1}, window_size);
-			bonobo::displayTexture({ 0.55f, -0.95f}, { 0.95f, -0.55f}, depth_texture,                       default_sampler, {0, 0, 0, -1}, window_size, &mCamera);
-			bonobo::displayTexture({-0.95f,  0.55f}, {-0.55f,  0.95f}, shadowmap_texture,                   default_sampler, {0, 0, 0, -1}, window_size, &mCamera);
-			bonobo::displayTexture({-0.45f,  0.55f}, {-0.05f,  0.95f}, light_diffuse_contribution_texture,  default_sampler, {0, 1, 2, -1}, window_size);
-			bonobo::displayTexture({ 0.05f,  0.55f}, { 0.45f,  0.95f}, light_specular_contribution_texture, default_sampler, {0, 1, 2, -1}, window_size);
+			bonobo::displayTexture({-0.95f, -0.95f}, {-0.55f, -0.55f}, diffuse_texture,                     default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
+			bonobo::displayTexture({-0.45f, -0.95f}, {-0.05f, -0.55f}, specular_texture,                    default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
+			bonobo::displayTexture({ 0.05f, -0.95f}, { 0.45f, -0.55f}, normal_texture,                      default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
+			bonobo::displayTexture({ 0.55f, -0.95f}, { 0.95f, -0.55f}, depth_texture,                       default_sampler, {0, 0, 0, -1}, glm::uvec2(framebuffer_width, framebuffer_height), &mCamera);
+			bonobo::displayTexture({-0.95f,  0.55f}, {-0.55f,  0.95f}, shadowmap_texture,                   default_sampler, {0, 0, 0, -1}, glm::uvec2(framebuffer_width, framebuffer_height), &mCamera);
+			bonobo::displayTexture({-0.45f,  0.55f}, {-0.05f,  0.95f}, light_diffuse_contribution_texture,  default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
+			bonobo::displayTexture({ 0.05f,  0.55f}, { 0.45f,  0.95f}, light_specular_contribution_texture, default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 		}
 		//
 		// Reset viewport back to normal
 		//
-		glViewport(0, 0, window_size.x, window_size.y);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
 
 		GLStateInspection::View::Render();
 
@@ -469,7 +465,7 @@ edan35::Assignment2::run()
 		if (show_gui)
 			ImGui::Render();
 
-		window->Swap();
+		glfwSwapBuffers(window);
 		lastTime = nowTime;
 	}
 

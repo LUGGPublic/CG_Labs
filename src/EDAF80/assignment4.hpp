@@ -1,7 +1,8 @@
 #pragma once
 
-#include "external/glad/glad.h"
 #include "core/InputHandler.h"
+#include "core/FPSCamera.h"
+#include "core/WindowManager.hpp"
 
 
 class Window;
@@ -29,7 +30,9 @@ namespace edaf80
 		void run();
 
 	private:
+		FPSCameraf    mCamera;
 		InputHandler  inputHandler;
-		Window       *window;
+		WindowManager mWindowManager;
+		GLFWwindow    *window;
 	};
 }
