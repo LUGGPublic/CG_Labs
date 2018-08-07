@@ -5,9 +5,7 @@ project (bonobo
 	LANGUAGES CXX
 )
 
-set (
-	SOURCES
-
+add_library (${PROJECT_NAME}
 	"Bonobo.cpp"
 	"GLStateInspection.cpp"
 	"GLStateInspectionView.cpp"
@@ -27,8 +25,6 @@ set (
 	"helpers.hpp"
 )
 
-add_library (${PROJECT_NAME} ${SOURCES})
-
 target_include_directories (
 	${PROJECT_NAME}
 	PRIVATE
@@ -40,8 +36,6 @@ target_include_directories (
 	${PROJECT_NAME}
 	SYSTEM PRIVATE
 		${ASSIMP_INCLUDE_DIRS}
-		${IMGUI_INCLUDE_DIRS}
-		${GLM_INCLUDE_DIRS}
 		"${CMAKE_SOURCE_DIR}/src/external"
 )
 
@@ -51,9 +45,7 @@ set_target_properties (
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED ON
 		CXX_EXTENSIONS OFF
-		INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib
-		INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-target_link_libraries (${PROJECT_NAME} ${IMGUI_LIBRARY} external_libs glfw assimp ${LUGGCGL_EXTRA_LIBS})
+)
+target_link_libraries (${PROJECT_NAME} imgui::imgui external_libs glfw glm ${ASSIMP_LIBRARIES})
 
 install (TARGETS ${PROJECT_NAME} DESTINATION lib)
