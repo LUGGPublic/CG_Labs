@@ -10,7 +10,7 @@ trim_trailing_whitespace = true
 insert_final_newline = true
 
 # Tab indentation (no size specified)
-[{CMakeLists.txt,Makefile}]
+[{CMakeLists.txt,*.cmake,Makefile}]
 indent_style = tab
 
 # Tab indent (no size specified)
