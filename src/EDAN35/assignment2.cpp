@@ -12,12 +12,13 @@
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 #include "core/utils.h"
-#include <imgui.h>
-#include "external/imgui_impl_glfw_gl3.h"
 
+#include <imgui.h>
+#include <external/imgui_impl_glfw_gl3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <tinyfiledialogs.h>
 
 #include <array>
 #include <cstdlib>
@@ -254,6 +255,7 @@ edan35::Assignment2::run()
 
 	bool show_logs = true;
 	bool show_gui = true;
+	bool shader_reload_failed = false;
 
 	while (!glfwWindowShouldClose(window)) {
 		nowTime = GetTimeMilliseconds();
@@ -277,143 +279,148 @@ edan35::Assignment2::run()
 			show_logs = !show_logs;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
+			shader_reload_failed = !program_manager.ReloadAllPrograms();
+			if (shader_reload_failed)
+				tinyfd_notifyPopup("Shader Program Reload Error",
+				                   "An error occurred while reloading shader programs; see the logs for details.\n"
+				                   "Rendering is suspended until the issue is solved. Once fixed, just reload the shaders again.",
+				                   "error");
+		}
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
-		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
-			program_manager.ReloadAllPrograms();
-		}
 
-
-
-		glDepthFunc(GL_LESS);
-		//
-		// Pass 1: Render scene into the g-buffer
-		//
-		glBindFramebuffer(GL_FRAMEBUFFER, deferred_fbo);
-		GLenum const deferred_draw_buffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-		glDrawBuffers(3, deferred_draw_buffers);
-		auto const status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (status != GL_FRAMEBUFFER_COMPLETE)
-			LogError("Something went wrong with framebuffer %u", deferred_fbo);
-		int framebuffer_width, framebuffer_height;
-		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
-		glViewport(0, 0, framebuffer_width, framebuffer_height);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		// XXX: Is any other clearing needed?
-
-		GLStateInspection::CaptureSnapshot("Filling Pass");
-
-		for (auto const& element : sponza_elements)
-			element.render(mCamera.GetWorldToClipMatrix(), element.get_transform(), fill_gbuffer_shader, set_uniforms);
-
-
-
-		glCullFace(GL_FRONT);
-		//
-		// Pass 2: Generate shadowmaps and accumulate lights' contribution
-		//
-		glBindFramebuffer(GL_FRAMEBUFFER, light_fbo);
-		GLenum light_draw_buffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-		glDrawBuffers(2, light_draw_buffers);
-		glViewport(0, 0, framebuffer_width, framebuffer_height);
-		// XXX: Is any clearing needed?
-		for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
-			auto& lightTransform = lightTransforms[i];
-			lightTransform.SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
-
-			auto light_matrix = lightProjection * lightOffsetTransform.GetMatrixInverse() * lightTransform.GetMatrixInverse();
-
+		if (!shader_reload_failed) {
+			glDepthFunc(GL_LESS);
 			//
-			// Pass 2.1: Generate shadow map for light i
+			// Pass 1: Render scene into the g-buffer
 			//
-			glBindFramebuffer(GL_FRAMEBUFFER, shadowmap_fbo);
-			glViewport(0, 0, constant::shadowmap_res_x, constant::shadowmap_res_y);
-			// XXX: Is any clearing needed?
+			glBindFramebuffer(GL_FRAMEBUFFER, deferred_fbo);
+			GLenum const deferred_draw_buffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+			glDrawBuffers(3, deferred_draw_buffers);
+			auto const status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if (status != GL_FRAMEBUFFER_COMPLETE)
+				LogError("Something went wrong with framebuffer %u", deferred_fbo);
+			int framebuffer_width, framebuffer_height;
+			glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+			glViewport(0, 0, framebuffer_width, framebuffer_height);
+			glClear(GL_DEPTH_BUFFER_BIT);
+			// XXX: Is any other clearing needed?
 
-			GLStateInspection::CaptureSnapshot("Shadow Map Generation");
+			GLStateInspection::CaptureSnapshot("Filling Pass");
 
 			for (auto const& element : sponza_elements)
-				element.render(light_matrix, glm::mat4(1.0f), fill_gbuffer_shader, set_uniforms);
+				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform(), fill_gbuffer_shader, set_uniforms);
 
 
-			glEnable(GL_BLEND);
-			glDepthFunc(GL_GREATER);
-			glDepthMask(GL_FALSE);
-			glBlendEquationSeparate(GL_FUNC_ADD, GL_MIN);
-			glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+
+			glCullFace(GL_FRONT);
 			//
-			// Pass 2.2: Accumulate light i contribution
+			// Pass 2: Generate shadowmaps and accumulate lights' contribution
+			//
 			glBindFramebuffer(GL_FRAMEBUFFER, light_fbo);
+			GLenum light_draw_buffers[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 			glDrawBuffers(2, light_draw_buffers);
-			glUseProgram(accumulate_lights_shader);
+			glViewport(0, 0, framebuffer_width, framebuffer_height);
+			// XXX: Is any clearing needed?
+			for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
+				auto& lightTransform = lightTransforms[i];
+				lightTransform.SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+				auto light_matrix = lightProjection * lightOffsetTransform.GetMatrixInverse() * lightTransform.GetMatrixInverse();
+
+				//
+				// Pass 2.1: Generate shadow map for light i
+				//
+				glBindFramebuffer(GL_FRAMEBUFFER, shadowmap_fbo);
+				glViewport(0, 0, constant::shadowmap_res_x, constant::shadowmap_res_y);
+				// XXX: Is any clearing needed?
+
+				GLStateInspection::CaptureSnapshot("Shadow Map Generation");
+
+				for (auto const& element : sponza_elements)
+					element.render(light_matrix, glm::mat4(1.0f), fill_gbuffer_shader, set_uniforms);
+
+
+				glEnable(GL_BLEND);
+				glDepthFunc(GL_GREATER);
+				glDepthMask(GL_FALSE);
+				glBlendEquationSeparate(GL_FUNC_ADD, GL_MIN);
+				glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
+				//
+				// Pass 2.2: Accumulate light i contribution
+				glBindFramebuffer(GL_FRAMEBUFFER, light_fbo);
+				glDrawBuffers(2, light_draw_buffers);
+				glUseProgram(accumulate_lights_shader);
+				glViewport(0, 0, framebuffer_width, framebuffer_height);
+				// XXX: Is any clearing needed?
+
+				auto const spotlight_set_uniforms = [framebuffer_width,framebuffer_height,this,&light_matrix,&lightColors,&lightTransform,&i](GLuint program){
+					glUniform2f(glGetUniformLocation(program, "inv_res"),
+					            1.0f / static_cast<float>(framebuffer_width),
+					            1.0f / static_cast<float>(framebuffer_height));
+					glUniformMatrix4fv(glGetUniformLocation(program, "view_projection_inverse"), 1, GL_FALSE,
+					                   glm::value_ptr(mCamera.GetClipToWorldMatrix()));
+					glUniform3fv(glGetUniformLocation(program, "camera_position"), 1,
+					                   glm::value_ptr(mCamera.mWorld.GetTranslation()));
+					glUniformMatrix4fv(glGetUniformLocation(program, "shadow_view_projection"), 1, GL_FALSE,
+					                   glm::value_ptr(light_matrix));
+					glUniform3fv(glGetUniformLocation(program, "light_color"), 1, glm::value_ptr(lightColors[i]));
+					glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(lightTransform.GetTranslation()));
+					glUniform3fv(glGetUniformLocation(program, "light_direction"), 1, glm::value_ptr(lightTransform.GetFront()));
+					glUniform1f(glGetUniformLocation(program, "light_intensity"), constant::light_intensity);
+					glUniform1f(glGetUniformLocation(program, "light_angle_falloff"), constant::light_angle_falloff);
+					glUniform2f(glGetUniformLocation(program, "shadowmap_texel_size"),
+					            1.0f / static_cast<float>(constant::shadowmap_res_x),
+					            1.0f / static_cast<float>(constant::shadowmap_res_y));
+				};
+
+				bind_texture_with_sampler(GL_TEXTURE_2D, 0, accumulate_lights_shader, "depth_texture", depth_texture, depth_sampler);
+				bind_texture_with_sampler(GL_TEXTURE_2D, 1, accumulate_lights_shader, "normal_texture", normal_texture, default_sampler);
+				bind_texture_with_sampler(GL_TEXTURE_2D, 2, accumulate_lights_shader, "shadow_texture", shadowmap_texture, shadow_sampler);
+
+				GLStateInspection::CaptureSnapshot("Accumulating");
+
+				cone.render(mCamera.GetWorldToClipMatrix(),
+				            lightTransform.GetMatrix() * lightOffsetTransform.GetMatrix() * coneScaleTransform.GetMatrix(),
+				            accumulate_lights_shader, spotlight_set_uniforms);
+
+				glBindSampler(2u, 0u);
+				glBindSampler(1u, 0u);
+				glBindSampler(0u, 0u);
+
+				glDepthMask(GL_TRUE);
+				glDepthFunc(GL_LESS);
+				glDisable(GL_BLEND);
+			}
+
+
+			glCullFace(GL_BACK);
+			glDepthFunc(GL_ALWAYS);
+			//
+			// Pass 3: Compute final image using both the g-buffer and  the light accumulation buffer
+			//
+			glBindFramebuffer(GL_FRAMEBUFFER, 0u);
+			glUseProgram(resolve_deferred_shader);
 			glViewport(0, 0, framebuffer_width, framebuffer_height);
 			// XXX: Is any clearing needed?
 
-			auto const spotlight_set_uniforms = [framebuffer_width,framebuffer_height,this,&light_matrix,&lightColors,&lightTransform,&i](GLuint program){
-				glUniform2f(glGetUniformLocation(program, "inv_res"),
-				            1.0f / static_cast<float>(framebuffer_width),
-				            1.0f / static_cast<float>(framebuffer_height));
-				glUniformMatrix4fv(glGetUniformLocation(program, "view_projection_inverse"), 1, GL_FALSE,
-				                   glm::value_ptr(mCamera.GetClipToWorldMatrix()));
-				glUniform3fv(glGetUniformLocation(program, "camera_position"), 1,
-				                   glm::value_ptr(mCamera.mWorld.GetTranslation()));
-				glUniformMatrix4fv(glGetUniformLocation(program, "shadow_view_projection"), 1, GL_FALSE,
-				                   glm::value_ptr(light_matrix));
-				glUniform3fv(glGetUniformLocation(program, "light_color"), 1, glm::value_ptr(lightColors[i]));
-				glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(lightTransform.GetTranslation()));
-				glUniform3fv(glGetUniformLocation(program, "light_direction"), 1, glm::value_ptr(lightTransform.GetFront()));
-				glUniform1f(glGetUniformLocation(program, "light_intensity"), constant::light_intensity);
-				glUniform1f(glGetUniformLocation(program, "light_angle_falloff"), constant::light_angle_falloff);
-				glUniform2f(glGetUniformLocation(program, "shadowmap_texel_size"),
-				            1.0f / static_cast<float>(constant::shadowmap_res_x),
-				            1.0f / static_cast<float>(constant::shadowmap_res_y));
-			};
+			bind_texture_with_sampler(GL_TEXTURE_2D, 0, resolve_deferred_shader, "diffuse_texture", diffuse_texture, default_sampler);
+			bind_texture_with_sampler(GL_TEXTURE_2D, 1, resolve_deferred_shader, "specular_texture", specular_texture, default_sampler);
+			bind_texture_with_sampler(GL_TEXTURE_2D, 2, resolve_deferred_shader, "light_d_texture", light_diffuse_contribution_texture, default_sampler);
+			bind_texture_with_sampler(GL_TEXTURE_2D, 3, resolve_deferred_shader, "light_s_texture", light_specular_contribution_texture, default_sampler);
 
-			bind_texture_with_sampler(GL_TEXTURE_2D, 0, accumulate_lights_shader, "depth_texture", depth_texture, depth_sampler);
-			bind_texture_with_sampler(GL_TEXTURE_2D, 1, accumulate_lights_shader, "normal_texture", normal_texture, default_sampler);
-			bind_texture_with_sampler(GL_TEXTURE_2D, 2, accumulate_lights_shader, "shadow_texture", shadowmap_texture, shadow_sampler);
+			GLStateInspection::CaptureSnapshot("Resolve Pass");
 
-			GLStateInspection::CaptureSnapshot("Accumulating");
+			bonobo::drawFullscreen();
 
-			cone.render(mCamera.GetWorldToClipMatrix(),
-			            lightTransform.GetMatrix() * lightOffsetTransform.GetMatrix() * coneScaleTransform.GetMatrix(),
-			            accumulate_lights_shader, spotlight_set_uniforms);
-
-			glBindSampler(2u, 0u);
-			glBindSampler(1u, 0u);
-			glBindSampler(0u, 0u);
-
-			glDepthMask(GL_TRUE);
-			glDepthFunc(GL_LESS);
-			glDisable(GL_BLEND);
+			glBindSampler(3, 0u);
+			glBindSampler(2, 0u);
+			glBindSampler(1, 0u);
+			glBindSampler(0, 0u);
+			glUseProgram(0u);
 		}
-
-
-		glCullFace(GL_BACK);
-		glDepthFunc(GL_ALWAYS);
-		//
-		// Pass 3: Compute final image using both the g-buffer and  the light accumulation buffer
-		//
-		glBindFramebuffer(GL_FRAMEBUFFER, 0u);
-		glUseProgram(resolve_deferred_shader);
-		glViewport(0, 0, framebuffer_width, framebuffer_height);
-		// XXX: Is any clearing needed?
-
-		bind_texture_with_sampler(GL_TEXTURE_2D, 0, resolve_deferred_shader, "diffuse_texture", diffuse_texture, default_sampler);
-		bind_texture_with_sampler(GL_TEXTURE_2D, 1, resolve_deferred_shader, "specular_texture", specular_texture, default_sampler);
-		bind_texture_with_sampler(GL_TEXTURE_2D, 2, resolve_deferred_shader, "light_d_texture", light_diffuse_contribution_texture, default_sampler);
-		bind_texture_with_sampler(GL_TEXTURE_2D, 3, resolve_deferred_shader, "light_s_texture", light_specular_contribution_texture, default_sampler);
-
-		GLStateInspection::CaptureSnapshot("Resolve Pass");
-
-		bonobo::drawFullscreen();
-
-		glBindSampler(3, 0u);
-		glBindSampler(2, 0u);
-		glBindSampler(1, 0u);
-		glBindSampler(0, 0u);
-		glUseProgram(0u);
 
 
 		//

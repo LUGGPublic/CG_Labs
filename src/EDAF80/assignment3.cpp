@@ -11,12 +11,13 @@
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 #include "core/utils.h"
-#include <imgui.h>
-#include "external/imgui_impl_glfw_gl3.h"
 
+#include <imgui.h>
+#include <external/imgui_impl_glfw_gl3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <tinyfiledialogs.h>
 
 #include <cstdlib>
 #include <stdexcept>
@@ -141,6 +142,7 @@ edaf80::Assignment3::run()
 
 	bool show_logs = true;
 	bool show_gui = true;
+	bool shader_reload_failed = false;
 
 	while (!glfwWindowShouldClose(window)) {
 		nowTime = GetTimeMilliseconds();
@@ -175,8 +177,14 @@ edaf80::Assignment3::run()
 		if (inputHandler.GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
 			polygon_mode = get_next_mode(polygon_mode);
 		}
-		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED)
-			program_manager.ReloadAllPrograms();
+		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
+			shader_reload_failed = !program_manager.ReloadAllPrograms();
+			if (shader_reload_failed)
+				tinyfd_notifyPopup("Shader Program Reload Error",
+				                   "An error occurred while reloading shader programs; see the logs for details.\n"
+				                   "Rendering is suspended until the issue is solved. Once fixed, just reload the shaders again.",
+				                   "error");
+		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
@@ -201,8 +209,6 @@ edaf80::Assignment3::run()
 		glClearDepthf(1.0f);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-		circle_ring.render(mCamera.GetWorldToClipMatrix(), circle_ring.get_transform());
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

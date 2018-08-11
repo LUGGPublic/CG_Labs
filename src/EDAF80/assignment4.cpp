@@ -9,8 +9,10 @@
 #include "core/Misc.h"
 #include "core/ShaderProgramManager.hpp"
 #include "core/utils.h"
+
 #include <imgui.h>
-#include "external/imgui_impl_glfw_gl3.h"
+#include <external/imgui_impl_glfw_gl3.h>
+#include <tinyfiledialogs.h>
 
 #include <stdexcept>
 
@@ -79,6 +81,7 @@ edaf80::Assignment4::run()
 
 	bool show_logs = true;
 	bool show_gui = true;
+	bool shader_reload_failed = false;
 
 	while (!glfwWindowShouldClose(window)) {
 		nowTime = GetTimeMilliseconds();
@@ -100,15 +103,20 @@ edaf80::Assignment4::run()
 			show_logs = !show_logs;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
+			shader_reload_failed = !program_manager.ReloadAllPrograms();
+			if (shader_reload_failed)
+				tinyfd_notifyPopup("Shader Program Reload Error",
+				                   "An error occurred while reloading shader programs; see the logs for details.\n"
+				                   "Rendering is suspended until the issue is solved. Once fixed, just reload the shaders again.",
+				                   "error");
+		}
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		//
 		// Todo: If you need to handle inputs, you can do it here
 		//
-		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
-			program_manager.ReloadAllPrograms();
-		}
 
 
 		int framebuffer_width, framebuffer_height;
@@ -118,9 +126,11 @@ edaf80::Assignment4::run()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		//
-		// Todo: Render all your geometry here.
-		//
+		if (!shader_reload_failed) {
+			//
+			// Todo: Render all your geometry here.
+			//
+		}
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
