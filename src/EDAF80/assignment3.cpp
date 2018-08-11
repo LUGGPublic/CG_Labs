@@ -10,7 +10,6 @@
 #include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
-#include "core/utils.h"
 
 #include <imgui.h>
 #include <external/imgui_impl_glfw_gl3.h>

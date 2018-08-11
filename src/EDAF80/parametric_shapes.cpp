@@ -1,6 +1,5 @@
 #include "parametric_shapes.hpp"
 #include "core/Log.h"
-#include "core/utils.h"
 
 #include <glm/glm.hpp>
 

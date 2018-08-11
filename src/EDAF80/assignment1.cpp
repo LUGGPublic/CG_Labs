@@ -10,7 +10,6 @@
 #include "core/node.hpp"
 #include "core/opengl.hpp"
 #include "core/ShaderProgramManager.hpp"
-#include "core/utils.h"
 #include "core/various.hpp"
 #include <imgui.h>
 #include "external/imgui_impl_glfw_gl3.h"
