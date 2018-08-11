@@ -6,14 +6,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Node::Node() : _vao(0u), _vertices_nb(0u), _indices_nb(0u), _drawing_mode(GL_TRIANGLES), _has_indices(true), _program(0u), _textures(), _scaling(1.0f), _rotation(), _translation(), _children()
+Node::Node() : _vao(0u), _vertices_nb(0u), _indices_nb(0u), _drawing_mode(GL_TRIANGLES), _has_indices(true), _program(nullptr), _textures(), _scaling(1.0f), _rotation(), _translation(), _children()
 {
 }
 
 void
 Node::render(glm::mat4 const& WVP, glm::mat4 const& world) const
 {
-	render(WVP, world, _program, _set_uniforms);
+	if (_program != nullptr)
+		render(WVP, world, *_program, _set_uniforms);
 }
 
 void
@@ -73,8 +74,11 @@ Node::set_geometry(bonobo::mesh_data const& shape)
 }
 
 void
-Node::set_program(GLuint program, std::function<void (GLuint)> const& set_uniforms)
+Node::set_program(GLuint const* const program, std::function<void (GLuint)> const& set_uniforms)
 {
+	if (program == nullptr)
+		throw std::runtime_error("Node::set_program: program can not be nul.");
+
 	_program = program;
 	_set_uniforms = set_uniforms;
 }

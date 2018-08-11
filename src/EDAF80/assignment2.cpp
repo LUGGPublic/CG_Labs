@@ -114,7 +114,7 @@ edaf80::Assignment2::run()
 
 	auto circle_rings = Node();
 	circle_rings.set_geometry(shape);
-	circle_rings.set_program(fallback_shader, set_uniforms);
+	circle_rings.set_program(&fallback_shader, set_uniforms);
 
 
 	//! \todo Create a tesselated sphere and a tesselated torus
@@ -163,16 +163,16 @@ edaf80::Assignment2::run()
 
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
-			circle_rings.set_program(fallback_shader, set_uniforms);
+			circle_rings.set_program(&fallback_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
-			circle_rings.set_program(diffuse_shader, set_uniforms);
+			circle_rings.set_program(&diffuse_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
-			circle_rings.set_program(normal_shader, set_uniforms);
+			circle_rings.set_program(&normal_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
-			circle_rings.set_program(texcoord_shader, set_uniforms);
+			circle_rings.set_program(&texcoord_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
 			polygon_mode = get_next_mode(polygon_mode);

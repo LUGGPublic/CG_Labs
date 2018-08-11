@@ -124,7 +124,7 @@ edaf80::Assignment3::run()
 
 	auto circle_ring = Node();
 	circle_ring.set_geometry(circle_ring_shape);
-	circle_ring.set_program(fallback_shader, set_uniforms);
+	circle_ring.set_program(&fallback_shader, set_uniforms);
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -161,16 +161,16 @@ edaf80::Assignment3::run()
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
-			circle_ring.set_program(fallback_shader, set_uniforms);
+			circle_ring.set_program(&fallback_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
-			circle_ring.set_program(diffuse_shader, set_uniforms);
+			circle_ring.set_program(&diffuse_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
-			circle_ring.set_program(normal_shader, set_uniforms);
+			circle_ring.set_program(&normal_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
-			circle_ring.set_program(texcoord_shader, set_uniforms);
+			circle_ring.set_program(&texcoord_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
 			polygon_mode = get_next_mode(polygon_mode);

@@ -79,7 +79,7 @@ edaf80::Assignment1::run()
 
 	auto sun = Node();
 	sun.set_geometry(sphere);
-	sun.set_program(shader, [](GLuint /*program*/){});
+	sun.set_program(&shader, [](GLuint /*program*/){});
 	//
 	// Todo: Attach a texture to the sun
 	//
