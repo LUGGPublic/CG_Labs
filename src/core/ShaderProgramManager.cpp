@@ -46,13 +46,18 @@ void ShaderProgramManager::CreateAndRegisterComputeProgram(std::string const& fi
 	ProcessProgram(program_entries.back().second, program_entries.back().first);
 }
 
-void ShaderProgramManager::ReloadAllPrograms()
+bool ShaderProgramManager::ReloadAllPrograms()
 {
+	bool encountered_failures = false;
 	for (auto& i : program_entries) {
 		if (i.first != 0u)
 			glDeleteProgram(i.first);
+		i.first = 0u;
 		ProcessProgram(i.second, i.first);
+		encountered_failures |= i.first == 0u;
 	}
+
+	return !encountered_failures;
 }
 
 void ShaderProgramManager::ProcessProgram(ProgramData const& program_data, GLuint& program)

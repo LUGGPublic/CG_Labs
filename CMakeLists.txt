@@ -61,6 +61,9 @@ set (LUGGCGL_IMGUI_MIN_VERSION 1.51)
 include (CMake/InstallImGui.cmake)
 find_package (imgui ${LUGGCGL_IMGUI_MIN_VERSION} REQUIRED)
 
+# TinyFileDialogs is used for displaying error popups.
+include (CMake/InstallTinyFileDialogs.cmake)
+
 # Resources are found in an external archive
 include (CMake/RetrieveResourceArchive.cmake)
 
@@ -120,7 +123,7 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 
 	add_dependencies (${assignment_name} bonobo)
 
-	target_link_libraries (${assignment_name} bonobo imgui::imgui glm)
+	target_link_libraries (${assignment_name} bonobo imgui::imgui glm tinyfiledialogs::tinyfiledialogs)
 
 	install (TARGETS ${assignment_name} DESTINATION bin)
 endfunction ()

@@ -25,7 +25,7 @@ public:
 	~ShaderProgramManager();
 	void CreateAndRegisterProgram(ProgramData const& program_data, GLuint& program);
 	void CreateAndRegisterComputeProgram(std::string const& filename, GLuint& program);
-	void ReloadAllPrograms();
+	bool ReloadAllPrograms();
 
 private:
 	void ProcessProgram(ProgramData const& program_data, GLuint& program);
