@@ -13,7 +13,6 @@ set (
 	ASSIGNMENT1_SOURCES
 
 	"assignment1.cpp"
-	"assignment1.hpp"
 )
 
 set (
