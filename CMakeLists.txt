@@ -2,6 +2,7 @@
 # project() command, set the minimum required version to 3.0.
 cmake_minimum_required (VERSION 3.0)
 
+# Workaround for the lab computers
 if (WIN32)
 	set (LUGGCGL_TMP_DIR ${CMAKE_SOURCE_DIR}/../Temp)
 	if (NOT EXISTS ${LUGGCGL_TMP_DIR})
