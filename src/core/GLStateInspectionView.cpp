@@ -38,11 +38,11 @@ void GLStateInspection::View::Render()
 
 			std::stringstream snapshotOs;
 			int len = 0;
-	
+
 			ImGui::ListBox("Loc", &snapshotItem, (const char **) snapshotName, count);
 			GLStateInspection::ToString(snapshotOs, snapshotItem);
-			ImGui::TextWrapped(snapshotOs.str().c_str());
-	
+			ImGui::TextWrapped("%s", snapshotOs.str().c_str());
+
 			for (int i = 0; i < count; i++)
 				delete [] snapshotName[i];
 		}

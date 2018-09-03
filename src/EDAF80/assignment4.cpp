@@ -1,46 +1,39 @@
 #include "assignment4.hpp"
 
 #include "config.hpp"
-#include "external/glad/glad.h"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/InputHandler.h"
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
-#include "core/utils.h"
-#include "core/Window.h"
-#include <imgui.h>
-#include "external/imgui_impl_glfw_gl3.h"
+#include "core/ShaderProgramManager.hpp"
 
-#include "external/glad/glad.h"
-#include <GLFW/glfw3.h>
+#include <imgui.h>
+#include <external/imgui_impl_glfw_gl3.h>
+#include <tinyfiledialogs.h>
 
 #include <stdexcept>
 
-edaf80::Assignment4::Assignment4()
+edaf80::Assignment4::Assignment4() :
+	mCamera(0.5f * glm::half_pi<float>(),
+	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
+	        0.01f, 1000.0f),
+	inputHandler(), mWindowManager(), window(nullptr)
 {
 	Log::View::Init();
 
-	window = Window::Create("EDAF80: Assignment 4", config::resolution_x,
-	                        config::resolution_y, config::msaa_rate, false);
+	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
+
+	window = mWindowManager.CreateWindow("EDAF80: Assignment 4", window_datum, config::msaa_rate);
 	if (window == nullptr) {
 		Log::View::Destroy();
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
-	inputHandler = new InputHandler();
-	window->SetInputHandler(inputHandler);
 }
 
 edaf80::Assignment4::~Assignment4()
 {
-	delete inputHandler;
-	inputHandler = nullptr;
-
-	Window::Destroy(window);
-	window = nullptr;
-
 	Log::View::Destroy();
 }
 
@@ -48,27 +41,25 @@ void
 edaf80::Assignment4::run()
 {
 	// Set up the camera
-	FPSCameraf mCamera(bonobo::pi / 4.0f,
-	                   static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
-	                   0.01f, 1000.0f);
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 0.025;
-	window->SetCamera(&mCamera);
 
 	// Create the shader programs
-	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
+	ShaderProgramManager program_manager;
+	GLuint fallback_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/fallback.vert" },
+	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
+	                                         fallback_shader);
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
 		return;
 	}
-	auto const reload_shaders = [](){
-		//
-		// Todo: Insert the creation of other shader programs.
-		//       (Check how it was done in assignment 3.)
-		//
-	};
-	reload_shaders();
+
+	//
+	// Todo: Insert the creation of other shader programs.
+	//       (Check how it was done in assignment 3.)
+	//
 
 	//
 	// Todo: Load your geometry
@@ -87,7 +78,11 @@ edaf80::Assignment4::run()
 	double nowTime, lastTime = GetTimeMilliseconds();
 	double fpsNextTick = lastTime + 1000.0;
 
-	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
+	bool show_logs = true;
+	bool show_gui = true;
+	bool shader_reload_failed = false;
+
+	while (!glfwWindowShouldClose(window)) {
 		nowTime = GetTimeMilliseconds();
 		ddeltatime = nowTime - lastTime;
 		if (nowTime > fpsNextTick) {
@@ -97,51 +92,60 @@ edaf80::Assignment4::run()
 		fpsSamples++;
 
 		auto& io = ImGui::GetIO();
-		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureMouse);
+		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
-		inputHandler->Advance();
-		mCamera.Update(ddeltatime, *inputHandler);
+		inputHandler.Advance();
+		mCamera.Update(ddeltatime, inputHandler);
+
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+			show_logs = !show_logs;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+			show_gui = !show_gui;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
+			shader_reload_failed = !program_manager.ReloadAllPrograms();
+			if (shader_reload_failed)
+				tinyfd_notifyPopup("Shader Program Reload Error",
+				                   "An error occurred while reloading shader programs; see the logs for details.\n"
+				                   "Rendering is suspended until the issue is solved. Once fixed, just reload the shaders again.",
+				                   "error");
+		}
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		//
 		// Todo: If you need to handle inputs, you can do it here
 		//
-		if (inputHandler->GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
-			reload_shaders();
-		}
 
 
-		auto const window_size = window->GetDimensions();
-		glViewport(0, 0, window_size.x, window_size.y);
+		int framebuffer_width, framebuffer_height;
+		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
 		glClearDepthf(1.0f);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		//
-		// Todo: Render all your geometry here.
-		//
+		if (!shader_reload_failed) {
+			//
+			// Todo: Render all your geometry here.
+			//
+		}
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-		Log::View::Render();
 
 		//
 		// Todo: If you want a custom ImGUI window, you can set it up
 		//       here
 		//
 
-		ImGui::Render();
+		if (show_logs)
+			Log::View::Render();
+		if (show_gui)
+			ImGui::Render();
 
-		window->Swap();
+		glfwSwapBuffers(window);
 		lastTime = nowTime;
 	}
-
-	//
-	// Todo: Do not forget to delete your shader programs, by calling
-	//       `glDeleteProgram($your_shader_program)` for each of them.
-	//
 }
 
 int main()

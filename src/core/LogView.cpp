@@ -73,7 +73,7 @@ void Log::View::Render()
 		if (mLen[pos] == 0 || !filter.PassFilter(mBuffer[pos]))
 			continue;
 		ImGui::PushStyleColor(ImGuiCol_Text, logViewTypeColor[mType[pos]]);
-		ImGui::TextWrapped(mBuffer[pos]);
+		ImGui::TextWrapped("%s", mBuffer[pos]);
 		ImGui::PopStyleColor();
 	}
 

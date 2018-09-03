@@ -1,188 +1,207 @@
-#include "assignment1.hpp"
-
 #include "config.hpp"
-#include "external/glad/glad.h"
-#include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/InputHandler.h"
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
 #include "core/node.hpp"
-#include "core/opengl.hpp"
-#include "core/utils.h"
-#include "core/various.hpp"
-#include "core/Window.h"
+#include "core/ShaderProgramManager.hpp"
+#include "core/WindowManager.hpp"
+
 #include <imgui.h>
-#include "external/imgui_impl_glfw_gl3.h"
+#include <external/imgui_impl_glfw_gl3.h>
 
-#include <GLFW/glfw3.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
-#include <array>
-#include <chrono>
-#include <cstdlib>
-#include <unordered_map>
 #include <stack>
-#include <stdexcept>
-#include <vector>
+
+#include <cstdlib>
 
 
-edaf80::Assignment1::Assignment1()
+int main()
 {
+	Log::Init();
 	Log::View::Init();
 
-	window = Window::Create("EDAF80: Assignment 1", config::resolution_x,
-	                        config::resolution_y, config::msaa_rate, false);
+	InputHandler input_handler;
+	FPSCameraf camera(0.5f * glm::half_pi<float>(),
+	                  static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
+	                  0.01f, 1000.0f);
+	camera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
+	camera.mMouseSensitivity = 0.003f;
+	camera.mMovementSpeed = 0.25f * 12.0f;
+
+	WindowManager window_manager;
+	WindowManager::WindowDatum window_datum{ input_handler, camera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
+	GLFWwindow* window = window_manager.CreateWindow("EDAF80: Assignment 1", window_datum, config::msaa_rate);
 	if (window == nullptr) {
+		LogError("Failed to get a window: exiting.");
+
 		Log::View::Destroy();
-		throw std::runtime_error("Failed to get a window: aborting!");
+		Log::Destroy();
+
+		return EXIT_FAILURE;
 	}
-	inputHandler = new InputHandler();
-	window->SetInputHandler(inputHandler);
-}
 
-edaf80::Assignment1::~Assignment1()
-{
-	delete inputHandler;
-	inputHandler = nullptr;
-
-	Window::Destroy(window);
-	window = nullptr;
-
-	Log::View::Destroy();
-}
-
-void
-edaf80::Assignment1::run()
-{
+	//
 	// Load the sphere geometry
-	auto const objects = bonobo::loadObjects("sphere.obj");
-	if (objects.empty())
-		return;
-	auto const& sphere = objects.front();
+	//
+	std::vector<bonobo::mesh_data> const objects = bonobo::loadObjects("sphere.obj");
+	if (objects.empty()) {
+		LogError("Failed to load the sphere geometry: exiting.");
 
-	// Set up the camera
-	FPSCameraf mCamera(bonobo::pi / 4.0f,
-	                   static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
-	                   0.01f, 1000.0f);
-	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
-	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 0.25f * 12.0f;
-	window->SetCamera(&mCamera);
+		Log::View::Destroy();
+		Log::Destroy();
 
+		return EXIT_FAILURE;
+	}
+	bonobo::mesh_data const& sphere = objects.front();
+
+
+	//
 	// Create the shader program
-	auto shader = bonobo::createProgram("default.vert", "default.frag");
+	//
+	ShaderProgramManager program_manager;
+	GLuint shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/default.vert" },
+	                                           { ShaderType::fragment, "EDAF80/default.frag" } },
+	                                         shader);
 	if (shader == 0u) {
-		LogError("Failed to load shader");
-		return;
+		LogError("Failed to generate the shader program: exiting.");
+
+		Log::View::Destroy();
+		Log::Destroy();
+
+		return EXIT_FAILURE;
 	}
 
-	// Load the sun's texture
-	auto sun_texture = bonobo::loadTexture2D("sunmap.png");
-
-	auto sun = Node();
-	sun.set_geometry(sphere);
-	sun.set_program(shader, [](GLuint /*program*/){});
-	//
-	// Todo: Attach a texture to the sun
-	//
-
-	auto world = Node();
-	world.add_child(&sun);
-
 
 	//
-	// Todo: Create an Earth node
+	// Set up the sun node and other related attributes
+	//
+	Node sun_node;
+	sun_node.set_geometry(sphere);
+	GLuint const sun_texture = bonobo::loadTexture2D("sunmap.png");
+	sun_node.add_texture("diffuse", sun_texture, GL_TEXTURE_2D);
+	float const sun_spin_speed = glm::two_pi<float>() / 6.0f; // Full rotation in six seconds
+
+
+	Node solar_system_node;
+	solar_system_node.add_child(&sun_node);
+
+
+	//
+	// TODO: Create nodes for the remaining of the solar system
 	//
 
 
+	glViewport(0, 0, config::resolution_x, config::resolution_y);
+	glClearDepthf(1.0f);
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
-	f64 ddeltatime;
+
 	size_t fpsSamples = 0;
-	double nowTime, lastTime = GetTimeSeconds();
+	double lastTime = GetTimeSeconds();
 	double fpsNextTick = lastTime + 1.0;
 
-	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
-		nowTime = GetTimeSeconds();
-		ddeltatime = nowTime - lastTime;
+
+	bool show_logs = true;
+	bool show_gui = true;
+
+	while (!glfwWindowShouldClose(window)) {
+		//
+		// Compute timings information
+		//
+		double const nowTime = GetTimeSeconds();
+		double const delta_time = nowTime - lastTime;
+		lastTime = nowTime;
 		if (nowTime > fpsNextTick) {
 			fpsNextTick += 1.0;
 			fpsSamples = 0;
 		}
-		fpsSamples++;
+		++fpsSamples;
 
-		auto& io = ImGui::GetIO();
-		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureMouse);
 
+		//
+		// Process inputs
+		//
 		glfwPollEvents();
-		inputHandler->Advance();
-		mCamera.Update(ddeltatime, *inputHandler);
 
+		ImGuiIO const& io = ImGui::GetIO();
+		input_handler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
+		input_handler.Advance();
+		camera.Update(delta_time, input_handler);
+
+		if (input_handler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+			show_logs = !show_logs;
+		if (input_handler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+			show_gui = !show_gui;
+
+
+		//
+		// Start a new frame for Dear ImGui
+		//
 		ImGui_ImplGlfwGL3_NewFrame();
 
 
 		//
-		// How-To: Translate the sun
+		// Clear the screen
 		//
-		sun.set_translation(glm::vec3(std::sin(nowTime), 0.0f, 0.0f));
-
-
-		auto const window_size = window->GetDimensions();
-		glViewport(0, 0, window_size.x, window_size.y);
-		glClearDepthf(1.0f);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		// Traverse the scene graph and render all the nodes
-		auto node_stack = std::stack<Node const*>();
-		auto matrix_stack = std::stack<glm::mat4>();
-		node_stack.push(&world);
-		matrix_stack.push(glm::mat4());
+
+		//
+		// Update the transforms
+		//
+		sun_node.rotate_y(sun_spin_speed * delta_time);
+
+
+		//
+		// Traverse the scene graph and render all nodes
+		//
+		std::stack<Node const*> node_stack({ &solar_system_node });
+		std::stack<glm::mat4> matrix_stack({ glm::mat4(1.0f) });
 		do {
-			auto const* const current_node = node_stack.top();
+			// Retrieve the node to process
+			Node const* const current_node = node_stack.top();
 			node_stack.pop();
 
-			auto const parent_matrix = matrix_stack.top();
-			matrix_stack.pop();
 
-			auto const current_node_matrix = current_node->get_transform();
+			// Retrieve its own transform matrix
+			glm::mat4 const current_node_matrix = current_node->get_transform();
 
-			//
-			// Todo: Compute the current node's world matrix
-			//
-			auto const current_node_world_matrix = current_node_matrix;
-			current_node->render(mCamera.GetWorldToClipMatrix(), current_node_world_matrix);
 
-			for (int i = static_cast<int>(current_node->get_children_nb()) - 1; i >= 0; --i) {
-				node_stack.push(current_node->get_child(static_cast<size_t>(i)));
-				matrix_stack.push(current_node_world_matrix);
-			}
+			// TODO: Compute the current node's world matrix
+			glm::mat4 const current_node_world_matrix = current_node_matrix;
+
+
+			// Render the node
+			current_node->render(camera.GetWorldToClipMatrix(), current_node_world_matrix, shader, [](GLuint /*program*/){});
+
+
+			// TODO: Process the children
 		} while (!node_stack.empty());
 
-		Log::View::Render();
-		ImGui::Render();
 
-		window->Swap();
-		lastTime = nowTime;
+		//
+		// Display Dear ImGui windows
+		//
+		if (show_logs)
+			Log::View::Render();
+		if (show_gui)
+			ImGui::Render();
+
+
+		//
+		// Queue the computed frame for display on screen
+		//
+		glfwSwapBuffers(window);
 	}
 
-	glDeleteProgram(shader);
-	shader = 0u;
-}
+	glDeleteTextures(1, &sun_texture);
 
-int main()
-{
-	Bonobo::Init();
-	try {
-		edaf80::Assignment1 assignment1;
-		assignment1.run();
-	}
-	catch (std::runtime_error const& e) {
-		LogError(e.what());
-	}
-	Bonobo::Destroy();
+
+	Log::View::Destroy();
+	Log::Destroy();
+
+	return EXIT_SUCCESS;
 }

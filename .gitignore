@@ -4,6 +4,9 @@ Debug/
 Release/
 ipch/
 
+# Dependencies folder
+dependencies/
+
 # Resources folder
 res/
 res.zip

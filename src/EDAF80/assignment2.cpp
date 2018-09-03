@@ -3,21 +3,16 @@
 #include "parametric_shapes.hpp"
 
 #include "config.hpp"
-#include "external/glad/glad.h"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
-#include "core/InputHandler.h"
 #include "core/Log.h"
 #include "core/LogView.h"
 #include "core/Misc.h"
 #include "core/node.hpp"
-#include "core/utils.h"
-#include "core/Window.h"
+#include "core/ShaderProgramManager.hpp"
 #include <imgui.h>
 #include "external/imgui_impl_glfw_gl3.h"
 
-#include "external/glad/glad.h"
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -36,28 +31,25 @@ static polygon_mode_t get_next_mode(polygon_mode_t mode)
 	return static_cast<polygon_mode_t>((static_cast<unsigned int>(mode) + 1u) % 3u);
 }
 
-edaf80::Assignment2::Assignment2()
+edaf80::Assignment2::Assignment2() :
+	mCamera(0.5f * glm::half_pi<float>(),
+	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
+	        0.01f, 1000.0f),
+	inputHandler(), mWindowManager(), window(nullptr)
 {
 	Log::View::Init();
 
-	window = Window::Create("EDAF80: Assignment 2", config::resolution_x,
-	                        config::resolution_y, config::msaa_rate, false);
+	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
+
+	window = mWindowManager.CreateWindow("EDAF80: Assignment 2", window_datum, config::msaa_rate);
 	if (window == nullptr) {
 		Log::View::Destroy();
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
-	inputHandler = new InputHandler();
-	window->SetInputHandler(inputHandler);
 }
 
 edaf80::Assignment2::~Assignment2()
 {
-	delete inputHandler;
-	inputHandler = nullptr;
-
-	Window::Destroy(window);
-	window = nullptr;
-
 	Log::View::Destroy();
 }
 
@@ -70,35 +62,41 @@ edaf80::Assignment2::run()
 		return;
 
 	// Set up the camera
-	FPSCameraf mCamera(bonobo::pi / 4.0f,
-	                   static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
-	                   0.01f, 1000.0f);
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 0.25f * 12.0f;
-	window->SetCamera(&mCamera);
 
 	// Create the shader programs
-	auto fallback_shader = bonobo::createProgram("fallback.vert", "fallback.frag");
+	ShaderProgramManager program_manager;
+	GLuint fallback_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/fallback.vert" },
+	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
+	                                         fallback_shader);
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
 		return;
 	}
-	auto diffuse_shader = bonobo::createProgram("diffuse.vert", "diffuse.frag");
-	if (diffuse_shader == 0u) {
+
+	GLuint diffuse_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/diffuse.vert" },
+	                                           { ShaderType::fragment, "EDAF80/diffuse.frag" } },
+	                                         diffuse_shader);
+	if (diffuse_shader == 0u)
 		LogError("Failed to load diffuse shader");
-		return;
-	}
-	auto normal_shader = bonobo::createProgram("normal.vert", "normal.frag");
-	if (normal_shader == 0u) {
+
+	GLuint normal_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/normal.vert" },
+	                                           { ShaderType::fragment, "EDAF80/normal.frag" } },
+	                                         normal_shader);
+	if (normal_shader == 0u)
 		LogError("Failed to load normal shader");
-		return;
-	}
-	auto texcoord_shader = bonobo::createProgram("texcoord.vert", "texcoord.frag");
-	if (texcoord_shader == 0u) {
+
+	GLuint texcoord_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/texcoord.vert" },
+	                                           { ShaderType::fragment, "EDAF80/texcoord.frag" } },
+	                                         texcoord_shader);
+	if (texcoord_shader == 0u)
 		LogError("Failed to load texcoord shader");
-		return;
-	}
 
 	auto const light_position = glm::vec3(-2.0f, 4.0f, 2.0f);
 	auto const set_uniforms = [&light_position](GLuint program){
@@ -115,7 +113,7 @@ edaf80::Assignment2::run()
 
 	auto circle_rings = Node();
 	circle_rings.set_geometry(shape);
-	circle_rings.set_program(fallback_shader, set_uniforms);
+	circle_rings.set_program(&fallback_shader, set_uniforms);
 
 
 	//! \todo Create a tesselated sphere and a tesselated torus
@@ -136,7 +134,10 @@ edaf80::Assignment2::run()
 	double nowTime, lastTime = GetTimeSeconds();
 	double fpsNextTick = lastTime + 1.0;
 
-	while (!glfwWindowShouldClose(window->GetGLFW_Window())) {
+	bool show_logs = true;
+	bool show_gui = true;
+
+	while (!glfwWindowShouldClose(window)) {
 		nowTime = GetTimeSeconds();
 		ddeltatime = nowTime - lastTime;
 		if (nowTime > fpsNextTick) {
@@ -146,28 +147,33 @@ edaf80::Assignment2::run()
 		fpsSamples++;
 
 		auto& io = ImGui::GetIO();
-		inputHandler->SetUICapture(io.WantCaptureMouse, io.WantCaptureMouse);
+		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
-		inputHandler->Advance();
-		mCamera.Update(ddeltatime, *inputHandler);
+		inputHandler.Advance();
+		mCamera.Update(ddeltatime, inputHandler);
+
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+			show_logs = !show_logs;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+			show_gui = !show_gui;
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
 
-		if (inputHandler->GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
-			circle_rings.set_program(fallback_shader, set_uniforms);
+		if (inputHandler.GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
+			circle_rings.set_program(&fallback_shader, set_uniforms);
 		}
-		if (inputHandler->GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
-			circle_rings.set_program(diffuse_shader, set_uniforms);
+		if (inputHandler.GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
+			circle_rings.set_program(&diffuse_shader, set_uniforms);
 		}
-		if (inputHandler->GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
-			circle_rings.set_program(normal_shader, set_uniforms);
+		if (inputHandler.GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
+			circle_rings.set_program(&normal_shader, set_uniforms);
 		}
-		if (inputHandler->GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
-			circle_rings.set_program(texcoord_shader, set_uniforms);
+		if (inputHandler.GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
+			circle_rings.set_program(&texcoord_shader, set_uniforms);
 		}
-		if (inputHandler->GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
+		if (inputHandler.GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
 			polygon_mode = get_next_mode(polygon_mode);
 		}
 		switch (polygon_mode) {
@@ -189,8 +195,9 @@ edaf80::Assignment2::run()
 		//!        control points
 
 
-		auto const window_size = window->GetDimensions();
-		glViewport(0, 0, window_size.x, window_size.y);
+		int framebuffer_width, framebuffer_height;
+		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
 		glClearDepthf(1.0f);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -205,21 +212,14 @@ edaf80::Assignment2::run()
 		ImGui::End();
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		Log::View::Render();
-		ImGui::Render();
+		if (show_logs)
+			Log::View::Render();
+		if (show_gui)
+			ImGui::Render();
 
-		window->Swap();
+		glfwSwapBuffers(window);
 		lastTime = nowTime;
 	}
-
-	glDeleteProgram(texcoord_shader);
-	normal_shader = 0u;
-	glDeleteProgram(normal_shader);
-	normal_shader = 0u;
-	glDeleteProgram(diffuse_shader);
-	diffuse_shader = 0u;
-	glDeleteProgram(fallback_shader);
-	diffuse_shader = 0u;
 }
 
 int main()

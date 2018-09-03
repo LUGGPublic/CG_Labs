@@ -1,7 +1,10 @@
 #pragma once
 
+#include "core/InputHandler.h"
+#include "core/FPSCamera.h"
+#include "core/WindowManager.hpp"
 
-class InputHandler;
+
 class Window;
 
 
@@ -27,7 +30,9 @@ namespace edan35
 		void run();
 
 	private:
-		InputHandler *inputHandler;
-		Window       *window;
+		FPSCameraf    mCamera;
+		InputHandler  inputHandler;
+		WindowManager mWindowManager;
+		GLFWwindow    *window;
 	};
 }

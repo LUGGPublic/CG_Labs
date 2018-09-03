@@ -63,11 +63,12 @@ public:
 	//! A node without a program will not render itself, but its children
 	//! will be rendered if they have one.
 	//!
-	//! @param [in] program OpenGL shader program to use
+	//! @param [in] pointer to the program OpenGL shader program to use;
+	//!             the pointer should not be nul.
 	//! @param [in] set_uniforms function that will take as argument an
 	//!             OpenGL shader program, and will setup that program's
 	//!             uniforms
-	void set_program(GLuint program, std::function<void (GLuint)> const& set_uniforms);
+	void set_program(GLuint const* const program, std::function<void (GLuint)> const& set_uniforms);
 
 	//! \brief Add a texture to this node.
 	//!
@@ -174,7 +175,7 @@ private:
 	bool _has_indices;
 
 	// Program data
-	GLuint _program;
+	GLuint const* _program;
 	std::function<void (GLuint)> _set_uniforms;
 
 	// Textures data

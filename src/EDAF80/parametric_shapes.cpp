@@ -1,6 +1,5 @@
 #include "parametric_shapes.hpp"
 #include "core/Log.h"
-#include "core/utils.h"
 
 #include <glm/glm.hpp>
 
@@ -148,8 +147,8 @@ parametric_shapes::createCircleRing(unsigned int const res_radius,
 	auto tangents  = std::vector<glm::vec3>(vertices_nb);
 	auto binormals = std::vector<glm::vec3>(vertices_nb);
 
-	float theta = 0.0f,                                                        // 'stepping'-variable for theta: will go 0 - 2PI
-	      dtheta = 2.0f * bonobo::pi / (static_cast<float>(res_theta) - 1.0f); // step size, depending on the resolution
+	float theta = 0.0f,                                                           // 'stepping'-variable for theta: will go 0 - 2PI
+	      dtheta = glm::two_pi<float>() / (static_cast<float>(res_theta) - 1.0f); // step size, depending on the resolution
 
 	float radius = 0.0f,                                                                     // 'stepping'-variable for radius: will go inner_radius - outer_radius
 	      dradius = (outer_radius - inner_radius) / (static_cast<float>(res_radius) - 1.0f); // step size, depending on the resolution

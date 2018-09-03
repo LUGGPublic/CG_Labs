@@ -175,7 +175,7 @@ void TRSTransform<T, P>::SetScale(T uniform)
 template<typename T, glm::precision P>
 void TRSTransform<T, P>::SetRotate(T angle, glm::tvec3<T, P> v)
 {
-	mR = glm::tmat3x3<T, P>(glm::rotate(glm::tmat4x4<T, P>(), angle, v));
+	mR = glm::tmat3x3<T, P>(glm::rotate(glm::tmat4x4<T, P>(T(1)), angle, v));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -183,7 +183,7 @@ void TRSTransform<T, P>::SetRotate(T angle, glm::tvec3<T, P> v)
 template<typename T, glm::precision P>
 void TRSTransform<T, P>::SetRotateX(T angle)
 {
-	mR = glm::tmat3x3<T, P>(glm::rotate(glm::tmat4x4<T, P>(), angle, glm::tvec3<T, P>(1, 0, 0)));
+	mR = glm::tmat3x3<T, P>(glm::rotate(glm::tmat4x4<T, P>(T(1)), angle, glm::tvec3<T, P>(1, 0, 0)));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -191,7 +191,7 @@ void TRSTransform<T, P>::SetRotateX(T angle)
 template<typename T, glm::precision P>
 void TRSTransform<T, P>::SetRotateY(T angle)
 {
-	mR = glm::tmat3x3<T, P>(glm::rotate(glm::tmat4x4<T, P>(), angle, glm::tvec3<T, P>(0, 1, 0)));
+	mR = glm::tmat3x3<T, P>(glm::rotate(glm::tmat4x4<T, P>(T(1)), angle, glm::tvec3<T, P>(0, 1, 0)));
 }
 
 /*----------------------------------------------------------------------------*/
@@ -199,7 +199,7 @@ void TRSTransform<T, P>::SetRotateY(T angle)
 template<typename T, glm::precision P>
 void TRSTransform<T, P>::SetRotateZ(T angle)
 {
-	mR = glm::tmat3x3<T, P>(glm::rotate(glm::tmat4x4<T, P>(), angle, glm::tvec3<T, P>(0, 0, 1)));
+	mR = glm::tmat3x3<T, P>(glm::rotate(glm::tmat4x4<T, P>(T(1)), angle, glm::tvec3<T, P>(0, 0, 1)));
 }
 
 /*----------------------------------------------------------------------------*/
