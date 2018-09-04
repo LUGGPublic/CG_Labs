@@ -18,9 +18,15 @@
 
 int main()
 {
+	//
+	// Set up the logging system
+	//
 	Log::Init();
 	Log::View::Init();
 
+	//
+	// Set up the camera
+	//
 	InputHandler input_handler;
 	FPSCameraf camera(0.5f * glm::half_pi<float>(),
 	                  static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
@@ -29,6 +35,9 @@ int main()
 	camera.mMouseSensitivity = 0.003f;
 	camera.mMovementSpeed = 0.25f * 12.0f;
 
+	//
+	// Set up the windowing system and create the window
+	//
 	WindowManager window_manager;
 	WindowManager::WindowDatum window_datum{ input_handler, camera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
 	GLFWwindow* window = window_manager.CreateWindow("EDAF80: Assignment 1", window_datum, config::msaa_rate);
