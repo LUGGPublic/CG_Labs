@@ -18,9 +18,15 @@
 
 int main()
 {
+	//
+	// Set up the logging system
+	//
 	Log::Init();
 	Log::View::Init();
 
+	//
+	// Set up the camera
+	//
 	InputHandler input_handler;
 	FPSCameraf camera(0.5f * glm::half_pi<float>(),
 	                  static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
@@ -29,6 +35,9 @@ int main()
 	camera.mMouseSensitivity = 0.003f;
 	camera.mMovementSpeed = 0.25f * 12.0f;
 
+	//
+	// Set up the windowing system and create the window
+	//
 	WindowManager window_manager;
 	WindowManager::WindowDatum window_datum{ input_handler, camera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
 	GLFWwindow* window = window_manager.CreateWindow("EDAF80: Assignment 1", window_datum, config::msaa_rate);
@@ -160,26 +169,9 @@ int main()
 		//
 		std::stack<Node const*> node_stack({ &solar_system_node });
 		std::stack<glm::mat4> matrix_stack({ glm::mat4(1.0f) });
-		do {
-			// Retrieve the node to process
-			Node const* const current_node = node_stack.top();
-			node_stack.pop();
-
-
-			// Retrieve its own transform matrix
-			glm::mat4 const current_node_matrix = current_node->get_transform();
-
-
-			// TODO: Compute the current node's world matrix
-			glm::mat4 const current_node_world_matrix = current_node_matrix;
-
-
-			// Render the node
-			current_node->render(camera.GetWorldToClipMatrix(), current_node_world_matrix, shader, [](GLuint /*program*/){});
-
-
-			// TODO: Process the children
-		} while (!node_stack.empty());
+		// TODO: Replace this explicit rendering of the Sun with a
+		// traversal of the scene graph and rendering of all its nodes.
+		sun_node.render(camera.GetWorldToClipMatrix(), sun_node.get_transform(), shader, [](GLuint /*program*/){});
 
 
 		//
