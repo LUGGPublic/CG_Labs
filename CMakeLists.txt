@@ -42,7 +42,7 @@ if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
 endif ()
 
 # assimp is used for loading the objects’s models
-set (LUGGCGL_ASSIMP_MIN_VERSION 4.0.1)
+set (LUGGCGL_ASSIMP_MIN_VERSION 4.1.0)
 include (CMake/InstallAssimp.cmake)
 find_package (assimp ${LUGGCGL_ASSIMP_MIN_VERSION} REQUIRED)
 link_directories (${ASSIMP_LIBRARY_DIRS})
