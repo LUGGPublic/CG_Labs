@@ -89,15 +89,4 @@ luggcgl_new_assignment ("EDAF80_Assignment3" "${ASSIGNMENT3_SOURCES}" "${COMMON_
 luggcgl_new_assignment ("EDAF80_Assignment4" "${ASSIGNMENT4_SOURCES}" "${COMMON_SOURCES}")
 luggcgl_new_assignment ("EDAF80_Assignment5" "${ASSIGNMENT5_SOURCES}" "${COMMON_SOURCES}")
 
-if (WIN32)
-	string (REGEX REPLACE "v([0-9][0-9])([0-9])" "vc\\1\\2" VS_TOOLSET_VERSION "${CMAKE_VS_PLATFORM_TOOLSET}" )
-	set (assimp_dll "${FETCHCONTENT_BASE_DIR}/assimp-install/bin/assimp-${VS_TOOLSET_VERSION}-mt.dll")
-	set (target_dir ${CMAKE_BINARY_DIR}/src/EDAF80)
-
-	add_custom_command (
-		TARGET EDAF80_Assignment1
-		POST_BUILD
-		COMMAND ${CMAKE_COMMAND} -E copy ${assimp_dll} ${target_dir}/$<CONFIG>
-		COMMENT "Copying dependent DLLs"
-	)
-endif ()
+copy_dlls (EDAF80_Assignment1 "${CMAKE_BINARY_DIR}/src/EDAF80")

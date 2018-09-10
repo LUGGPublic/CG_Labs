@@ -31,6 +31,7 @@ if (NOT glfw3_FOUND)
 			                         -DGLFW_BUILD_TESTS=OFF
 			                         -DGLFW_BUILD_EXAMPLES=OFF
 			                         -DCMAKE_INSTALL_PREFIX=${glfw_INSTALL_DIR}
+			                         -DCMAKE_BUILD_TYPE=Release
 			                         ${glfw_SOURCE_DIR}
 			OUTPUT_QUIET
 			ERROR_VARIABLE stderr

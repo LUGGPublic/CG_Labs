@@ -15,7 +15,7 @@ CG_Labs uses the following dependencies:
 * GLAD_: to load OpenGL extensions;
 * GLM_ (>= 0.9.8.5): for linear algebra operations;
 * `Dear ImGui`_ (>= 1.51): to display information on screen, such as logs;
-* assimp_ (>= 4.0.1): to load OBJ models;
+* assimp_ (>= 4.1.0): to load OBJ models;
 * lodepng_: to load PNG files;
 
 The project contains the needed files for GLAD and lodepng, and it will

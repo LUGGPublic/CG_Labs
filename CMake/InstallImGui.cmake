@@ -54,6 +54,7 @@ if (NOT EXISTS ${imgui_SOURCE_DIR})
 	execute_process (
 		COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}"
 		                         -DCMAKE_INSTALL_PREFIX=${imgui_INSTALL_DIR}
+		                         -DCMAKE_BUILD_TYPE=Release
 		                         ${imgui_SOURCE_DIR}
 		OUTPUT_QUIET
 		ERROR_VARIABLE stderr
