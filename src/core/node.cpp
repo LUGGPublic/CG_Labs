@@ -77,7 +77,7 @@ void
 Node::set_program(GLuint const* const program, std::function<void (GLuint)> const& set_uniforms)
 {
 	if (program == nullptr)
-		throw std::runtime_error("Node::set_program: program can not be nul.");
+		throw std::runtime_error("Node::set_program: program can not be null.");
 
 	_program = program;
 	_set_uniforms = set_uniforms;
