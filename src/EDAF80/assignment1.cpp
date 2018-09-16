@@ -102,7 +102,14 @@ int main()
 	//
 
 
-	glViewport(0, 0, config::resolution_x, config::resolution_y);
+	// Retrieve the actual framebuffer size: for HiDPI monitors, you might
+	// end up with a framebuffer larger than what you actually asked for.
+	// For example, if you ask for a 1920x1080 framebuffer, you might get a
+	// 3840x2160 one instead.
+	int framebuffer_width, framebuffer_height;
+	glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+
+	glViewport(0, 0, framebuffer_width, framebuffer_height);
 	glClearDepthf(1.0f);
 	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
