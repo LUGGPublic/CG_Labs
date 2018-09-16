@@ -89,7 +89,7 @@ int main()
 	Node sun_node;
 	sun_node.set_geometry(sphere);
 	GLuint const sun_texture = bonobo::loadTexture2D("sunmap.png");
-	sun_node.add_texture("diffuse", sun_texture, GL_TEXTURE_2D);
+	sun_node.add_texture("diffuse_texture", sun_texture, GL_TEXTURE_2D);
 	float const sun_spin_speed = glm::two_pi<float>() / 6.0f; // Full rotation in six seconds
 
 
