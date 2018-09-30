@@ -91,6 +91,20 @@ edaf80::Assignment2::run()
 	if (normal_shader == 0u)
 		LogError("Failed to load normal shader");
 
+	GLuint tangent_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/tangent.vert" },
+	                                           { ShaderType::fragment, "EDAF80/tangent.frag" } },
+	                                         tangent_shader);
+	if (tangent_shader == 0u)
+		LogError("Failed to load tangent shader");
+
+	GLuint binormal_shader = 0u;
+	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/binormal.vert" },
+	                                           { ShaderType::fragment, "EDAF80/binormal.frag" } },
+	                                         binormal_shader);
+	if (binormal_shader == 0u)
+		LogError("Failed to load binormal shader");
+
 	GLuint texcoord_shader = 0u;
 	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/texcoord.vert" },
 	                                           { ShaderType::fragment, "EDAF80/texcoord.frag" } },
@@ -175,6 +189,12 @@ edaf80::Assignment2::run()
 			circle_rings.set_program(&normal_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
+			circle_rings.set_program(&tangent_shader, set_uniforms);
+		}
+		if (inputHandler.GetKeycodeState(GLFW_KEY_5) & JUST_PRESSED) {
+			circle_rings.set_program(&binormal_shader, set_uniforms);
+		}
+		if (inputHandler.GetKeycodeState(GLFW_KEY_6) & JUST_PRESSED) {
 			circle_rings.set_program(&texcoord_shader, set_uniforms);
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
