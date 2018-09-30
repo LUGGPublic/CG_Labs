@@ -111,6 +111,10 @@ edaf80::Assignment2::run()
 	// it can always be changed at runtime through the "Scene Controls" window.
 	bool use_linear = true;
 
+	// Set whether to interpolate the position of an object or not; it can
+	// always be changed at runtime through the "Scene Controls" window.
+	bool interpolate = true;
+
 	auto circle_rings = Node();
 	circle_rings.set_geometry(shape);
 	circle_rings.set_program(&fallback_shader, set_uniforms);
@@ -191,8 +195,20 @@ edaf80::Assignment2::run()
 		circle_rings.rotate_y(0.01f);
 
 
-		//! \todo Interpolate the movement of a shape between various
-		//!        control points
+		if (interpolate) {
+			//! \todo Interpolate the movement of a shape between various
+			//!        control points.
+			if (use_linear) {
+				//! \todo Compute the interpolated position
+				//!       using the linear interpolation.
+			}
+			else {
+				//! \todo Compute the interpolated position
+				//!       using the Catmull-Rom interpolation;
+				//!       use the `catmull_rom_tension`
+				//!       variable as your tension argument.
+			}
+		}
 
 
 		int framebuffer_width, framebuffer_height;
@@ -206,8 +222,9 @@ edaf80::Assignment2::run()
 
 		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(300, 100), -1.0f, 0);
 		if (opened) {
-			ImGui::SliderFloat("Catmull-Rom tension", &catmull_rom_tension, 0.0f, 1.0f);
+			ImGui::Checkbox("Enable interpolation", &interpolate);
 			ImGui::Checkbox("Use linear interpolation", &use_linear);
+			ImGui::SliderFloat("Catmull-Rom tension", &catmull_rom_tension, 0.0f, 1.0f);
 		}
 		ImGui::End();
 
