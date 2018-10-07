@@ -151,6 +151,7 @@ GLFWwindow* WindowManager::CreateWindow(std::string const& title, WindowDatum co
 	{
 #if DEBUG_LEVEL >= 2
 		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glDebugMessageCallback(utils::opengl::debug::opengl_error_callback, nullptr);
 #endif
 #if DEBUG_LEVEL == 2
