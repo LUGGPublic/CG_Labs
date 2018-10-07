@@ -232,9 +232,20 @@ bonobo::createTexture(uint32_t width, uint32_t height, GLenum target, GLint inte
 	glGenTextures(1, &texture);
 	assert(texture != 0u);
 	glBindTexture(target, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexImage2D(target, 0, internal_format, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
+	glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	switch (target) {
+	case GL_TEXTURE_1D:
+		glTexImage1D(target, 0, internal_format, static_cast<GLsizei>(width), 0, format, type, data);
+		break;
+	case GL_TEXTURE_2D:
+		glTexImage2D(target, 0, internal_format, static_cast<GLsizei>(width), static_cast<GLsizei>(height), 0, format, type, data);
+		break;
+	default:
+		glDeleteTextures(1, &texture);
+		LogError("Non-handled texture target: %08x.\n", target);
+		return 0u;
+	}
 	glBindTexture(target, 0u);
 
 	return texture;
