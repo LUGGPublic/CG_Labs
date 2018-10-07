@@ -209,6 +209,8 @@ edaf80::Assignment3::run()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+		circle_ring.render(mCamera.GetWorldToClipMatrix(), circle_ring.get_transform());
+
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 		bool opened = ImGui::Begin("Scene Control", &opened, ImVec2(300, 100), -1.0f, 0);
