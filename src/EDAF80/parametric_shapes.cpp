@@ -120,7 +120,7 @@ parametric_shapes::createSphere(unsigned int const res_theta,
                                 unsigned int const res_phi, float const radius)
 {
 
-	//! \todo (Optional) Implement this function
+	//! \todo Implement this function
 	return bonobo::mesh_data();
 }
 

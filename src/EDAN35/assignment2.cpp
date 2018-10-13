@@ -1,3 +1,7 @@
+// Do not use intrinsic functions, which allows using `constexpr` on GLM
+// functions.
+#define GLM_FORCE_PURE 1
+
 #include "assignment2.hpp"
 
 #include "config.hpp"

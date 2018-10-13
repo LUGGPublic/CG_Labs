@@ -55,6 +55,9 @@ namespace
 
 	void FramebufferSizeCallback(GLFWwindow* window, int width, int height)
 	{
+		if (width <= 0 || height <= 0)
+			return;
+
 		WindowManager::WindowDatum* const instance = static_cast<WindowManager::WindowDatum*>(glfwGetWindowUserPointer(window));
 		instance->camera.SetAspect(static_cast<float>(width) / static_cast<float>(height));
 	}
@@ -148,6 +151,7 @@ GLFWwindow* WindowManager::CreateWindow(std::string const& title, WindowDatum co
 	{
 #if DEBUG_LEVEL >= 2
 		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glDebugMessageCallback(utils::opengl::debug::opengl_error_callback, nullptr);
 #endif
 #if DEBUG_LEVEL == 2

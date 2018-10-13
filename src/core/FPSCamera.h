@@ -17,7 +17,7 @@ public:
 	~FPSCamera();
 
 public:
-	void Update(double dt, InputHandler &ih);
+	void Update(double dt, InputHandler &ih, bool ignoreKeyEvents = false, bool ignoreMouseEvents = false);
 	void SetProjection(T fovy, T aspect, T nnear, T nfar);
 	void SetFov(T fovy);
 	T GetFov();

@@ -33,20 +33,15 @@ Node::render(glm::mat4 const& WVP, glm::mat4 const& world, GLuint program, std::
 	glUniformMatrix4fv(glGetUniformLocation(program, "normal_model_to_world"), 1, GL_FALSE, glm::value_ptr(normal_model_to_world));
 	glUniformMatrix4fv(glGetUniformLocation(program, "vertex_world_to_clip"), 1, GL_FALSE, glm::value_ptr(WVP));
 
-	glUniform1i(glGetUniformLocation(program, "has_textures"), !_textures.empty());
-	bool has_diffuse_texture = false, has_opacity_texture = false;
 	for (size_t i = 0u; i < _textures.size(); ++i) {
 		auto const texture = _textures[i];
 		glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(i));
 		glBindTexture(std::get<2>(texture), std::get<1>(texture));
 		glUniform1i(glGetUniformLocation(program, std::get<0>(texture).c_str()), static_cast<GLint>(i));
-		if (std::get<0>(texture) == "diffuse_texture")
-			has_diffuse_texture = true;
-		else if (std::get<0>(texture) == "opacity_texture")
-			has_opacity_texture = true;
+
+		std::string texture_presence_var_name = "has_" + std::get<0>(texture);
+		glUniform1i(glGetUniformLocation(program, texture_presence_var_name.c_str()), 1);
 	}
-	glUniform1i(glGetUniformLocation(program, "has_diffuse_texture"), has_diffuse_texture);
-	glUniform1i(glGetUniformLocation(program, "has_opacity_texture"), has_opacity_texture);
 
 	glBindVertexArray(_vao);
 	if (_has_indices)

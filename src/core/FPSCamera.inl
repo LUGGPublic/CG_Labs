@@ -46,7 +46,7 @@ T FPSCamera<T, P>::GetAspect()
 
 
 template<typename T, glm::precision P>
-void FPSCamera<T, P>::Update(double dt, InputHandler &ih)
+void FPSCamera<T, P>::Update(double dt, InputHandler &ih, bool ignoreKeyEvents, bool ignoreMouseEvents)
 {
 	glm::tvec2<T, P> newMousePosition = glm::tvec2<T, P>(ih.GetMousePosition().x, ih.GetMousePosition().y);
 	glm::tvec2<T, P> mouse_diff = newMousePosition - mMousePosition;
@@ -54,7 +54,7 @@ void FPSCamera<T, P>::Update(double dt, InputHandler &ih)
 	mMousePosition = newMousePosition;
 	mouse_diff *= mMouseSensitivity;
 
-	if (!ih.IsMouseCapturedByUI() && (ih.GetMouseState(GLFW_MOUSE_BUTTON_LEFT) & PRESSED)) {
+	if (!ih.IsMouseCapturedByUI() && !ignoreMouseEvents && (ih.GetMouseState(GLFW_MOUSE_BUTTON_LEFT) & PRESSED)) {
 		mRotation.x -= mouse_diff.x;
 		mRotation.y += mouse_diff.y;
 		mWorld.SetRotateX(mRotation.y);
@@ -65,7 +65,7 @@ void FPSCamera<T, P>::Update(double dt, InputHandler &ih)
 	T movement = movementModifier * T(dt) * mMovementSpeed;
 
 	T move = 0.0f, strafe = 0.0f, levitate = 0.0f;
-	if (!ih.IsKeyboardCapturedByUI()) {
+	if (!ih.IsKeyboardCapturedByUI() && !ignoreKeyEvents) {
 		if ((ih.GetKeycodeState(GLFW_KEY_W) & PRESSED)) move += movement;
 		if ((ih.GetKeycodeState(GLFW_KEY_S) & PRESSED)) move -= movement;
 		if ((ih.GetKeycodeState(GLFW_KEY_A) & PRESSED)) strafe -= movement;
