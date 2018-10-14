@@ -50,6 +50,11 @@ Node::render(glm::mat4 const& WVP, glm::mat4 const& world, GLuint program, std::
 		glDrawArrays(_drawing_mode, 0, _vertices_nb);
 	glBindVertexArray(0u);
 
+	for (auto const& texture : _textures) {
+		std::string texture_presence_var_name = "has_" + std::get<0>(texture);
+		glUniform1i(glGetUniformLocation(program, texture_presence_var_name.c_str()), 0);
+	}
+
 	glUseProgram(0u);
 }
 
