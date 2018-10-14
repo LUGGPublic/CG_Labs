@@ -34,7 +34,7 @@ Node::render(glm::mat4 const& WVP, glm::mat4 const& world, GLuint program, std::
 	glUniformMatrix4fv(glGetUniformLocation(program, "vertex_world_to_clip"), 1, GL_FALSE, glm::value_ptr(WVP));
 
 	for (size_t i = 0u; i < _textures.size(); ++i) {
-		auto const texture = _textures[i];
+		auto const& texture = _textures[i];
 		glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(i));
 		glBindTexture(std::get<2>(texture), std::get<1>(texture));
 		glUniform1i(glGetUniformLocation(program, std::get<0>(texture).c_str()), static_cast<GLint>(i));
