@@ -1,0 +1,32 @@
+language: cpp
+
+os: linux
+
+# Use the latest supported distro, Xenial, released in April 2016…
+dist: xenial
+
+git:
+  depth: 1
+
+compiler:
+  - clang
+  - gcc
+
+env:
+  matrix:
+    - BUILD_TYPE="Release"
+    - BUILD_TYPE="Debug"
+
+# Xenial only has outdated versions of the packages we could use, but we still
+# install them as a way to get all their dependencies installed.
+before_install:
+  - sudo apt-get install -y libassimp-dev
+  - sudo apt-get install -y libglm-dev
+  - sudo apt-get install -y libglfw3-dev
+
+script:
+  - mkdir build || exit 1
+  - pushd build && { cmake -DCMAKE_CXX_FLAGS="-Wall" \
+                           -DCMAKE_BUILD_TYPE="${BUILD_TYPE}" \
+                           -G Ninja ..; popd; } || exit 1
+  - cmake --build build || exit 1
