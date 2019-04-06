@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include <functional>
+#include <string>
 #include <tuple>
 #include <vector>
 
