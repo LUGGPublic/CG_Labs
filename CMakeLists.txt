@@ -131,38 +131,14 @@ endfunction ()
 
 function (copy_dlls target target_folder)
 	if (WIN32)
-		set (USING_VS2017 OFF)
-		string (COMPARE LESS ${CMAKE_VERSION} "3.12" IS_MSVC_TOOLSET_VERSION_NOT_AVAILABLE)
-		if (CMAKE_VERSION VERSION_GREATER "3.12")
-			set (VS_TOOLSET_VERSION "vc${MSVC_TOOLSET_VERSION}")
-			if (MSVC_TOOLSET_VERSION GREATER 140)
-				set (USING_VS2017 ON)
-			endif ()
-		elseif ((DEFINED CMAKE_VS_PLATFORM_TOOLSET) AND (NOT "${CMAKE_VS_PLATFORM_TOOLSET}" STREQUAL ""))
-			string (REGEX REPLACE "v([0-9][0-9])([0-9])" "vc\\1\\2" VS_TOOLSET_VERSION "${CMAKE_VS_PLATFORM_TOOLSET}" )
-			string (COMPARE GREATER ${CMAKE_VS_PLATFORM_TOOLSET} "v140" USING_VS2017)
-		else ()
-			# Assume it's Visual Studio 2017 with toolset 140
-			set (VS_TOOLSET_VERSION "vc140")
-			set (USING_VS2017 ON)
-		endif ()
-		set (assimp_dll "${FETCHCONTENT_BASE_DIR}/assimp-install/bin/assimp-${VS_TOOLSET_VERSION}-mt.dll")
+		set (assimp_dll "${ASSIMP_ROOT_DIR}/bin/assimp${ASSIMP_LIBRARY_SUFFIX}.dll")
 
-		if (USING_VS2017)
-			add_custom_command (
-				TARGET ${target}
-				POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E copy ${assimp_dll} ${target_folder}
-				COMMENT "Copying dependent DLLs"
-			)
-		else ()
-			add_custom_command (
-				TARGET ${target}
-				POST_BUILD
-				COMMAND ${CMAKE_COMMAND} -E copy ${assimp_dll} ${target_folder}/$<CONFIG>
-				COMMENT "Copying dependent DLLs"
-			)
-		endif ()
+		add_custom_command (
+			TARGET ${target}
+			POST_BUILD
+			COMMAND ${CMAKE_COMMAND} -E copy ${assimp_dll} ${target_folder}
+			COMMENT "Copying dependent DLLs"
+		)
 	endif ()
 endfunction ()
 
