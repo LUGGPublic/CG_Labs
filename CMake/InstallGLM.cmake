@@ -28,6 +28,7 @@ if (NOT glm_FOUND)
 		message (STATUS "Setting up CMake for glm…")
 		execute_process (
 			COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}"
+			                         -A "${CMAKE_GENERATOR_PLATFORM}"
 			                         -DCMAKE_INSTALL_PREFIX=${glm_INSTALL_DIR}
 			                         -DCMAKE_BUILD_TYPE=Release
 			                         ${glm_SOURCE_DIR}

@@ -53,6 +53,7 @@ if (NOT EXISTS ${imgui_SOURCE_DIR})
 	message (STATUS "Setting up CMake for imgui…")
 	execute_process (
 		COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}"
+		                         -A "${CMAKE_GENERATOR_PLATFORM}"
 		                         -DCMAKE_INSTALL_PREFIX=${imgui_INSTALL_DIR}
 		                         -DCMAKE_BUILD_TYPE=Release
 		                         ${imgui_SOURCE_DIR}

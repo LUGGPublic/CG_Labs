@@ -27,6 +27,7 @@ if (NOT assimp_FOUND)
 		message (STATUS "Setting up CMake for assimp…")
 		execute_process (
 			COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}"
+			                         -A "${CMAKE_GENERATOR_PLATFORM}"
 			                         -DASSIMP_NO_EXPORT=ON
 			                         -DASSIMP_BUILD_ASSIMP_TOOLS=OFF
 			                         -DASSIMP_BUILD_TESTS=OFF
