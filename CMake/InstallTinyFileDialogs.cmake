@@ -12,7 +12,7 @@ if (NOT EXISTS ${tinyfiledialogs_SOURCE_DIR})
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies
 	)
 	if (result)
-		message (FATAL_ERROR "Failed to clone assimp: ${result}\n"
+		message (FATAL_ERROR "Failed to clone tinyfiledialogs: ${result}\n"
 		                     "Error output: ${stderr}")
 	endif ()
 endif ()
