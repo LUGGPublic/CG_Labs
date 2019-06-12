@@ -3,6 +3,7 @@ build/
 Debug/
 Release/
 ipch/
+out/
 
 # Dependencies folder
 dependencies/
@@ -16,6 +17,7 @@ imgui.ini
 log.txt
 
 # Visual Studio Files
+.vs/
 *.opensdf
 *.sdf
 *.suo
