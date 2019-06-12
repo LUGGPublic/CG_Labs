@@ -2,14 +2,15 @@ find_package (assimp QUIET ${LUGGCGL_ASSIMP_MIN_VERSION})
 if (NOT assimp_FOUND)
 	set (assimp_SOURCE_DIR ${FETCHCONTENT_BASE_DIR}/assimp-source)
 	set (assimp_BINARY_DIR ${FETCHCONTENT_BASE_DIR}/assimp-build)
+	set (assimp_INSTALL_DIR ${FETCHCONTENT_BASE_DIR}/assimp-install)
 
 	if (NOT EXISTS ${assimp_SOURCE_DIR})
 		message (STATUS "Cloning assimp…")
 		execute_process (
 			COMMAND ${GIT_EXECUTABLE} clone --depth=1
 			                                -b v${LUGGCGL_ASSIMP_MIN_VERSION}
-							https://github.com/assimp/assimp.git
-							${assimp_SOURCE_DIR}
+			                                https://github.com/assimp/assimp.git
+			                                ${assimp_SOURCE_DIR}
 			OUTPUT_QUIET
 			ERROR_VARIABLE stderr
 			RESULT_VARIABLE result
@@ -20,13 +21,13 @@ if (NOT assimp_FOUND)
 			                     "Error output: ${stderr}")
 		endif ()
 
-		set (assimp_INSTALL_DIR ${FETCHCONTENT_BASE_DIR}/assimp-install)
 		file (MAKE_DIRECTORY ${assimp_BINARY_DIR})
 		file (MAKE_DIRECTORY ${assimp_INSTALL_DIR})
 
 		message (STATUS "Setting up CMake for assimp…")
 		execute_process (
 			COMMAND ${CMAKE_COMMAND} -G "${CMAKE_GENERATOR}"
+			                         -A "${CMAKE_GENERATOR_PLATFORM}"
 			                         -DASSIMP_NO_EXPORT=ON
 			                         -DASSIMP_BUILD_ASSIMP_TOOLS=OFF
 			                         -DASSIMP_BUILD_TESTS=OFF
@@ -56,9 +57,9 @@ if (NOT assimp_FOUND)
 			message (FATAL_ERROR "Build step for assimp failed: ${result}\n"
 			                     "Error output: ${stderr}")
 		endif ()
-
-		list (APPEND CMAKE_PREFIX_PATH ${assimp_INSTALL_DIR}/lib/cmake)
-
-		set (assimp_INSTALL_DIR)
 	endif ()
+
+	list (APPEND CMAKE_PREFIX_PATH ${assimp_INSTALL_DIR}/lib/cmake)
+
+	set (assimp_INSTALL_DIR)
 endif ()

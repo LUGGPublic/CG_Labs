@@ -4,8 +4,8 @@ if (NOT EXISTS ${tinyfiledialogs_SOURCE_DIR})
 	message (STATUS "Cloning tinyfiledialogs…")
 	execute_process (
 		COMMAND ${GIT_EXECUTABLE} clone --depth=1
-						https://git.code.sf.net/p/tinyfiledialogs/code
-						${tinyfiledialogs_SOURCE_DIR}
+		                                https://git.code.sf.net/p/tinyfiledialogs/code
+		                                ${tinyfiledialogs_SOURCE_DIR}
 		OUTPUT_QUIET
 		ERROR_VARIABLE stderr
 		RESULT_VARIABLE result
@@ -13,7 +13,7 @@ if (NOT EXISTS ${tinyfiledialogs_SOURCE_DIR})
 	)
 	if (result)
 		message (FATAL_ERROR "Failed to clone assimp: ${result}\n"
-				     "Error output: ${stderr}")
+		                     "Error output: ${stderr}")
 	endif ()
 endif ()
 

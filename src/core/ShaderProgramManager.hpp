@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 
 #include <map>
+#include <string>
 #include <utility>
 #include <vector>
 

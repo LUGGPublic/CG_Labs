@@ -25,6 +25,6 @@ if (NOT EXISTS ${resources_SOURCE_FILE})
 	)
 	if (result)
 		message (FATAL_ERROR "Extraction step for resources failed: ${result}\n"
-				     "Error output: ${stderr}")
+		                     "Error output: ${stderr}")
 	endif ()
 endif ()
