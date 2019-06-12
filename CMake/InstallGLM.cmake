@@ -2,14 +2,15 @@ find_package (glm QUIET ${LUGGCGL_GLM_MIN_VERSION})
 if (NOT glm_FOUND)
 	set (glm_SOURCE_DIR ${FETCHCONTENT_BASE_DIR}/glm-source)
 	set (glm_BINARY_DIR ${FETCHCONTENT_BASE_DIR}/glm-build)
+	set (glm_INSTALL_DIR ${FETCHCONTENT_BASE_DIR}/glm-install)
 
 	if (NOT EXISTS ${glm_SOURCE_DIR})
 		message (STATUS "Cloning glm…")
 		execute_process (
 			COMMAND ${GIT_EXECUTABLE} clone --depth=1
 			                                -b ${LUGGCGL_GLM_MIN_VERSION}
-							https://github.com/g-truc/glm.git
-							${glm_SOURCE_DIR}
+			                                https://github.com/g-truc/glm.git
+			                                ${glm_SOURCE_DIR}
 			OUTPUT_QUIET
 			ERROR_VARIABLE stderr
 			RESULT_VARIABLE result
@@ -20,8 +21,6 @@ if (NOT glm_FOUND)
 			                     "Error output: ${stderr}")
 		endif ()
 
-
-		set (glm_INSTALL_DIR ${FETCHCONTENT_BASE_DIR}/glm-install)
 		file (MAKE_DIRECTORY ${glm_BINARY_DIR})
 		file (MAKE_DIRECTORY ${glm_INSTALL_DIR})
 
@@ -55,9 +54,9 @@ if (NOT glm_FOUND)
 			message (FATAL_ERROR "Build step for glm failed: ${result}\n"
 			                     "Error output: ${stderr}")
 		endif ()
-
-		list (APPEND CMAKE_PREFIX_PATH ${glm_INSTALL_DIR}/lib/cmake)
-
-		set (glm_INSTALL_DIR)
 	endif ()
+
+	list (APPEND CMAKE_PREFIX_PATH ${glm_INSTALL_DIR}/lib/cmake)
+
+	set (glm_INSTALL_DIR)
 endif ()
