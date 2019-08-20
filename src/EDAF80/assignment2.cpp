@@ -18,17 +18,6 @@
 #include <cstdlib>
 #include <stdexcept>
 
-enum class polygon_mode_t : unsigned int {
-	fill = 0u,
-	line,
-	point
-};
-
-static polygon_mode_t get_next_mode(polygon_mode_t mode)
-{
-	return static_cast<polygon_mode_t>((static_cast<unsigned int>(mode) + 1u) % 3u);
-}
-
 edaf80::Assignment2::Assignment2(WindowManager& windowManager) :
 	mCamera(0.5f * glm::half_pi<float>(),
 	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
@@ -128,8 +117,6 @@ edaf80::Assignment2::run()
 	//! \todo Create a tesselated sphere and a tesselated torus
 
 
-	auto polygon_mode = polygon_mode_t::fill;
-
 	glEnable(GL_DEPTH_TEST);
 
 	// Enable face culling to improve performance
@@ -143,6 +130,7 @@ edaf80::Assignment2::run()
 	double nowTime, lastTime = GetTimeSeconds();
 	double fpsNextTick = lastTime + 1.0;
 
+	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
 
@@ -188,20 +176,6 @@ edaf80::Assignment2::run()
 		if (inputHandler.GetKeycodeState(GLFW_KEY_6) & JUST_PRESSED) {
 			circle_rings.set_program(&texcoord_shader, set_uniforms);
 		}
-		if (inputHandler.GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
-			polygon_mode = get_next_mode(polygon_mode);
-		}
-		switch (polygon_mode) {
-			case polygon_mode_t::fill:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				break;
-			case polygon_mode_t::line:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				break;
-			case polygon_mode_t::point:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-				break;
-		}
 
 		circle_rings_transform_ref.RotateY(0.01f);
 
@@ -228,11 +202,14 @@ edaf80::Assignment2::run()
 		glClearDepthf(1.0f);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		bonobo::changePolygonMode(polygon_mode);
 
 		circle_rings.render(mCamera.GetWorldToClipMatrix(), circle_rings_transform_ref.GetMatrix());
 
 		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(300, 100), -1.0f, 0);
 		if (opened) {
+			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
+			ImGui::Separator();
 			ImGui::Checkbox("Enable interpolation", &interpolate);
 			ImGui::Checkbox("Use linear interpolation", &use_linear);
 			ImGui::SliderFloat("Catmull-Rom tension", &catmull_rom_tension, 0.0f, 1.0f);

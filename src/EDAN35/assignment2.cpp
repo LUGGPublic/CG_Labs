@@ -25,17 +25,6 @@
 #include <cstdlib>
 #include <stdexcept>
 
-enum class polygon_mode_t : unsigned int {
-	fill = 0u,
-	line,
-	point
-};
-
-static polygon_mode_t get_next_mode(polygon_mode_t mode)
-{
-	return static_cast<polygon_mode_t>((static_cast<unsigned int>(mode) + 1u) % 3u);
-}
-
 namespace constant
 {
 	constexpr uint32_t shadowmap_res_x = 1024;

@@ -19,17 +19,6 @@
 #include <cstdlib>
 #include <stdexcept>
 
-enum class polygon_mode_t : unsigned int {
-	fill = 0u,
-	line,
-	point
-};
-
-static polygon_mode_t get_next_mode(polygon_mode_t mode)
-{
-	return static_cast<polygon_mode_t>((static_cast<unsigned int>(mode) + 1u) % 3u);
-}
-
 edaf80::Assignment3::Assignment3(WindowManager& windowManager) :
 	mCamera(0.5f * glm::half_pi<float>(),
 	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
@@ -110,8 +99,6 @@ edaf80::Assignment3::run()
 		glUniform1f(glGetUniformLocation(program, "shininess"), shininess);
 	};
 
-	auto polygon_mode = polygon_mode_t::fill;
-
 	auto circle_ring = Node();
 	circle_ring.set_geometry(circle_ring_shape);
 	circle_ring.set_program(&fallback_shader, set_uniforms);
@@ -130,6 +117,7 @@ edaf80::Assignment3::run()
 	double nowTime, lastTime = GetTimeMilliseconds();
 	double fpsNextTick = lastTime + 1000.0;
 
+	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
 	bool shader_reload_failed = false;
@@ -164,9 +152,6 @@ edaf80::Assignment3::run()
 		if (inputHandler.GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
 			circle_ring.set_program(&texcoord_shader, set_uniforms);
 		}
-		if (inputHandler.GetKeycodeState(GLFW_KEY_Z) & JUST_PRESSED) {
-			polygon_mode = get_next_mode(polygon_mode);
-		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			shader_reload_failed = !program_manager.ReloadAllPrograms();
 			if (shader_reload_failed)
@@ -179,17 +164,6 @@ edaf80::Assignment3::run()
 			show_logs = !show_logs;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
-		switch (polygon_mode) {
-			case polygon_mode_t::fill:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-				break;
-			case polygon_mode_t::line:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				break;
-			case polygon_mode_t::point:
-				glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
-				break;
-		}
 
 		camera_position = mCamera.mWorld.GetTranslation();
 
@@ -199,6 +173,7 @@ edaf80::Assignment3::run()
 		glClearDepthf(1.0f);
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		bonobo::changePolygonMode(polygon_mode);
 
 		circle_ring.render(mCamera.GetWorldToClipMatrix(), circle_ring_transform_ref.GetMatrix());
 
@@ -206,6 +181,8 @@ edaf80::Assignment3::run()
 
 		bool opened = ImGui::Begin("Scene Control", &opened, ImVec2(300, 100), -1.0f, 0);
 		if (opened) {
+			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
+			ImGui::Separator();
 			ImGui::ColorEdit3("Ambient", glm::value_ptr(ambient));
 			ImGui::ColorEdit3("Diffuse", glm::value_ptr(diffuse));
 			ImGui::ColorEdit3("Specular", glm::value_ptr(specular));

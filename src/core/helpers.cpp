@@ -11,13 +11,20 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <imgui.h>
 
+#include <array>
 #include <cassert>
 
 namespace local
 {
 	static GLuint fullscreen_shader;
 	static GLuint display_vao;
+	static std::array<char const*, 3> const polygon_mode_labels{
+		"Fill",
+		"Line",
+		"Point"
+	};
 }
 
 void
@@ -433,4 +440,31 @@ bonobo::drawFullscreen()
 	glBindVertexArray(local::display_vao);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glBindVertexArray(0u);
+}
+
+bool
+bonobo::uiSelectPolygonMode(std::string const& label, enum polygon_mode_t& polygon_mode) noexcept
+{
+	auto polygon_mode_index = static_cast<int>(polygon_mode);
+	bool was_modified = ImGui::Combo(label.c_str(), &polygon_mode_index,
+	                                 local::polygon_mode_labels.data(),
+	                                 local::polygon_mode_labels.size());
+	polygon_mode = static_cast<polygon_mode_t>(polygon_mode_index);
+	return was_modified;
+}
+
+void
+bonobo::changePolygonMode(enum polygon_mode_t const polygon_mode) noexcept
+{
+	switch (polygon_mode) {
+		case bonobo::polygon_mode_t::fill:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			break;
+		case bonobo::polygon_mode_t::line:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			break;
+		case bonobo::polygon_mode_t::point:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+			break;
+	}
 }
