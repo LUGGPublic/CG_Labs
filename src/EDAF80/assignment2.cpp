@@ -122,6 +122,7 @@ edaf80::Assignment2::run()
 	auto circle_rings = Node();
 	circle_rings.set_geometry(shape);
 	circle_rings.set_program(&fallback_shader, set_uniforms);
+	TRSTransformf& circle_rings_transform_ref = circle_rings.get_transform();
 
 
 	//! \todo Create a tesselated sphere and a tesselated torus
@@ -202,7 +203,7 @@ edaf80::Assignment2::run()
 				break;
 		}
 
-		circle_rings.rotate_y(0.01f);
+		circle_rings_transform_ref.RotateY(0.01f);
 
 
 		if (interpolate) {
@@ -228,7 +229,7 @@ edaf80::Assignment2::run()
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-		circle_rings.render(mCamera.GetWorldToClipMatrix(), circle_rings.get_transform());
+		circle_rings.render(mCamera.GetWorldToClipMatrix(), circle_rings_transform_ref.GetMatrix());
 
 		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(300, 100), -1.0f, 0);
 		if (opened) {

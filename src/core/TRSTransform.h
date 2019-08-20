@@ -124,3 +124,6 @@ public:
 };
 
 #include "TRSTransform.inl"
+
+using TRSTransformf = TRSTransform<float, glm::defaultp>;
+using TRSTransformd = TRSTransform<double, glm::defaultp>;

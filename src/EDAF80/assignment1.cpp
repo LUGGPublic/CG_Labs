@@ -79,6 +79,7 @@ int main()
 	//
 	Node sun_node;
 	sun_node.set_geometry(sphere);
+	TRSTransformf& sun_transform_reference = sun_node.get_transform();
 	GLuint const sun_texture = bonobo::loadTexture2D("sunmap.png");
 	sun_node.add_texture("diffuse_texture", sun_texture, GL_TEXTURE_2D);
 	float const sun_spin_speed = glm::two_pi<float>() / 6.0f; // Full rotation in six seconds
@@ -159,7 +160,7 @@ int main()
 		//
 		// Update the transforms
 		//
-		sun_node.rotate_y(sun_spin_speed * delta_time);
+		sun_transform_reference.RotateY(sun_spin_speed * delta_time);
 
 
 		//
@@ -169,7 +170,7 @@ int main()
 		std::stack<glm::mat4> matrix_stack({ glm::mat4(1.0f) });
 		// TODO: Replace this explicit rendering of the Sun with a
 		// traversal of the scene graph and rendering of all its nodes.
-		sun_node.render(camera.GetWorldToClipMatrix(), sun_node.get_transform(), shader, [](GLuint /*program*/){});
+		sun_node.render(camera.GetWorldToClipMatrix(), sun_transform_reference.GetMatrix(), shader, [](GLuint /*program*/){});
 
 
 		//

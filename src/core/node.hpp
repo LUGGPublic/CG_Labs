@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TRSTransform.h"
+
 #include "external/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
@@ -99,73 +101,12 @@ public:
 	//! @return a pointer to the desired child
 	Node const* get_child(size_t index) const;
 
-	//! \brief Reset the translation to a new value.
-	//!
-	//! @param [in] translation new translation vector
-	void set_translation(glm::vec3 const& translation);
-
-	//! \brief Translate this node.
-	//!
-	//! @param [in] v translation vector to be added to the node's
-	//!               current translation
-	void translate(glm::vec3 const& v);
-
-	//! \brief Reset the rotation along the x-axis to a new value.
-	//!
-	//! @param [in] angle new rotation angle along the x-axis; it should be
-	//!                   given in radians
-	void set_rotation_x(float angle) { _rotation.x = angle; }
-
-	//! \brief Rotate this node along the x-axis.
-	//!
-	//! @param [in] d_angle delta angle to add to the current rotation
-	//!                     angle around the x-axis; it should be given in
-	//!                     radians
-	void rotate_x(float d_angle) { _rotation.x += d_angle; }
-
-	//! \brief Reset the rotation along the y-axis to a new value.
-	//!
-	//! @param [in] angle new rotation angle along the y-axis; it should be
-	//!                   given in radians
-	void set_rotation_y(float angle) { _rotation.y = angle; }
-
-	//! \brief Rotate this node along the y-axis.
-	//!
-	//! @param [in] d_angle delta angle to add to the current rotation
-	//!                     angle around the y-axis; it should be given in
-	//!                     radians
-	void rotate_y(float d_angle) { _rotation.y += d_angle; }
-
-	//! \brief Reset the rotation along the z-axis to a new value.
-	//!
-	//! @param [in] angle new rotation angle along the z-axis; it should be
-	//!                   given in radians
-	void set_rotation_z(float angle) { _rotation.z = angle; }
-
-	//! \brief Rotate this node along the z-axis.
-	//!
-	//! @param [in] d_angle delta angle to add to the current rotation
-	//!                     angle around the z-axis; it should be given in
-	//!                     radians
-	void rotate_z(float d_angle) { _rotation.z += d_angle; }
-
-	//! \brief Reset the scaling to a new value.
-	//!
-	//! @param [in] scaling new scaling vector: `(x_scaling, y_scaling,
-	//!                     z_scaling)`
-	void set_scaling(glm::vec3 const& scaling);
-
-	//! \brief Scale this node.
-	//!
-	//! @param [in] s scaling vector to be composed with the node's
-	//!               current scaling value
-	void scale(glm::vec3 const& s);
-
 	//! \brief Return this node transformation matrix.
 	//!
 	//! @return the composition of the rotation, scaling and translation
 	//!         transformations; this is the model matrix of this node
-	glm::mat4x4 get_transform() const;
+	TRSTransformf const& get_transform() const;
+	TRSTransformf& get_transform();
 
 private:
 	// Geometry data
@@ -183,9 +124,7 @@ private:
 	std::vector<std::tuple<std::string, GLuint, GLenum>> _textures;
 
 	// Transformation data
-	glm::vec3 _scaling;
-	glm::vec3 _rotation; // as (angle around x-axis, angle around y-axis, angle around z-axis)
-	glm::vec3 _translation;
+	TRSTransformf _transform;
 
 	// Children data
 	std::vector<Node const*> _children;

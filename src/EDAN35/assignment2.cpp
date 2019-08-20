@@ -213,7 +213,7 @@ edan35::Assignment2::run()
 	//
 	// Setup lights properties
 	//
-	std::array<TRSTransform<float, glm::defaultp>, constant::lights_nb> lightTransforms;
+	std::array<TRSTransformf, constant::lights_nb> lightTransforms;
 	std::array<glm::vec3, constant::lights_nb> lightColors;
 	int lights_nb = static_cast<int>(constant::lights_nb);
 	bool are_lights_paused = false;
@@ -225,10 +225,10 @@ edan35::Assignment2::run()
 		                           0.5f + 0.5f * (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)));
 	}
 
-	TRSTransform<f32, glm::defaultp> coneScaleTransform = TRSTransform<f32, glm::defaultp>();
+	TRSTransformf coneScaleTransform;
 	coneScaleTransform.SetScale(glm::vec3(std::sqrt(constant::light_intensity / constant::light_cutoff)));
 
-	TRSTransform<f32, glm::defaultp> lightOffsetTransform = TRSTransform<f32, glm::defaultp>();
+	TRSTransformf lightOffsetTransform;
 	lightOffsetTransform.SetTranslate(glm::vec3(0.0f, 0.0f, -40.0f));
 
 	auto lightProjection = glm::perspective(0.5f * glm::pi<float>(),
@@ -307,7 +307,7 @@ edan35::Assignment2::run()
 			GLStateInspection::CaptureSnapshot("Filling Pass");
 
 			for (auto const& element : sponza_elements)
-				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform(), fill_gbuffer_shader, set_uniforms);
+				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform().GetMatrix(), fill_gbuffer_shader, set_uniforms);
 
 
 
