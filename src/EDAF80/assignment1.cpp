@@ -61,7 +61,8 @@ int main()
 	//
 	ShaderProgramManager program_manager;
 	GLuint shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/default.vert" },
+	program_manager.CreateAndRegisterProgram("Default",
+	                                         { { ShaderType::vertex, "EDAF80/default.vert" },
 	                                           { ShaderType::fragment, "EDAF80/default.frag" } },
 	                                         shader);
 	if (shader == 0u) {

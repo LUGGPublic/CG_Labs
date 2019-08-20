@@ -38,7 +38,8 @@ edaf80::Assignment5::run()
 	// Create the shader programs
 	ShaderProgramManager program_manager;
 	GLuint fallback_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/fallback.vert" },
+	program_manager.CreateAndRegisterProgram("Fallback",
+	                                         { { ShaderType::vertex, "EDAF80/fallback.vert" },
 	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
 	                                         fallback_shader);
 	if (fallback_shader == 0u) {

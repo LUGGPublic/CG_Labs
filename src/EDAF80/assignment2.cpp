@@ -48,7 +48,8 @@ edaf80::Assignment2::run()
 	// Create the shader programs
 	ShaderProgramManager program_manager;
 	GLuint fallback_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/fallback.vert" },
+	program_manager.CreateAndRegisterProgram("Fallback",
+	                                         { { ShaderType::vertex, "EDAF80/fallback.vert" },
 	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
 	                                         fallback_shader);
 	if (fallback_shader == 0u) {
@@ -57,35 +58,40 @@ edaf80::Assignment2::run()
 	}
 
 	GLuint diffuse_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/diffuse.vert" },
+	program_manager.CreateAndRegisterProgram("Diffuse",
+	                                         { { ShaderType::vertex, "EDAF80/diffuse.vert" },
 	                                           { ShaderType::fragment, "EDAF80/diffuse.frag" } },
 	                                         diffuse_shader);
 	if (diffuse_shader == 0u)
 		LogError("Failed to load diffuse shader");
 
 	GLuint normal_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/normal.vert" },
+	program_manager.CreateAndRegisterProgram("Normal",
+	                                         { { ShaderType::vertex, "EDAF80/normal.vert" },
 	                                           { ShaderType::fragment, "EDAF80/normal.frag" } },
 	                                         normal_shader);
 	if (normal_shader == 0u)
 		LogError("Failed to load normal shader");
 
 	GLuint tangent_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/tangent.vert" },
+	program_manager.CreateAndRegisterProgram("Tangent",
+	                                         { { ShaderType::vertex, "EDAF80/tangent.vert" },
 	                                           { ShaderType::fragment, "EDAF80/tangent.frag" } },
 	                                         tangent_shader);
 	if (tangent_shader == 0u)
 		LogError("Failed to load tangent shader");
 
 	GLuint binormal_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/binormal.vert" },
+	program_manager.CreateAndRegisterProgram("Bitangent",
+	                                         { { ShaderType::vertex, "EDAF80/binormal.vert" },
 	                                           { ShaderType::fragment, "EDAF80/binormal.frag" } },
 	                                         binormal_shader);
 	if (binormal_shader == 0u)
 		LogError("Failed to load binormal shader");
 
 	GLuint texcoord_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/texcoord.vert" },
+	program_manager.CreateAndRegisterProgram("Texture coords",
+	                                         { { ShaderType::vertex, "EDAF80/texcoord.vert" },
 	                                           { ShaderType::fragment, "EDAF80/texcoord.frag" } },
 	                                         texcoord_shader);
 	if (texcoord_shader == 0u)
@@ -130,6 +136,7 @@ edaf80::Assignment2::run()
 	double nowTime, lastTime = GetTimeSeconds();
 	double fpsNextTick = lastTime + 1.0;
 
+	std::int32_t program_index = 0;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
@@ -157,25 +164,6 @@ edaf80::Assignment2::run()
 
 		ImGui_ImplGlfwGL3_NewFrame();
 
-
-		if (inputHandler.GetKeycodeState(GLFW_KEY_1) & JUST_PRESSED) {
-			circle_rings.set_program(&fallback_shader, set_uniforms);
-		}
-		if (inputHandler.GetKeycodeState(GLFW_KEY_2) & JUST_PRESSED) {
-			circle_rings.set_program(&diffuse_shader, set_uniforms);
-		}
-		if (inputHandler.GetKeycodeState(GLFW_KEY_3) & JUST_PRESSED) {
-			circle_rings.set_program(&normal_shader, set_uniforms);
-		}
-		if (inputHandler.GetKeycodeState(GLFW_KEY_4) & JUST_PRESSED) {
-			circle_rings.set_program(&tangent_shader, set_uniforms);
-		}
-		if (inputHandler.GetKeycodeState(GLFW_KEY_5) & JUST_PRESSED) {
-			circle_rings.set_program(&binormal_shader, set_uniforms);
-		}
-		if (inputHandler.GetKeycodeState(GLFW_KEY_6) & JUST_PRESSED) {
-			circle_rings.set_program(&texcoord_shader, set_uniforms);
-		}
 
 		circle_rings_transform_ref.RotateY(0.01f);
 
@@ -209,6 +197,10 @@ edaf80::Assignment2::run()
 		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(300, 100), -1.0f, 0);
 		if (opened) {
 			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
+			auto selection_result = program_manager.SelectProgram("Shader", program_index);
+			if (selection_result.was_selection_changed) {
+				circle_rings.set_program(selection_result.program, set_uniforms);
+			}
 			ImGui::Separator();
 			ImGui::Checkbox("Enable interpolation", &interpolate);
 			ImGui::Checkbox("Use linear interpolation", &use_linear);

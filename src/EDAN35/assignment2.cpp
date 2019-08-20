@@ -98,7 +98,8 @@ edan35::Assignment2::run()
 	//
 	ShaderProgramManager program_manager;
 	GLuint fallback_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/fallback.vert" },
+	program_manager.CreateAndRegisterProgram("Fallback",
+	                                         { { ShaderType::vertex, "EDAF80/fallback.vert" },
 	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
 	                                         fallback_shader);
 	if (fallback_shader == 0u) {
@@ -107,7 +108,8 @@ edan35::Assignment2::run()
 	}
 
 	GLuint fill_gbuffer_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/fill_gbuffer.vert" },
+	program_manager.CreateAndRegisterProgram("Fill G-Buffer",
+	                                         { { ShaderType::vertex, "EDAN35/fill_gbuffer.vert" },
 	                                           { ShaderType::fragment, "EDAN35/fill_gbuffer.frag" } },
 	                                         fill_gbuffer_shader);
 	if (fill_gbuffer_shader == 0u) {
@@ -116,7 +118,8 @@ edan35::Assignment2::run()
 	}
 
 	GLuint fill_shadowmap_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/fill_shadowmap.vert" },
+	program_manager.CreateAndRegisterProgram("Fill shadow map",
+	                                         { { ShaderType::vertex, "EDAN35/fill_shadowmap.vert" },
 	                                           { ShaderType::fragment, "EDAN35/fill_shadowmap.frag" } },
 	                                         fill_shadowmap_shader);
 	if (fill_shadowmap_shader == 0u) {
@@ -125,7 +128,8 @@ edan35::Assignment2::run()
 	}
 
 	GLuint accumulate_lights_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/accumulate_lights.vert" },
+	program_manager.CreateAndRegisterProgram("Accumulate light",
+	                                         { { ShaderType::vertex, "EDAN35/accumulate_lights.vert" },
 	                                           { ShaderType::fragment, "EDAN35/accumulate_lights.frag" } },
 	                                         accumulate_lights_shader);
 	if (accumulate_lights_shader == 0u) {
@@ -134,7 +138,8 @@ edan35::Assignment2::run()
 	}
 
 	GLuint resolve_deferred_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/resolve_deferred.vert" },
+	program_manager.CreateAndRegisterProgram("Resolve deferred",
+	                                         { { ShaderType::vertex, "EDAN35/resolve_deferred.vert" },
 	                                           { ShaderType::fragment, "EDAN35/resolve_deferred.frag" } },
 	                                         resolve_deferred_shader);
 	if (resolve_deferred_shader == 0u) {

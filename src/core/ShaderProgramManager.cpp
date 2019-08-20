@@ -6,6 +6,8 @@
 #include "opengl.hpp"
 #include "various.hpp"
 
+#include <imgui.h>
+
 #include <type_traits>
 
 ShaderProgramManager::~ShaderProgramManager()
@@ -18,7 +20,7 @@ ShaderProgramManager::~ShaderProgramManager()
 	}
 }
 
-void ShaderProgramManager::CreateAndRegisterProgram(ProgramData const& program_data, GLuint& program)
+void ShaderProgramManager::CreateAndRegisterProgram(char const* const program_name, ProgramData const& program_data, GLuint& program)
 {
 	if (!GLAD_GL_ARB_compute_shader) {
 		for (auto const& i : program_data) {
@@ -30,11 +32,12 @@ void ShaderProgramManager::CreateAndRegisterProgram(ProgramData const& program_d
 	}
 
 	program_entries.emplace_back(program, program_data);
+	program_names.emplace_back(program_name);
 
 	ProcessProgram(program_entries.back().second, program_entries.back().first);
 }
 
-void ShaderProgramManager::CreateAndRegisterComputeProgram(std::string const& filename, GLuint& program)
+void ShaderProgramManager::CreateAndRegisterComputeProgram(char const* const program_name, std::string const& filename, GLuint& program)
 {
 	if (!GLAD_GL_ARB_compute_shader) {
 		LogError("Compute shaders aren't exposed on your computer (needed for shader '%s'.", filename.c_str());
@@ -42,6 +45,7 @@ void ShaderProgramManager::CreateAndRegisterComputeProgram(std::string const& fi
 	}
 
 	program_entries.emplace_back(program, ProgramData{ { ShaderType::compute, filename } });
+	program_names.emplace_back(program_name);
 
 	ProcessProgram(program_entries.back().second, program_entries.back().first);
 }
@@ -58,6 +62,20 @@ bool ShaderProgramManager::ReloadAllPrograms()
 	}
 
 	return !encountered_failures;
+}
+
+ShaderProgramManager::SelectedProgram ShaderProgramManager::SelectProgram(std::string const& label, std::int32_t& program_index)
+{
+	SelectedProgram selection_result;
+	if (program_index >= program_entries.size()) {
+		LogError("Invalid program index '%d': only %d programs are registered.", program_index, program_entries.size());
+		return selection_result;
+	}
+
+	selection_result.was_selection_changed = ImGui::Combo(label.c_str(), &program_index, program_names.data(), program_names.size());
+	selection_result.program = &program_entries.at(program_index).first;
+	selection_result.name = program_names.at(program_index);
+	return selection_result;
 }
 
 void ShaderProgramManager::ProcessProgram(ProgramData const& program_data, GLuint& program)
