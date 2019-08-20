@@ -4,8 +4,6 @@
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/Log.h"
-#include "core/LogView.h"
 #include "core/Misc.h"
 #include "core/ShaderProgramManager.hpp"
 
@@ -15,26 +13,18 @@
 
 #include <stdexcept>
 
-edaf80::Assignment5::Assignment5() :
+edaf80::Assignment5::Assignment5(WindowManager& windowManager) :
 	mCamera(0.5f * glm::half_pi<float>(),
 	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
 	        0.01f, 1000.0f),
-	inputHandler(), mWindowManager(), window(nullptr)
+	inputHandler(), mWindowManager(windowManager), window(nullptr)
 {
-	Log::View::Init();
-
 	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
 
 	window = mWindowManager.CreateWindow("EDAF80: Assignment 5", window_datum, config::msaa_rate);
 	if (window == nullptr) {
-		Log::View::Destroy();
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
-}
-
-edaf80::Assignment5::~Assignment5()
-{
-	Log::View::Destroy();
 }
 
 void
@@ -150,12 +140,12 @@ edaf80::Assignment5::run()
 
 int main()
 {
-	Bonobo::Init();
+	Bonobo framework;
+
 	try {
-		edaf80::Assignment5 assignment5;
+		edaf80::Assignment5 assignment5(framework.GetWindowManager());
 		assignment5.run();
 	} catch (std::runtime_error const& e) {
 		LogError(e.what());
 	}
-	Bonobo::Destroy();
 }

@@ -1,12 +1,10 @@
 #include "config.hpp"
+#include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/Log.h"
-#include "core/LogView.h"
 #include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
-#include "core/WindowManager.hpp"
 
 #include <imgui.h>
 #include <external/imgui_impl_glfw_gl3.h>
@@ -19,10 +17,9 @@
 int main()
 {
 	//
-	// Set up the logging system
+	// Set up the framework
 	//
-	Log::Init();
-	Log::View::Init();
+	Bonobo framework;
 
 	//
 	// Set up the camera
@@ -36,16 +33,13 @@ int main()
 	camera.mMovementSpeed = 0.25f * 12.0f;
 
 	//
-	// Set up the windowing system and create the window
+	// Create the window
 	//
-	WindowManager window_manager;
+	WindowManager& window_manager = framework.GetWindowManager();
 	WindowManager::WindowDatum window_datum{ input_handler, camera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
 	GLFWwindow* window = window_manager.CreateWindow("EDAF80: Assignment 1", window_datum, config::msaa_rate);
 	if (window == nullptr) {
 		LogError("Failed to get a window: exiting.");
-
-		Log::View::Destroy();
-		Log::Destroy();
 
 		return EXIT_FAILURE;
 	}
@@ -56,9 +50,6 @@ int main()
 	std::vector<bonobo::mesh_data> const objects = bonobo::loadObjects("sphere.obj");
 	if (objects.empty()) {
 		LogError("Failed to load the sphere geometry: exiting.");
-
-		Log::View::Destroy();
-		Log::Destroy();
 
 		return EXIT_FAILURE;
 	}
@@ -197,10 +188,6 @@ int main()
 	}
 
 	glDeleteTextures(1, &sun_texture);
-
-
-	Log::View::Destroy();
-	Log::Destroy();
 
 	return EXIT_SUCCESS;
 }
