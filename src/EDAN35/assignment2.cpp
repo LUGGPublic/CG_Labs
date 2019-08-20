@@ -237,6 +237,7 @@ edan35::Assignment2::run()
 	double nowTime, lastTime = GetTimeMilliseconds();
 	double fpsNextTick = lastTime + 1000.0;
 	bool show_textures = true;
+	bool show_cone_wireframe = false;
 
 	bool show_logs = true;
 	bool show_gui = true;
@@ -411,13 +412,15 @@ edan35::Assignment2::run()
 		//
 		// Pass 4: Draw wireframe cones on top of the final image for debugging purposes
 		//
-//		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//		for (size_t i = 0; i < lights_nb; ++i) {
-//			cone.render(mCamera.GetWorldToClipMatrix(),
-//			            lightTransforms[i].GetMatrix() * lightOffsetTransform.GetMatrix() * coneScaleTransform.GetMatrix(),
-//			            fill_shadowmap_shader, set_uniforms);
-//		}
-//		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		if (show_cone_wireframe) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			for (size_t i = 0; i < lights_nb; ++i) {
+				cone.render(mCamera.GetWorldToClipMatrix(),
+				            lightTransforms[i].GetMatrix() * lightOffsetTransform.GetMatrix() * coneScaleTransform.GetMatrix(),
+				            fill_shadowmap_shader, set_uniforms);
+			}
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 
 
 		//
@@ -449,6 +452,7 @@ edan35::Assignment2::run()
 			ImGui::Checkbox("Pause lights", &are_lights_paused);
 			ImGui::SliderInt("Number of lights", &lights_nb, 1, static_cast<int>(constant::lights_nb));
 			ImGui::Checkbox("Show textures", &show_textures);
+			ImGui::Checkbox("Show light cones wireframe", &show_cone_wireframe);
 		}
 		ImGui::End();
 
