@@ -5,13 +5,13 @@
 #include "core/Misc.h"
 #include "core/opengl.hpp"
 #include "core/various.hpp"
-#include "external/lodepng.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
+#include <stb_image.h>
 
 #include <array>
 #include <cassert>
@@ -47,20 +47,24 @@ static std::vector<u8>
 getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
 {
 	auto const path = config::resources_path(filename);
-	std::vector<unsigned char> image;
-	if (lodepng::decode(image, width, height, path, LCT_RGBA) != 0) {
+	auto const channels_nb = 4u;
+	unsigned char* image_data = stbi_load(path.c_str(), reinterpret_cast<int*>(&width), reinterpret_cast<int*>(&height), nullptr, channels_nb);
+	std::vector<unsigned char> image(width * height * channels_nb);
+	if (image_data == nullptr) {
 		LogWarning("Couldn't load or decode image file %s", path.c_str());
 		return image;
 	}
-	if (!flip)
+	if (!flip) {
+		std::memcpy(image.data(), image_data, image.size());
+		stbi_image_free(image_data);
 		return image;
+	}
 
-	auto const channels_nb = 4u;
-	auto flipBuffer = std::vector<u8>(width * height * channels_nb);
 	for (u32 y = 0; y < height; y++)
-		memcpy(flipBuffer.data() + (height - 1 - y) * width * channels_nb, &image[y * width * channels_nb], width * channels_nb);
+		memcpy(image.data() + (height - 1 - y) * width * channels_nb, &image_data[y * width * channels_nb], width * channels_nb);
+	stbi_image_free(image_data);
 
-	return flipBuffer;
+	return image;
 }
 
 std::vector<bonobo::mesh_data>
@@ -311,8 +315,8 @@ bonobo::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// We need to fill in the cube map using the images passed in as
-	// argument. The function `getTextureData()` uses lodepng to read in
-	// the image files and return a `std::vector<u8>` containing all the
+	// argument. The function `getTextureData()` uses stb to read in the
+	// image files and return a `std::vector<u8>` containing all the
 	// texels.
 	u32 width, height;
 	auto data = getTextureData("cubemaps/" + negx, width, height, false);
