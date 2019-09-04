@@ -192,7 +192,7 @@ edaf80::Assignment2::run()
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		bonobo::changePolygonMode(polygon_mode);
 
-		circle_rings.render(mCamera.GetWorldToClipMatrix(), circle_rings_transform_ref.GetMatrix());
+		circle_rings.render(mCamera.GetWorldToClipMatrix());
 
 		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(300, 100), -1.0f, 0);
 		if (opened) {

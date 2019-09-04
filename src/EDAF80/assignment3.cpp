@@ -106,7 +106,6 @@ edaf80::Assignment3::run()
 	auto circle_ring = Node();
 	circle_ring.set_geometry(circle_ring_shape);
 	circle_ring.set_program(&fallback_shader, set_uniforms);
-	TRSTransformf& circle_ring_transform_ref = circle_ring.get_transform();
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -168,7 +167,7 @@ edaf80::Assignment3::run()
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		bonobo::changePolygonMode(polygon_mode);
 
-		circle_ring.render(mCamera.GetWorldToClipMatrix(), circle_ring_transform_ref.GetMatrix());
+		circle_ring.render(mCamera.GetWorldToClipMatrix());
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 

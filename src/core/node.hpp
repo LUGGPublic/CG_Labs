@@ -26,9 +26,9 @@ public:
 	//! \brief Render this node.
 	//!
 	//! @param [in] WVP Matrix transforming from world-space to clip-space
-	//! @param [in] world Matrix transforming from model-space to
+	//! @param [in] parentTransform Matrix transforming from parent-space to
 	//!             world-space
-	void render(glm::mat4 const& WVP, glm::mat4 const& world) const;
+	void render(glm::mat4 const& WVP, glm::mat4 const& parentTransform = glm::mat4(1.0f)) const;
 
 	//! \brief Render this node with a specific shader program.
 	//!

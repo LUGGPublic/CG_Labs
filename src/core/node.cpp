@@ -11,10 +11,10 @@ Node::Node() : _vao(0u), _vertices_nb(0u), _indices_nb(0u), _drawing_mode(GL_TRI
 }
 
 void
-Node::render(glm::mat4 const& WVP, glm::mat4 const& world) const
+Node::render(glm::mat4 const& WVP, glm::mat4 const& parentTransform) const
 {
 	if (_program != nullptr)
-		render(WVP, world, *_program, _set_uniforms);
+		render(WVP, parentTransform * _transform.GetMatrix(), *_program, _set_uniforms);
 }
 
 void
