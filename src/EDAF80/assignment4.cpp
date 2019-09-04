@@ -21,7 +21,7 @@ edaf80::Assignment4::Assignment4(WindowManager& windowManager) :
 {
 	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
 
-	window = mWindowManager.CreateWindow("EDAF80: Assignment 4", window_datum, config::msaa_rate);
+	window = mWindowManager.CreateGLFWWindow("EDAF80: Assignment 4", window_datum, config::msaa_rate);
 	if (window == nullptr) {
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}

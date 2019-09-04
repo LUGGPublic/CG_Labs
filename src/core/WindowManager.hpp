@@ -36,7 +36,7 @@ public:
 	WindowManager();
 	~WindowManager();
 
-	GLFWwindow* CreateWindow(std::string const& title, WindowDatum const& data, unsigned int msaa = 1u, bool fullscreen = false, bool resizable = false, SwapStrategy swap = SwapStrategy::enable_vsync);
+	GLFWwindow* CreateGLFWWindow(std::string const& title, WindowDatum const& data, unsigned int msaa = 1u, bool fullscreen = false, bool resizable = false, SwapStrategy swap = SwapStrategy::enable_vsync);
 	void DestroyWindow(GLFWwindow* const window);
 	void ToggleFullscreenStatusForWindow(GLFWwindow* const window) noexcept;
 

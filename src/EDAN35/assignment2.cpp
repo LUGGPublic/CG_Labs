@@ -46,7 +46,7 @@ edan35::Assignment2::Assignment2(WindowManager& windowManager) :
 {
 	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
 
-	window = mWindowManager.CreateWindow("EDAN35: Assignment 2", window_datum, config::msaa_rate);
+	window = mWindowManager.CreateGLFWWindow("EDAN35: Assignment 2", window_datum, config::msaa_rate);
 	if (window == nullptr) {
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
