@@ -1,4 +1,5 @@
 #include "config.hpp"
+#include "parametric_shapes.hpp"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
@@ -60,13 +61,26 @@ int main()
 	// Create the shader program
 	//
 	ShaderProgramManager program_manager;
-	GLuint shader = 0u;
-	program_manager.CreateAndRegisterProgram("Default",
+	GLuint celestial_body_shader = 0u;
+	program_manager.CreateAndRegisterProgram("Celestial Body",
 	                                         { { ShaderType::vertex, "EDAF80/default.vert" },
 	                                           { ShaderType::fragment, "EDAF80/default.frag" } },
-	                                         shader);
-	if (shader == 0u) {
-		LogError("Failed to generate the shader program: exiting.");
+	                                         celestial_body_shader);
+	if (celestial_body_shader == 0u) {
+		LogError("Failed to generate the “Celestial Body” shader program: exiting.");
+
+		Log::View::Destroy();
+		Log::Destroy();
+
+		return EXIT_FAILURE;
+	}
+	GLuint celestial_ring_shader = 0u;
+	program_manager.CreateAndRegisterProgram("Celestial Ring",
+	                                         { { ShaderType::vertex, "EDAF80/celestial_ring.vert" },
+	                                           { ShaderType::fragment, "EDAF80/celestial_ring.frag" } },
+	                                         celestial_ring_shader);
+	if (celestial_ring_shader == 0u) {
+		LogError("Failed to generate the “Celestial Ring” shader program: exiting.");
 
 		Log::View::Destroy();
 		Log::Destroy();
@@ -80,7 +94,7 @@ int main()
 	//
 	Node sun_node;
 	sun_node.set_geometry(sphere);
-	sun_node.set_program(&shader, [](GLuint /*program*/){});
+	sun_node.set_program(&celestial_body_shader, [](GLuint /*program*/){});
 	TRSTransformf& sun_transform_reference = sun_node.get_transform();
 	GLuint const sun_texture = bonobo::loadTexture2D("sunmap.png");
 	sun_node.add_texture("diffuse_texture", sun_texture, GL_TEXTURE_2D);
