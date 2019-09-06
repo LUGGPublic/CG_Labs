@@ -14,7 +14,7 @@ endif ()
 # Set the project name, versions and languages used.
 project (
 	CG_Labs
-	VERSION 0.1
+	VERSION 2019.1
 	LANGUAGES CXX C
 )
 
