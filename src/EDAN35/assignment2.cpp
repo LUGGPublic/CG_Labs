@@ -10,8 +10,6 @@
 #include "core/GLStateInspection.h"
 #include "core/GLStateInspectionView.h"
 #include "core/helpers.hpp"
-#include "core/Log.h"
-#include "core/LogView.h"
 #include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
@@ -27,17 +25,6 @@
 #include <cstdlib>
 #include <stdexcept>
 
-enum class polygon_mode_t : unsigned int {
-	fill = 0u,
-	line,
-	point
-};
-
-static polygon_mode_t get_next_mode(polygon_mode_t mode)
-{
-	return static_cast<polygon_mode_t>((static_cast<unsigned int>(mode) + 1u) % 3u);
-}
-
 namespace constant
 {
 	constexpr uint32_t shadowmap_res_x = 1024;
@@ -51,19 +38,16 @@ namespace constant
 
 static bonobo::mesh_data loadCone();
 
-edan35::Assignment2::Assignment2() :
+edan35::Assignment2::Assignment2(WindowManager& windowManager) :
 	mCamera(0.5f * glm::half_pi<float>(),
 	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
 	        0.01f, 1000.0f),
-	inputHandler(), mWindowManager(), window(nullptr)
+	inputHandler(), mWindowManager(windowManager), window(nullptr)
 {
-	Log::View::Init();
-
 	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
 
-	window = mWindowManager.CreateWindow("EDAN35: Assignment 2", window_datum, config::msaa_rate);
+	window = mWindowManager.CreateGLFWWindow("EDAN35: Assignment 2", window_datum, config::msaa_rate);
 	if (window == nullptr) {
-		Log::View::Destroy();
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
 
@@ -79,8 +63,6 @@ edan35::Assignment2::~Assignment2()
 
 	GLStateInspection::View::Destroy();
 	GLStateInspection::Destroy();
-
-	Log::View::Destroy();
 }
 
 void
@@ -116,7 +98,8 @@ edan35::Assignment2::run()
 	//
 	ShaderProgramManager program_manager;
 	GLuint fallback_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/fallback.vert" },
+	program_manager.CreateAndRegisterProgram("Fallback",
+	                                         { { ShaderType::vertex, "EDAF80/fallback.vert" },
 	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
 	                                         fallback_shader);
 	if (fallback_shader == 0u) {
@@ -125,7 +108,8 @@ edan35::Assignment2::run()
 	}
 
 	GLuint fill_gbuffer_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/fill_gbuffer.vert" },
+	program_manager.CreateAndRegisterProgram("Fill G-Buffer",
+	                                         { { ShaderType::vertex, "EDAN35/fill_gbuffer.vert" },
 	                                           { ShaderType::fragment, "EDAN35/fill_gbuffer.frag" } },
 	                                         fill_gbuffer_shader);
 	if (fill_gbuffer_shader == 0u) {
@@ -134,7 +118,8 @@ edan35::Assignment2::run()
 	}
 
 	GLuint fill_shadowmap_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/fill_shadowmap.vert" },
+	program_manager.CreateAndRegisterProgram("Fill shadow map",
+	                                         { { ShaderType::vertex, "EDAN35/fill_shadowmap.vert" },
 	                                           { ShaderType::fragment, "EDAN35/fill_shadowmap.frag" } },
 	                                         fill_shadowmap_shader);
 	if (fill_shadowmap_shader == 0u) {
@@ -143,7 +128,8 @@ edan35::Assignment2::run()
 	}
 
 	GLuint accumulate_lights_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/accumulate_lights.vert" },
+	program_manager.CreateAndRegisterProgram("Accumulate light",
+	                                         { { ShaderType::vertex, "EDAN35/accumulate_lights.vert" },
 	                                           { ShaderType::fragment, "EDAN35/accumulate_lights.frag" } },
 	                                         accumulate_lights_shader);
 	if (accumulate_lights_shader == 0u) {
@@ -152,7 +138,8 @@ edan35::Assignment2::run()
 	}
 
 	GLuint resolve_deferred_shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAN35/resolve_deferred.vert" },
+	program_manager.CreateAndRegisterProgram("Resolve deferred",
+	                                         { { ShaderType::vertex, "EDAN35/resolve_deferred.vert" },
 	                                           { ShaderType::fragment, "EDAN35/resolve_deferred.frag" } },
 	                                         resolve_deferred_shader);
 	if (resolve_deferred_shader == 0u) {
@@ -220,7 +207,7 @@ edan35::Assignment2::run()
 	//
 	// Setup lights properties
 	//
-	std::array<TRSTransform<float, glm::defaultp>, constant::lights_nb> lightTransforms;
+	std::array<TRSTransformf, constant::lights_nb> lightTransforms;
 	std::array<glm::vec3, constant::lights_nb> lightColors;
 	int lights_nb = static_cast<int>(constant::lights_nb);
 	bool are_lights_paused = false;
@@ -232,10 +219,10 @@ edan35::Assignment2::run()
 		                           0.5f + 0.5f * (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)));
 	}
 
-	TRSTransform<f32, glm::defaultp> coneScaleTransform = TRSTransform<f32, glm::defaultp>();
+	TRSTransformf coneScaleTransform;
 	coneScaleTransform.SetScale(glm::vec3(std::sqrt(constant::light_intensity / constant::light_cutoff)));
 
-	TRSTransform<f32, glm::defaultp> lightOffsetTransform = TRSTransform<f32, glm::defaultp>();
+	TRSTransformf lightOffsetTransform;
 	lightOffsetTransform.SetTranslate(glm::vec3(0.0f, 0.0f, -40.0f));
 
 	auto lightProjection = glm::perspective(0.5f * glm::pi<float>(),
@@ -255,6 +242,7 @@ edan35::Assignment2::run()
 	double nowTime, lastTime = GetTimeMilliseconds();
 	double fpsNextTick = lastTime + 1000.0;
 	bool show_textures = true;
+	bool show_cone_wireframe = false;
 
 	bool show_logs = true;
 	bool show_gui = true;
@@ -314,7 +302,7 @@ edan35::Assignment2::run()
 			GLStateInspection::CaptureSnapshot("Filling Pass");
 
 			for (auto const& element : sponza_elements)
-				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform(), fill_gbuffer_shader, set_uniforms);
+				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform().GetMatrix(), fill_gbuffer_shader, set_uniforms);
 
 
 
@@ -429,13 +417,15 @@ edan35::Assignment2::run()
 		//
 		// Pass 4: Draw wireframe cones on top of the final image for debugging purposes
 		//
-//		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//		for (size_t i = 0; i < lights_nb; ++i) {
-//			cone.render(mCamera.GetWorldToClipMatrix(),
-//			            lightTransforms[i].GetMatrix() * lightOffsetTransform.GetMatrix() * coneScaleTransform.GetMatrix(),
-//			            fill_shadowmap_shader, set_uniforms);
-//		}
-//		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		if (show_cone_wireframe) {
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			for (size_t i = 0; i < lights_nb; ++i) {
+				cone.render(mCamera.GetWorldToClipMatrix(),
+				            lightTransforms[i].GetMatrix() * lightOffsetTransform.GetMatrix() * coneScaleTransform.GetMatrix(),
+				            fill_shadowmap_shader, set_uniforms);
+			}
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		}
 
 
 		//
@@ -467,6 +457,7 @@ edan35::Assignment2::run()
 			ImGui::Checkbox("Pause lights", &are_lights_paused);
 			ImGui::SliderInt("Number of lights", &lights_nb, 1, static_cast<int>(constant::lights_nb));
 			ImGui::Checkbox("Show textures", &show_textures);
+			ImGui::Checkbox("Show light cones wireframe", &show_cone_wireframe);
 		}
 		ImGui::End();
 
@@ -493,14 +484,14 @@ edan35::Assignment2::run()
 
 int main()
 {
-	Bonobo::Init();
+	Bonobo framework;
+
 	try {
-		edan35::Assignment2 assignment2;
+		edan35::Assignment2 assignment2(framework.GetWindowManager());
 		assignment2.run();
 	} catch (std::runtime_error const& e) {
 		LogError(e.what());
 	}
-	Bonobo::Destroy();
 }
 
 static

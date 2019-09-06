@@ -1,7 +1,6 @@
 add_library (external_libs
 	"glad.c"
 	"imgui_impl_glfw_gl3.cpp"
-	"lodepng.cpp"
 )
 
 # Include directories

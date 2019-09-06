@@ -16,17 +16,19 @@ Dependencies
 
 CG_Labs uses the following dependencies:
 
-* CMake_ (>= 3.0): to generate project files and handle dependencies;
-* Git_: to clone missing dependencies;
-* GLFW_ (>= 3.2.1): to create a window and an OpenGL context, as well as handle inputs;
-* GLAD_: to load OpenGL extensions;
-* GLM_ (>= 0.9.8.5): for linear algebra operations;
-* `Dear ImGui`_ (>= 1.51): to display information on screen, such as logs;
 * assimp_ (>= 4.1.0): to load OBJ models;
-* lodepng_: to load PNG files;
+* CMake_ (>= 3.0): to generate project files and handle dependencies;
+* `Dear ImGui`_ (>= 1.51): to display information on screen, such as logs;
+* Git_: to clone missing dependencies;
+* GLAD_: to load OpenGL extensions;
+* GLFW_ (>= 3.2.1): to create a window and an OpenGL context, as well as handle inputs;
+* GLM_ (>= 0.9.8.5): for linear algebra operations;
+* stb_: to load image files;
+* tinyfiledialogs_: to display dialogue windows to the user, in case of errors
+  for example.
 
-The project contains the needed files for GLAD and lodepng, and it will
-download assimp, Dear ImGui, GLM and GLFW if they are not found on your
+The project contains the needed files for GLAD, and it will download assimp,
+Dear ImGui, GLM, GLFW, stb and tinyfiledialogs if they are not found on your
 computer, so you only need to make sure that CMake and Git are installed on
 your computer.
 
@@ -122,7 +124,6 @@ Licence
 =======
 
 * Dear ImGui is released under an MIT licence, see `Dear ImGui’s licence`_.
-* lodepng’s licence can be found at the top of every lodepng file.
 * This project is unlicenced, see `the UNLICENCE file`_.
 
 .. _Lund University: http://www.lu.se/
@@ -135,7 +136,8 @@ Licence
 .. _GLM: http://glm.g-truc.net/
 .. _Dear ImGui: https://github.com/ocornut/imgui
 .. _assimp: https://github.com/assimp/assimp
-.. _lodepng: http://lodev.org/lodepng/
+.. _stb: https://github.com/nothings/stb
+.. _tinyfiledialogs: https://sourceforge.net/projects/tinyfiledialogs/
 .. _cmake-generators(7): https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
 .. _Dear ImGui’s licence: Dear_ImGui_LICENCE
 .. _this ZIP file: http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDA221_resources.zip

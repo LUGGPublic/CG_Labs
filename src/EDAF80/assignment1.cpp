@@ -1,12 +1,11 @@
 #include "config.hpp"
+#include "parametric_shapes.hpp"
+#include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/Log.h"
-#include "core/LogView.h"
 #include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
-#include "core/WindowManager.hpp"
 
 #include <imgui.h>
 #include <external/imgui_impl_glfw_gl3.h>
@@ -19,10 +18,9 @@
 int main()
 {
 	//
-	// Set up the logging system
+	// Set up the framework
 	//
-	Log::Init();
-	Log::View::Init();
+	Bonobo framework;
 
 	//
 	// Set up the camera
@@ -36,16 +34,13 @@ int main()
 	camera.mMovementSpeed = 0.25f * 12.0f;
 
 	//
-	// Set up the windowing system and create the window
+	// Create the window
 	//
-	WindowManager window_manager;
+	WindowManager& window_manager = framework.GetWindowManager();
 	WindowManager::WindowDatum window_datum{ input_handler, camera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
-	GLFWwindow* window = window_manager.CreateWindow("EDAF80: Assignment 1", window_datum, config::msaa_rate);
+	GLFWwindow* window = window_manager.CreateGLFWWindow("EDAF80: Assignment 1", window_datum, config::msaa_rate);
 	if (window == nullptr) {
 		LogError("Failed to get a window: exiting.");
-
-		Log::View::Destroy();
-		Log::Destroy();
 
 		return EXIT_FAILURE;
 	}
@@ -57,9 +52,6 @@ int main()
 	if (objects.empty()) {
 		LogError("Failed to load the sphere geometry: exiting.");
 
-		Log::View::Destroy();
-		Log::Destroy();
-
 		return EXIT_FAILURE;
 	}
 	bonobo::mesh_data const& sphere = objects.front();
@@ -69,12 +61,26 @@ int main()
 	// Create the shader program
 	//
 	ShaderProgramManager program_manager;
-	GLuint shader = 0u;
-	program_manager.CreateAndRegisterProgram({ { ShaderType::vertex, "EDAF80/default.vert" },
+	GLuint celestial_body_shader = 0u;
+	program_manager.CreateAndRegisterProgram("Celestial Body",
+	                                         { { ShaderType::vertex, "EDAF80/default.vert" },
 	                                           { ShaderType::fragment, "EDAF80/default.frag" } },
-	                                         shader);
-	if (shader == 0u) {
-		LogError("Failed to generate the shader program: exiting.");
+	                                         celestial_body_shader);
+	if (celestial_body_shader == 0u) {
+		LogError("Failed to generate the “Celestial Body” shader program: exiting.");
+
+		Log::View::Destroy();
+		Log::Destroy();
+
+		return EXIT_FAILURE;
+	}
+	GLuint celestial_ring_shader = 0u;
+	program_manager.CreateAndRegisterProgram("Celestial Ring",
+	                                         { { ShaderType::vertex, "EDAF80/celestial_ring.vert" },
+	                                           { ShaderType::fragment, "EDAF80/celestial_ring.frag" } },
+	                                         celestial_ring_shader);
+	if (celestial_ring_shader == 0u) {
+		LogError("Failed to generate the “Celestial Ring” shader program: exiting.");
 
 		Log::View::Destroy();
 		Log::Destroy();
@@ -88,6 +94,8 @@ int main()
 	//
 	Node sun_node;
 	sun_node.set_geometry(sphere);
+	sun_node.set_program(&celestial_body_shader, [](GLuint /*program*/){});
+	TRSTransformf& sun_transform_reference = sun_node.get_transform();
 	GLuint const sun_texture = bonobo::loadTexture2D("sunmap.png");
 	sun_node.add_texture("diffuse_texture", sun_texture, GL_TEXTURE_2D);
 	float const sun_spin_speed = glm::two_pi<float>() / 6.0f; // Full rotation in six seconds
@@ -168,7 +176,7 @@ int main()
 		//
 		// Update the transforms
 		//
-		sun_node.rotate_y(sun_spin_speed * delta_time);
+		sun_transform_reference.RotateY(sun_spin_speed * delta_time);
 
 
 		//
@@ -178,7 +186,7 @@ int main()
 		std::stack<glm::mat4> matrix_stack({ glm::mat4(1.0f) });
 		// TODO: Replace this explicit rendering of the Sun with a
 		// traversal of the scene graph and rendering of all its nodes.
-		sun_node.render(camera.GetWorldToClipMatrix(), sun_node.get_transform(), shader, [](GLuint /*program*/){});
+		sun_node.render(camera.GetWorldToClipMatrix());
 
 
 		//
@@ -197,10 +205,6 @@ int main()
 	}
 
 	glDeleteTextures(1, &sun_texture);
-
-
-	Log::View::Destroy();
-	Log::Destroy();
 
 	return EXIT_SUCCESS;
 }

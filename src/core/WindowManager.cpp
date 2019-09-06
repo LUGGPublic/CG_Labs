@@ -86,7 +86,7 @@ WindowManager::~WindowManager()
 	WindowManager::mMutex.unlock();
 }
 
-GLFWwindow* WindowManager::CreateWindow(std::string const& title, WindowDatum const& data, unsigned int msaa, bool fullscreen, bool resizable, SwapStrategy swap)
+GLFWwindow* WindowManager::CreateGLFWWindow(std::string const& title, WindowDatum const& data, unsigned int msaa, bool fullscreen, bool resizable, SwapStrategy swap)
 {
 #ifdef __APPLE__
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);

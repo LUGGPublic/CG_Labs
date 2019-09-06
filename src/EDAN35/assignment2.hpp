@@ -17,7 +17,7 @@ namespace edan35
 		//!
 		//! It will initialise various modules of bonobo and retrieve a
 		//! window to draw to.
-		Assignment2();
+		Assignment2(WindowManager& windowManager);
 
 		//! \brief Default destructor.
 		//!
@@ -30,9 +30,9 @@ namespace edan35
 		void run();
 
 	private:
-		FPSCameraf    mCamera;
-		InputHandler  inputHandler;
-		WindowManager mWindowManager;
-		GLFWwindow    *window;
+		FPSCameraf     mCamera;
+		InputHandler   inputHandler;
+		WindowManager& mWindowManager;
+		GLFWwindow*    window;
 	};
 }

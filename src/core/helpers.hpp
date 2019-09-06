@@ -43,6 +43,12 @@ namespace bonobo
 		}
 	};
 
+	enum class polygon_mode_t : unsigned int {
+		fill = 0u,
+		line,
+		point
+	};
+
 	//! \brief Allocate some objects needed by some helper functions.
 	void init();
 
@@ -155,4 +161,18 @@ namespace bonobo
 
 	//! \brief Draw full screen.
 	void drawFullscreen();
+
+	//! \brief Add a combo box to the current ImGUI window, to choose a
+	//!        polygon mode.
+	//!
+	//! @param [in] label Text to be displayed near the combo box.
+	//! @param [inout] polygon_mode The currently selected polygon mode,
+	//!                which will be modified to contain the newly selected
+	//!                one.
+	//! @return whether the selection was changed
+	bool uiSelectPolygonMode(std::string const& label, enum polygon_mode_t& polygon_mode) noexcept;
+
+	//! \brief Call glPolygonMode for both front and back faces, with the
+	//!        specified polygon mode.
+	void changePolygonMode(enum polygon_mode_t const polygon_mode) noexcept;
 }

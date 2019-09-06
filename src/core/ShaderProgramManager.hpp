@@ -23,13 +23,20 @@ class ShaderProgramManager
 {
 public:
 	using ProgramData = std::map<ShaderType, std::string>;
+	struct SelectedProgram {
+		bool was_selection_changed = false;
+		GLuint const* program = nullptr;
+		char const* name = nullptr;
+	};
 	~ShaderProgramManager();
-	void CreateAndRegisterProgram(ProgramData const& program_data, GLuint& program);
-	void CreateAndRegisterComputeProgram(std::string const& filename, GLuint& program);
+	void CreateAndRegisterProgram(char const* const program_name, ProgramData const& program_data, GLuint& program);
+	void CreateAndRegisterComputeProgram(char const* const program_name, std::string const& filename, GLuint& program);
 	bool ReloadAllPrograms();
+	SelectedProgram SelectProgram(std::string const& label, std::int32_t& program_index);
 
 private:
 	void ProcessProgram(ProgramData const& program_data, GLuint& program);
 	using ProgramEntry = std::pair<GLuint&, ProgramData>;
 	std::vector<ProgramEntry> program_entries;
+	std::vector<char const*> program_names;
 };

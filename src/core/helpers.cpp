@@ -5,19 +5,26 @@
 #include "core/Misc.h"
 #include "core/opengl.hpp"
 #include "core/various.hpp"
-#include "external/lodepng.h"
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <imgui.h>
+#include <stb_image.h>
 
+#include <array>
 #include <cassert>
 
 namespace local
 {
 	static GLuint fullscreen_shader;
 	static GLuint display_vao;
+	static std::array<char const*, 3> const polygon_mode_labels{
+		"Fill",
+		"Line",
+		"Point"
+	};
 }
 
 void
@@ -40,20 +47,24 @@ static std::vector<u8>
 getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
 {
 	auto const path = config::resources_path(filename);
-	std::vector<unsigned char> image;
-	if (lodepng::decode(image, width, height, path, LCT_RGBA) != 0) {
+	auto const channels_nb = 4u;
+	unsigned char* image_data = stbi_load(path.c_str(), reinterpret_cast<int*>(&width), reinterpret_cast<int*>(&height), nullptr, channels_nb);
+	std::vector<unsigned char> image(width * height * channels_nb);
+	if (image_data == nullptr) {
 		LogWarning("Couldn't load or decode image file %s", path.c_str());
 		return image;
 	}
-	if (!flip)
+	if (!flip) {
+		std::memcpy(image.data(), image_data, image.size());
+		stbi_image_free(image_data);
 		return image;
+	}
 
-	auto const channels_nb = 4u;
-	auto flipBuffer = std::vector<u8>(width * height * channels_nb);
 	for (u32 y = 0; y < height; y++)
-		memcpy(flipBuffer.data() + (height - 1 - y) * width * channels_nb, &image[y * width * channels_nb], width * channels_nb);
+		memcpy(image.data() + (height - 1 - y) * width * channels_nb, &image_data[y * width * channels_nb], width * channels_nb);
+	stbi_image_free(image_data);
 
-	return flipBuffer;
+	return image;
 }
 
 std::vector<bonobo::mesh_data>
@@ -304,8 +315,8 @@ bonobo::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	// We need to fill in the cube map using the images passed in as
-	// argument. The function `getTextureData()` uses lodepng to read in
-	// the image files and return a `std::vector<u8>` containing all the
+	// argument. The function `getTextureData()` uses stb to read in the
+	// image files and return a `std::vector<u8>` containing all the
 	// texels.
 	u32 width, height;
 	auto data = getTextureData("cubemaps/" + negx, width, height, false);
@@ -433,4 +444,31 @@ bonobo::drawFullscreen()
 	glBindVertexArray(local::display_vao);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glBindVertexArray(0u);
+}
+
+bool
+bonobo::uiSelectPolygonMode(std::string const& label, enum polygon_mode_t& polygon_mode) noexcept
+{
+	auto polygon_mode_index = static_cast<int>(polygon_mode);
+	bool was_modified = ImGui::Combo(label.c_str(), &polygon_mode_index,
+	                                 local::polygon_mode_labels.data(),
+	                                 local::polygon_mode_labels.size());
+	polygon_mode = static_cast<polygon_mode_t>(polygon_mode_index);
+	return was_modified;
+}
+
+void
+bonobo::changePolygonMode(enum polygon_mode_t const polygon_mode) noexcept
+{
+	switch (polygon_mode) {
+		case bonobo::polygon_mode_t::fill:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			break;
+		case bonobo::polygon_mode_t::line:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			break;
+		case bonobo::polygon_mode_t::point:
+			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+			break;
+	}
 }
