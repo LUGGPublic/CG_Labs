@@ -24,10 +24,13 @@ CG_Labs uses the following dependencies:
 * `Dear ImGui`_ (>= 1.51): to display information on screen, such as logs;
 * assimp_ (>= 4.1.0): to load OBJ models;
 * stb_: to load image files;
+* tinyfiledialogs_: to display dialogue windows to the user, in case of errors
+  for example.
 
 The project contains the needed files for GLAD, and it will download assimp,
-Dear ImGui, GLM, GLFW and stb if they are not found on your computer, so you
-only need to make sure that CMake and Git are installed on your computer.
+Dear ImGui, GLM, GLFW, stb and tinyfiledialogs if they are not found on your
+computer, so you only need to make sure that CMake and Git are installed on
+your computer.
 
 An OpenGL 4.1 context is created by the project. You could possibly lower that
 to an OpenGL 3.3 context, but it is not supported.
@@ -134,6 +137,7 @@ Licence
 .. _Dear ImGui: https://github.com/ocornut/imgui
 .. _assimp: https://github.com/assimp/assimp
 .. _stb: https://github.com/nothings/stb
+.. _tinyfiledialogs: https://sourceforge.net/projects/tinyfiledialogs/
 .. _cmake-generators(7): https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
 .. _Dear ImGui’s licence: Dear_ImGui_LICENCE
 .. _this ZIP file: http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDA221_resources.zip
