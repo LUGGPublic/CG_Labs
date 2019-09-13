@@ -12,7 +12,7 @@
  *
  *    M = T * R * S
  *
- * Transformations can be used hierachically. This means that every transformable child
+ * Transformations can be used hierarchically. This means that every transformable child
  * node will inherit the transformations of its parent. Let's say for instance,
  * that there are two nodes A and B. A is the parent of B and both are
  * transformable. The local transformation of A is denoted Ma and for B its Ma.
