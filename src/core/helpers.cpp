@@ -49,11 +49,16 @@ getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
 	auto const path = config::resources_path(filename);
 	auto const channels_nb = 4u;
 	unsigned char* image_data = stbi_load(path.c_str(), reinterpret_cast<int*>(&width), reinterpret_cast<int*>(&height), nullptr, channels_nb);
-	std::vector<unsigned char> image(width * height * channels_nb);
 	if (image_data == nullptr) {
 		LogWarning("Couldn't load or decode image file %s", path.c_str());
-		return image;
+
+		// Provide a small empty image instead in case of failure.
+		width = 16;
+		height = 16;
+		return std::vector<unsigned char>(width * height * channels_nb);
 	}
+    
+	std::vector<unsigned char> image(width * height * channels_nb);
 	if (!flip) {
 		std::memcpy(image.data(), image_data, image.size());
 		stbi_image_free(image_data);
