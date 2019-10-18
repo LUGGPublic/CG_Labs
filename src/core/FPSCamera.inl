@@ -118,17 +118,13 @@ glm::tmat4x4<T, P> FPSCamera<T, P>::GetViewToClipMatrix()
 template<typename T, glm::precision P>
 glm::tvec3<T, P> FPSCamera<T, P>::GetClipToWorld(glm::tvec3<T, P> xyw)
 {
-	glm::tvec4<T, P> vv = GetClipToView(xyw).xyz1();
-	glm::tvec3<T, P> wv = mWorld.GetMatrix().affineMul(vv);
+	glm::tvec4<T, P> vv = glm::tvec4<T, P>(GetClipToView(xyw), static_cast<T>(1));
+	glm::tvec3<T, P> wv = mWorld.GetMatrix() * vv;
 	return wv;
 }
 
 template<typename T, glm::precision P>
 glm::tvec3<T, P> FPSCamera<T, P>::GetClipToView(glm::tvec3<T, P> xyw)
 {
-	glm::tvec3<T, P> vv;
-	vv.x = mProjectionInverse.M[0][0] * xyw.x;
-	vv.y = mProjectionInverse.M[1][1] * xyw.y;
-	vv.z = -xyw.w;
-	return vv;
+	return xyw * glm::tvec3<T, P>(mProjectionInverse[0][0], mProjectionInverse[1][1], static_cast<T>(-1));
 }
