@@ -30,12 +30,13 @@ target_include_directories (
 	PRIVATE
 		"${CMAKE_SOURCE_DIR}/src"
 		"${CMAKE_BINARY_DIR}"
+	PUBLIC
+		"${ASSIMP_INCLUDE_DIRS}"
 )
 
 target_include_directories (
 	${PROJECT_NAME}
 	SYSTEM PRIVATE
-		${ASSIMP_INCLUDE_DIRS}
 		"${CMAKE_SOURCE_DIR}/src/external"
 )
 
@@ -46,6 +47,6 @@ set_target_properties (
 		CXX_STANDARD_REQUIRED ON
 		CXX_EXTENSIONS OFF
 )
-target_link_libraries (${PROJECT_NAME} imgui::imgui external_libs glfw glm ${ASSIMP_LIBRARIES} stb::stb)
+target_link_libraries (${PROJECT_NAME} ${ASSIMP_LIBRARIES} imgui::imgui external_libs glfw glm stb::stb)
 
 install (TARGETS ${PROJECT_NAME} DESTINATION lib)

@@ -21,6 +21,21 @@ if (NOT assimp_FOUND)
 			                     "Error output: ${stderr}")
 		endif ()
 
+		# assimp will fail to link on Windows without that commit
+		# (which is not part of any release as of now).
+		execute_process (
+			COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/0001-Fix-CMake-import.patch
+			OUTPUT_VARIABLE stdout
+			ERROR_VARIABLE stderr
+			RESULT_VARIABLE result
+			WORKING_DIRECTORY "${assimp_SOURCE_DIR}"
+		)
+		if (result)
+			message (FATAL_ERROR "Failed to patch assimp: ${result}\n"
+			                     "Standard output: ${stdout}\n"
+			                     "Error output: ${stderr}")
+		endif ()
+
 		file (MAKE_DIRECTORY ${assimp_BINARY_DIR})
 		file (MAKE_DIRECTORY ${assimp_INSTALL_DIR})
 
