@@ -32,8 +32,9 @@ Dear ImGui, GLM, GLFW, stb and tinyfiledialogs if they are not found on your
 computer, so you only need to make sure that CMake and Git are installed on
 your computer.
 
-An OpenGL 4.1 context is created by the project. You could possibly lower that
-to an OpenGL 3.3 context, but it is not supported.
+An OpenGL 4.1 context is created by the project; if your hardware or its driver
+does not support OpenGL 4.1, you should use the `OpenGL 3.3`_ branch instead
+which will create a 3.3 context.
 
 C++14 features are used by this project, so you will need a C++14-capable
 compiler; if you are using Visual Studio, that means Visual Studio 2015 or
@@ -140,5 +141,6 @@ Licence
 .. _tinyfiledialogs: https://sourceforge.net/projects/tinyfiledialogs/
 .. _cmake-generators(7): https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
 .. _Dear ImGui’s licence: Dear_ImGui_LICENCE
+.. _OpenGL 3.3: https://github.com/LUGGPublic/CG_Labs/tree/OpenGL_3.3
 .. _this ZIP file: http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDA221_resources.zip
 .. _the UNLICENCE file: UNLICENCE
