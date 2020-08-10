@@ -257,7 +257,7 @@ edan35::Assignment2::run()
 
 
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClearDepthf(1.0f);
+	glClearDepth(1.0);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 

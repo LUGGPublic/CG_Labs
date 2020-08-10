@@ -62,7 +62,7 @@ edaf80::Assignment5::run()
 	// Todo: Load your geometry
 	//
 
-	glClearDepthf(1.0f);
+	glClearDepth(1.0);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 

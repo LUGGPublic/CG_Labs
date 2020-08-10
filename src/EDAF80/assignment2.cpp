@@ -130,7 +130,7 @@ edaf80::Assignment2::run()
 	//! \todo Create a tesselated sphere and a tesselated torus
 
 
-	glClearDepthf(1.0f);
+	glClearDepth(1.0);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
