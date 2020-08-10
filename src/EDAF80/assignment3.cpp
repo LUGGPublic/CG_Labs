@@ -121,7 +121,7 @@ edaf80::Assignment3::run()
 	demo_sphere.set_program(&fallback_shader, set_uniforms);
 
 
-	glClearDepthf(1.0f);
+	glClearDepth(1.0);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 

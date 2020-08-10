@@ -159,7 +159,7 @@ int main()
 	sun.add_texture("diffuse_texture", sun_texture, GL_TEXTURE_2D);
 
 
-	glClearDepthf(1.0f);
+	glClearDepth(1.0);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
