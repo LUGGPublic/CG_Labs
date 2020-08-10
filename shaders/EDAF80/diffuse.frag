@@ -1,4 +1,4 @@
-#version 410
+#version 330
 
 uniform vec3 light_position;
 

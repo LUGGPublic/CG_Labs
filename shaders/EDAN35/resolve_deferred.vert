@@ -1,4 +1,4 @@
-#version 410
+#version 330
 
 // Trick from
 // https://rauwendaal.net/2014/06/14/rendering-a-screen-covering-triangle-in-opengl/

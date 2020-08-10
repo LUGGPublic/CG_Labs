@@ -1,4 +1,4 @@
-#version 410
+#version 330
 
 uniform sampler2D depth_texture;
 uniform sampler2D normal_texture;

@@ -1,4 +1,4 @@
-#version 410
+#version 330
 
 uniform sampler2D diffuse_texture;
 uniform int has_diffuse_texture;
