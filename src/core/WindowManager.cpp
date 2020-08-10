@@ -10,8 +10,8 @@
 
 namespace
 {
-	const int default_opengl_major_version = 4;
-	const int default_opengl_minor_version = 1;
+	const int default_opengl_major_version = 3;
+	const int default_opengl_minor_version = 3;
 	const int default_glsl_version = default_opengl_major_version * 100 + default_opengl_minor_version * 10;
 
 	void ErrorCallback(int error, char const* description)

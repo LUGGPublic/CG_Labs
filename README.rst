@@ -32,9 +32,9 @@ download assimp, GLM, GLFW, stb and tinyfiledialogs if they are not found on
 your computer, so you only need to make sure that CMake and Git are installed
 on your computer.
 
-An OpenGL 4.1 context is created by the project; if your hardware or its driver
-does not support OpenGL 4.1, you should use the `OpenGL 3.3`_ branch instead
-which will create a 3.3 context.
+An OpenGL 3.3 context is created by the project; note that this branch is meant
+for older GPUs or drivers which do not support the OpenGL 4.1 context created
+when using the master_ branch, and should only be used in those scenarios.
 
 C++14 features are used by this project, so you will need a C++14-capable
 compiler; if you are using Visual Studio, that means Visual Studio 2015 or
@@ -139,6 +139,7 @@ Licence
 .. _assimp: https://github.com/assimp/assimp
 .. _stb: https://github.com/nothings/stb
 .. _tinyfiledialogs: https://sourceforge.net/projects/tinyfiledialogs/
+.. _master: https://github.com/LUGGPublic/CG_Labs/tree/master
 .. _cmake-generators(7): https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
 .. _Dear ImGui’s licence: src/external/Dear ImGui/LICENSE.txt
 .. _OpenGL 3.3: https://github.com/LUGGPublic/CG_Labs/tree/OpenGL_3.3
