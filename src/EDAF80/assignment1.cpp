@@ -94,7 +94,7 @@ int main()
 	//
 	Node sun_node;
 	sun_node.set_geometry(sphere);
-	sun_node.set_program(&celestial_body_shader, [](GLuint /*program*/){});
+	sun_node.set_program(&celestial_body_shader);
 	TRSTransformf& sun_transform_reference = sun_node.get_transform();
 	GLuint const sun_texture = bonobo::loadTexture2D("sunmap.png");
 	sun_node.add_texture("diffuse_texture", sun_texture, GL_TEXTURE_2D);
