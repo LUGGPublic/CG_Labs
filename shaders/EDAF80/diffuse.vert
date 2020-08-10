@@ -1,4 +1,4 @@
-#version 410
+#version 330
 
 // Remember how we enabled vertex attributes in assignment 2 and attached some
 // data to each of them, here we retrieve that data. Attribute 0 pointed to the
