@@ -83,10 +83,8 @@ source_group (
 	${PROJECT_SOURCE_DIR}/assignment5.hpp
 )
 
-luggcgl_new_assignment ("EDAF80_Assignment1" "${ASSIGNMENT1_SOURCES}" "${COMMON_SOURCES}")
-luggcgl_new_assignment ("EDAF80_Assignment2" "${ASSIGNMENT2_SOURCES}" "${COMMON_SOURCES}")
-luggcgl_new_assignment ("EDAF80_Assignment3" "${ASSIGNMENT3_SOURCES}" "${COMMON_SOURCES}")
-luggcgl_new_assignment ("EDAF80_Assignment4" "${ASSIGNMENT4_SOURCES}" "${COMMON_SOURCES}")
-luggcgl_new_assignment ("EDAF80_Assignment5" "${ASSIGNMENT5_SOURCES}" "${COMMON_SOURCES}")
-
-copy_dlls (EDAF80_Assignment1 "${CMAKE_BINARY_DIR}/src/EDAF80")
+luggcgl_new_assignment ("EDAF80_Assignment1" "${ASSIGNMENT1_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")
+luggcgl_new_assignment ("EDAF80_Assignment2" "${ASSIGNMENT2_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")
+luggcgl_new_assignment ("EDAF80_Assignment3" "${ASSIGNMENT3_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")
+luggcgl_new_assignment ("EDAF80_Assignment4" "${ASSIGNMENT4_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")
+luggcgl_new_assignment ("EDAF80_Assignment5" "${ASSIGNMENT5_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")

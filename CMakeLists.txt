@@ -95,9 +95,24 @@ if (LUGGCGL_BUILD_DOCUMENTATION)
 	)
 endif ()
 
-function (luggcgl_new_assignment assignment_name sources common_sources)
-	add_executable (${assignment_name} ${sources} ${common_sources})
+function (copy_dlls target target_folder)
+	if (WIN32)
+		set (assimp_dll "assimp${ASSIMP_LIBRARY_SUFFIX}.dll")
+		set (assimp_dll_path "${ASSIMP_ROOT_DIR}/bin/${assimp_dll}")
 
+		if (NOT EXISTS "${target_folder}/${assimp_dll}")
+			add_custom_command (
+				TARGET ${target}
+				POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy ${assimp_dll_path} ${target_folder}
+				COMMENT "Copying dependent DLLs"
+			)
+		endif ()
+	endif ()
+endfunction ()
+
+function (luggcgl_new_assignment assignment_name sources common_sources output_dir)
+	add_executable (${assignment_name} ${sources} ${common_sources})
 
 	target_include_directories (
 		${assignment_name}
@@ -115,19 +130,8 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 	target_link_libraries (${assignment_name} bonobo glm stb::stb tinyfiledialogs::tinyfiledialogs)
 
 	install (TARGETS ${assignment_name} DESTINATION bin)
-endfunction ()
 
-function (copy_dlls target target_folder)
-	if (WIN32)
-		set (assimp_dll "${ASSIMP_ROOT_DIR}/bin/assimp${ASSIMP_LIBRARY_SUFFIX}.dll")
-
-		add_custom_command (
-			TARGET ${target}
-			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy ${assimp_dll} ${target_folder}
-			COMMENT "Copying dependent DLLs"
-		)
-	endif ()
+	copy_dlls (${assignment_name} "${output_dir}")
 endfunction ()
 
 
