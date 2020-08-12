@@ -105,7 +105,6 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 			"${CMAKE_SOURCE_DIR}/src"
 			"${CMAKE_BINARY_DIR}"
 	)
-
 	set_target_properties (
 		${assignment_name}
 		PROPERTIES
@@ -113,9 +112,6 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 			CXX_STANDARD_REQUIRED ON
 			CXX_EXTENSIONS OFF
 	)
-
-	add_dependencies (${assignment_name} bonobo)
-
 	target_link_libraries (${assignment_name} bonobo glm stb::stb tinyfiledialogs::tinyfiledialogs)
 
 	install (TARGETS ${assignment_name} DESTINATION bin)
