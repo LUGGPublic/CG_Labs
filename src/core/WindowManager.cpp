@@ -3,7 +3,7 @@
 #include "Log.h"
 #include "opengl.hpp"
 
-#include <external/glad/glad.h>
+#include <glad/glad.h>
 #include <imgui.h>
 #include <external/imgui_impl_glfw_gl3.h>
 
