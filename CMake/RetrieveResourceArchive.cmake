@@ -18,13 +18,14 @@ if (NOT EXISTS ${resources_SOURCE_FILE})
 
 	execute_process (
 		COMMAND ${CMAKE_COMMAND} -E tar xf ${resources_SOURCE_FILE}
-		OUTPUT_QUIET
+		OUTPUT_VARIABLE stdout
 		ERROR_VARIABLE stderr
 		RESULT_VARIABLE result
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 	)
 	if (result)
 		message (FATAL_ERROR "Extraction step for resources failed: ${result}\n"
+		                     "Standard output: ${stdout}\n"
 		                     "Error output: ${stderr}")
 	endif ()
 endif ()

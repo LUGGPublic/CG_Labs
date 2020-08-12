@@ -6,13 +6,14 @@ if (NOT EXISTS ${tinyfiledialogs_SOURCE_DIR})
 		COMMAND ${GIT_EXECUTABLE} clone --depth=1
 		                                https://git.code.sf.net/p/tinyfiledialogs/code
 		                                ${tinyfiledialogs_SOURCE_DIR}
-		OUTPUT_QUIET
+		OUTPUT_VARIABLE stdout
 		ERROR_VARIABLE stderr
 		RESULT_VARIABLE result
 		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies
 	)
 	if (result)
 		message (FATAL_ERROR "Failed to clone tinyfiledialogs: ${result}\n"
+		                     "Standard output: ${stdout}\n"
 		                     "Error output: ${stderr}")
 	endif ()
 endif ()

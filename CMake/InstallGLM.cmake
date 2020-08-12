@@ -11,13 +11,14 @@ if (NOT glm_FOUND)
 			                                -b ${LUGGCGL_GLM_MIN_VERSION}
 			                                https://github.com/g-truc/glm.git
 			                                ${glm_SOURCE_DIR}
-			OUTPUT_QUIET
+			OUTPUT_VARIABLE stdout
 			ERROR_VARIABLE stderr
 			RESULT_VARIABLE result
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies
 		)
 		if (result)
 			message (FATAL_ERROR "Failed to clone glm: ${result}\n"
+			                     "Standard output: ${stdout}\n"
 			                     "Error output: ${stderr}")
 		endif ()
 
@@ -31,13 +32,14 @@ if (NOT glm_FOUND)
 			                         -DCMAKE_INSTALL_PREFIX=${glm_INSTALL_DIR}
 			                         -DCMAKE_BUILD_TYPE=Release
 			                         ${glm_SOURCE_DIR}
-			OUTPUT_QUIET
+			OUTPUT_VARIABLE stdout
 			ERROR_VARIABLE stderr
 			RESULT_VARIABLE result
 			WORKING_DIRECTORY ${glm_BINARY_DIR}
 		)
 		if (result)
 			message (FATAL_ERROR "CMake setup for glm failed: ${result}\n"
+			                     "Standard output: ${stdout}\n"
 			                     "Error output: ${stderr}")
 		endif ()
 
@@ -46,12 +48,13 @@ if (NOT glm_FOUND)
 			COMMAND ${CMAKE_COMMAND} --build ${glm_BINARY_DIR}
 			                         --config Release
 			                         --target install
-			OUTPUT_QUIET
+			OUTPUT_VARIABLE stdout
 			ERROR_VARIABLE stderr
 			RESULT_VARIABLE result
 		)
 		if (result)
 			message (FATAL_ERROR "Build step for glm failed: ${result}\n"
+			                     "Standard output: ${stdout}\n"
 			                     "Error output: ${stderr}")
 		endif ()
 	endif ()

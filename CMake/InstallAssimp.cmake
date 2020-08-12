@@ -11,13 +11,14 @@ if (NOT assimp_FOUND)
 			                                -b v${LUGGCGL_ASSIMP_MIN_VERSION}
 			                                https://github.com/assimp/assimp.git
 			                                ${assimp_SOURCE_DIR}
-			OUTPUT_QUIET
+			OUTPUT_VARIABLE stdout
 			ERROR_VARIABLE stderr
 			RESULT_VARIABLE result
 			WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies
 		)
 		if (result)
 			message (FATAL_ERROR "Failed to clone assimp: ${result}\n"
+			                     "Standard output: ${stdout}\n"
 			                     "Error output: ${stderr}")
 		endif ()
 
@@ -49,13 +50,14 @@ if (NOT assimp_FOUND)
 			                         -DCMAKE_INSTALL_PREFIX=${assimp_INSTALL_DIR}
 			                         -DCMAKE_BUILD_TYPE=Release
 			                         ${assimp_SOURCE_DIR}
-			OUTPUT_QUIET
+			OUTPUT_VARIABLE stdout
 			ERROR_VARIABLE stderr
 			RESULT_VARIABLE result
 			WORKING_DIRECTORY ${assimp_BINARY_DIR}
 		)
 		if (result)
 			message (FATAL_ERROR "CMake setup for assimp failed: ${result}\n"
+			                     "Standard output: ${stdout}\n"
 			                     "Error output: ${stderr}")
 		endif ()
 
@@ -64,12 +66,13 @@ if (NOT assimp_FOUND)
 			COMMAND ${CMAKE_COMMAND} --build ${assimp_BINARY_DIR}
 			                         --config Release
 			                         --target install
-			OUTPUT_QUIET
+			OUTPUT_VARIABLE stdout
 			ERROR_VARIABLE stderr
 			RESULT_VARIABLE result
 		)
 		if (result)
 			message (FATAL_ERROR "Build step for assimp failed: ${result}\n"
+			                     "Standard output: ${stdout}\n"
 			                     "Error output: ${stderr}")
 		endif ()
 	endif ()
