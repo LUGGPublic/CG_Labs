@@ -12,6 +12,7 @@ char Log::View::mBuffer[BUFFER_ROWS][BUFFER_WIDTH];
 int Log::View::mLen[BUFFER_ROWS];
 Log::Type Log::View::mType[BUFFER_ROWS];
 int Log::View::mBufferPtr = 0;
+bool Log::View::mAutoScroll = true;
 bool Log::View::mScrollToBottom = true;
 static ImVec4 logViewTypeColor[Log::N_TYPES];
 
@@ -40,24 +41,33 @@ void Log::View::Destroy()
 void Log::View::Render()
 {
 	// Inspired by Dear ImGUI's ExampleAppConsole
-	bool const opened = ImGui::Begin("Log", nullptr, ImVec2(600, 400), -1.0f, 0);
-	if (!opened) {
+	bool const isWindowExpended = ImGui::Begin("Log", nullptr, ImGuiWindowFlags_None);
+	if (!isWindowExpended) {
 		ImGui::End();
 		return;
 	}
 
-	bool const copy_to_clipboard = ImGui::SmallButton("Copy"); ImGui::SameLine();
-	mScrollToBottom |= ImGui::SmallButton("Scroll to bottom"); ImGui::SameLine();
+	bool const copyToClipboard = ImGui::SmallButton("Copy"); ImGui::SameLine();
+	mScrollToBottom = mScrollToBottom || ImGui::SmallButton("Scroll to bottom"); ImGui::SameLine();
 	if (ImGui::SmallButton("Clear")) ClearLog();
 
 	ImGui::Separator();
+
+        // Options menu
+        if (ImGui::BeginPopup("Options"))
+        {
+            ImGui::Checkbox("Auto-scroll", &mAutoScroll);
+            ImGui::EndPopup();
+        }
 
 	static ImGuiTextFilter filter;
 	filter.Draw("Filter (\"incl,-excl\")", 180);
 
 	ImGui::Separator();
 
-	ImGui::BeginChild("ScrollingRegion", ImVec2(0, -ImGui::GetItemsLineHeightWithSpacing()), false, ImGuiWindowFlags_HorizontalScrollbar);
+        // Reserve enough left-over height for 1 separator + 1 input text
+        const float footerHeightToReserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+        ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footerHeightToReserve), false, ImGuiWindowFlags_HorizontalScrollbar);
 	if (ImGui::BeginPopupContextWindow())
 	{
 		if (ImGui::Selectable("Clear")) ClearLog();
@@ -65,7 +75,7 @@ void Log::View::Render()
 	}
 
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
-	if (copy_to_clipboard)
+	if (copyToClipboard)
 		ImGui::LogToClipboard();
 
 	for (int i = 0; i < BUFFER_ROWS; i++) {
@@ -77,10 +87,10 @@ void Log::View::Render()
 		ImGui::PopStyleColor();
 	}
 
-	if (copy_to_clipboard)
+	if (copyToClipboard)
 		ImGui::LogFinish();
-	if (mScrollToBottom)
-		ImGui::SetScrollHere();
+	if (mScrollToBottom || (mAutoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY()))
+            ImGui::SetScrollHereY(1.0f);
 	mScrollToBottom = false;
 
 	ImGui::PopStyleVar();

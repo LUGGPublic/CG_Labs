@@ -9,7 +9,6 @@
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 #include <imgui.h>
-#include "external/imgui_impl_glfw_gl3.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -162,7 +161,7 @@ edaf80::Assignment2::run()
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
 
-		ImGui_ImplGlfwGL3_NewFrame();
+		mWindowManager.NewImGuiFrame();
 
 
 		circle_rings_transform_ref.RotateY(0.01f);
@@ -194,7 +193,7 @@ edaf80::Assignment2::run()
 
 		circle_rings.render(mCamera.GetWorldToClipMatrix());
 
-		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(300, 100), -1.0f, 0);
+		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
 			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
 			auto selection_result = program_manager.SelectProgram("Shader", program_index);
@@ -212,7 +211,7 @@ edaf80::Assignment2::run()
 		if (show_logs)
 			Log::View::Render();
 		if (show_gui)
-			ImGui::Render();
+			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
 		lastTime = nowTime;

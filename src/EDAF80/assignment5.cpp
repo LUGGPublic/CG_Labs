@@ -8,7 +8,6 @@
 #include "core/ShaderProgramManager.hpp"
 
 #include <imgui.h>
-#include <external/imgui_impl_glfw_gl3.h>
 #include <tinyfiledialogs.h>
 
 #include <stdexcept>
@@ -102,7 +101,7 @@ edaf80::Assignment5::run()
 				                   "error");
 		}
 
-		ImGui_ImplGlfwGL3_NewFrame();
+		mWindowManager.NewImGuiFrame();
 
 		//
 		// Todo: If you need to handle inputs, you can do it here
@@ -132,7 +131,7 @@ edaf80::Assignment5::run()
 		if (show_logs)
 			Log::View::Render();
 		if (show_gui)
-			ImGui::Render();
+			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
 		lastTime = nowTime;

@@ -18,7 +18,7 @@ CG_Labs uses the following dependencies:
 
 * assimp_ (>= 5.0.1): to load OBJ models;
 * CMake_ (>= 3.0): to generate project files and handle dependencies;
-* `Dear ImGui`_ (>= 1.51): to display information on screen, such as logs;
+* `Dear ImGui`_ (1.78): to display information on screen, such as logs;
 * Git_: to clone missing dependencies;
 * GLAD_ (0.1.33): to load OpenGL extensions;
 * GLFW_ (>= 3.2.1): to create a window and an OpenGL context, as well as handle inputs;
@@ -27,10 +27,10 @@ CG_Labs uses the following dependencies:
 * tinyfiledialogs_: to display dialogue windows to the user, in case of errors
   for example.
 
-The project contains the needed files for GLAD, and it will download assimp,
-Dear ImGui, GLM, GLFW, stb and tinyfiledialogs if they are not found on your
-computer, so you only need to make sure that CMake and Git are installed on
-your computer.
+The project contains the needed files for GLAD and Dear ImGui, and it will
+download assimp, GLM, GLFW, stb and tinyfiledialogs if they are not found on
+your computer, so you only need to make sure that CMake and Git are installed
+on your computer.
 
 An OpenGL 4.1 context is created by the project; if your hardware or its driver
 does not support OpenGL 4.1, you should use the `OpenGL 3.3`_ branch instead
@@ -140,7 +140,7 @@ Licence
 .. _stb: https://github.com/nothings/stb
 .. _tinyfiledialogs: https://sourceforge.net/projects/tinyfiledialogs/
 .. _cmake-generators(7): https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html
-.. _Dear ImGui’s licence: Dear_ImGui_LICENCE
+.. _Dear ImGui’s licence: src/external/Dear ImGui/LICENSE.txt
 .. _OpenGL 3.3: https://github.com/LUGGPublic/CG_Labs/tree/OpenGL_3.3
 .. _this ZIP file: http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDA221_resources.zip
 .. _the UNLICENCE file: UNLICENCE

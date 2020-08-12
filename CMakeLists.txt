@@ -57,11 +57,6 @@ set (LUGGCGL_GLM_MIN_VERSION 0.9.9.0)
 include (CMake/InstallGLM.cmake)
 find_package (glm ${LUGGCGL_GLM_MIN_VERSION} REQUIRED)
 
-# ImGui is used for the windowing system inside the application
-set (LUGGCGL_IMGUI_MIN_VERSION 1.51)
-include (CMake/InstallImGui.cmake)
-find_package (imgui ${LUGGCGL_IMGUI_MIN_VERSION} REQUIRED)
-
 # TinyFileDialogs is used for displaying error popups.
 include (CMake/InstallTinyFileDialogs.cmake)
 
@@ -127,7 +122,7 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 
 	add_dependencies (${assignment_name} bonobo)
 
-	target_link_libraries (${assignment_name} bonobo imgui::imgui glm stb::stb tinyfiledialogs::tinyfiledialogs)
+	target_link_libraries (${assignment_name} bonobo glm stb::stb tinyfiledialogs::tinyfiledialogs)
 
 	install (TARGETS ${assignment_name} DESTINATION bin)
 endfunction ()
@@ -148,7 +143,6 @@ endfunction ()
 
 # Define groups of files for IDEs
 set (PATH_SEP \\)
-source_group (Source\ Files${PATH_SEP}External${PATH_SEP}GLFW FILES ${PROJECT_SOURCE_DIR}/src/external/imgui_impl_glfw_gl3.cpp ${PROJECT_SOURCE_DIR}/src/external/imgui_impl_glfw_gl3.h)
 source_group (Source\ Files${PATH_SEP}External${PATH_SEP}GL3W FILES ${PROJECT_SOURCE_DIR}/src/external/gl3w.cpp)
 
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/external")

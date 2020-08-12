@@ -5,12 +5,14 @@
 
 #include <glad/glad.h>
 #include <imgui.h>
-#include <external/imgui_impl_glfw_gl3.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 namespace
 {
 	const int default_opengl_major_version = 4;
 	const int default_opengl_minor_version = 1;
+	const int default_glsl_version = default_opengl_major_version * 100 + default_opengl_minor_version * 10;
 
 	void ErrorCallback(int error, char const* description)
 	{
@@ -38,7 +40,7 @@ namespace
 		if (should_close)
 			glfwSetWindowShouldClose(window, true);
 
-		ImGui_ImplGlfwGL3_KeyCallback(window, key, scancode, action, mods);
+		ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
 	}
 
 	void MouseCallback(GLFWwindow* window, int button, int action, int mods)
@@ -124,7 +126,18 @@ GLFWwindow* WindowManager::CreateGLFWWindow(std::string const& title, WindowDatu
 		return nullptr;
 	}
 
-	ImGui_ImplGlfwGL3_Init(window, false);
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+
+	// Setup Platform/Renderer bindings
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	char glsl_version_directive[13];
+	std::snprintf(glsl_version_directive, 13, "#version %d%d0", default_opengl_major_version, default_opengl_minor_version);
+	ImGui_ImplOpenGL3_Init(glsl_version_directive);
 
 	glfwSetKeyCallback(window, KeyCallback);
 	glfwSetInputMode(window, GLFW_STICKY_KEYS, 1);
@@ -133,8 +146,8 @@ GLFWwindow* WindowManager::CreateGLFWWindow(std::string const& title, WindowDatu
 	glfwSetFramebufferSizeCallback(window, FramebufferSizeCallback);
 	glfwSetWindowUserPointer(window, static_cast<void*>(this));
 
-	glfwSetScrollCallback(window, ImGui_ImplGlfwGL3_ScrollCallback);
-	glfwSetCharCallback(window, ImGui_ImplGlfwGL3_CharCallback);
+	glfwSetScrollCallback(window, ImGui_ImplGlfw_ScrollCallback);
+	glfwSetCharCallback(window, ImGui_ImplGlfw_CharCallback);
 
 	GLint context_flags = 0, profile_mask = 0;
 	glGetIntegerv(GL_CONTEXT_FLAGS, &context_flags);
@@ -177,11 +190,28 @@ GLFWwindow* WindowManager::CreateGLFWWindow(std::string const& title, WindowDatu
 
 void WindowManager::DestroyWindow(GLFWwindow* const window)
 {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
 	glfwDestroyWindow(window);
 
 	auto const window_datum_iter = mWindowData.find(window);
 	if (window_datum_iter != mWindowData.end())
 		mWindowData.erase(window_datum_iter);
+}
+
+void WindowManager::NewImGuiFrame()
+{
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+}
+
+void WindowManager::RenderImGuiFrame()
+{
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void WindowManager::ToggleFullscreenStatusForWindow(GLFWwindow* const window) noexcept

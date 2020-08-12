@@ -10,7 +10,6 @@
 #include "core/ShaderProgramManager.hpp"
 
 #include <imgui.h>
-#include <external/imgui_impl_glfw_gl3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -142,7 +141,7 @@ edaf80::Assignment3::run()
 		inputHandler.Advance();
 		mCamera.Update(ddeltatime, inputHandler);
 
-		ImGui_ImplGlfwGL3_NewFrame();
+		mWindowManager.NewImGuiFrame();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			shader_reload_failed = !program_manager.ReloadAllPrograms();
@@ -171,7 +170,7 @@ edaf80::Assignment3::run()
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-		bool opened = ImGui::Begin("Scene Control", &opened, ImVec2(300, 100), -1.0f, 0);
+		bool opened = ImGui::Begin("Scene Control", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
 			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
 			auto circle_ring_selection_result = program_manager.SelectProgram("Circle ring", circle_ring_program_index);
@@ -187,7 +186,7 @@ edaf80::Assignment3::run()
 		}
 		ImGui::End();
 
-		ImGui::Begin("Render Time", &opened, ImVec2(120, 50), -1.0f, 0);
+		opened = ImGui::Begin("Render Time", nullptr, ImGuiWindowFlags_None);
 		if (opened)
 			ImGui::Text("%.3f ms", ddeltatime);
 		ImGui::End();
@@ -195,7 +194,7 @@ edaf80::Assignment3::run()
 		if (show_logs)
 			Log::View::Render();
 		if (show_gui)
-			ImGui::Render();
+			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
 		lastTime = nowTime;

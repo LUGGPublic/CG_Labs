@@ -26,6 +26,7 @@ private:
 	static int mLen[BUFFER_ROWS];
 	static Log::Type mType[BUFFER_ROWS];
 	static int mBufferPtr;
+	static bool mAutoScroll;
 	static bool mScrollToBottom;
 };
 

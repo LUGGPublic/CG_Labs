@@ -23,8 +23,12 @@ void GLStateInspection::View::Destroy()
 
 void GLStateInspection::View::Render()
 {
-	bool opened = false;
-	ImGui::Begin("GL state inspection", &opened, ImVec2(600, 400), -1.0f, 0);
+	bool const isWindowExpended = ImGui::Begin("GL state inspection", nullptr, ImGuiWindowFlags_None);
+	if (!isWindowExpended) {
+		ImGui::End();
+		return;
+	}
+
 #if defined ENABLE_GL_STATE_INSPECTION && ENABLE_GL_STATE_INSPECTION != 0
 	int count = GLStateInspection::SnapshotCount();
 	if (count != 0) {

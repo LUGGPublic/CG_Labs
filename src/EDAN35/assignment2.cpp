@@ -15,7 +15,6 @@
 #include "core/ShaderProgramManager.hpp"
 
 #include <imgui.h>
-#include <external/imgui_impl_glfw_gl3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -279,7 +278,7 @@ edan35::Assignment2::run()
 				                   "error");
 		}
 
-		ImGui_ImplGlfwGL3_NewFrame();
+		mWindowManager.NewImGuiFrame();
 
 
 		if (!shader_reload_failed) {
@@ -447,12 +446,12 @@ edan35::Assignment2::run()
 
 		GLStateInspection::View::Render();
 
-		bool opened = ImGui::Begin("Render Time", nullptr, ImVec2(120, 50), -1.0f, 0);
+		bool opened = ImGui::Begin("Render Time", nullptr, ImGuiWindowFlags_None);
 		if (opened)
 			ImGui::Text("%.3f ms", ddeltatime);
 		ImGui::End();
 
-		opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(350, 100), -1.0f, 0);
+		opened = ImGui::Begin("Scene Controls", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
 			ImGui::Checkbox("Pause lights", &are_lights_paused);
 			ImGui::SliderInt("Number of lights", &lights_nb, 1, static_cast<int>(constant::lights_nb));
@@ -464,7 +463,7 @@ edan35::Assignment2::run()
 		if (show_logs)
 			Log::View::Render();
 		if (show_gui)
-			ImGui::Render();
+			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
 		lastTime = nowTime;

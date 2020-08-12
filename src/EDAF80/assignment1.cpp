@@ -8,7 +8,6 @@
 #include "core/ShaderProgramManager.hpp"
 
 #include <imgui.h>
-#include <external/imgui_impl_glfw_gl3.h>
 
 #include <stack>
 
@@ -164,7 +163,7 @@ int main()
 		//
 		// Start a new frame for Dear ImGui
 		//
-		ImGui_ImplGlfwGL3_NewFrame();
+		window_manager.NewImGuiFrame();
 
 
 		//
@@ -195,7 +194,7 @@ int main()
 		if (show_logs)
 			Log::View::Render();
 		if (show_gui)
-			ImGui::Render();
+			window_manager.RenderImGuiFrame();
 
 
 		//

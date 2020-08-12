@@ -47,6 +47,6 @@ set_target_properties (
 		CXX_STANDARD_REQUIRED ON
 		CXX_EXTENSIONS OFF
 )
-target_link_libraries (${PROJECT_NAME} ${ASSIMP_LIBRARIES} imgui::imgui external_libs glfw glm stb::stb)
+target_link_libraries (${PROJECT_NAME} ${ASSIMP_LIBRARIES} external_libs glfw glm stb::stb)
 
 install (TARGETS ${PROJECT_NAME} DESTINATION lib)
