@@ -20,7 +20,7 @@ CG_Labs uses the following dependencies:
 * CMake_ (>= 3.0): to generate project files and handle dependencies;
 * `Dear ImGui`_ (>= 1.51): to display information on screen, such as logs;
 * Git_: to clone missing dependencies;
-* GLAD_: to load OpenGL extensions;
+* GLAD_ (0.1.33): to load OpenGL extensions;
 * GLFW_ (>= 3.2.1): to create a window and an OpenGL context, as well as handle inputs;
 * GLM_ (>= 0.9.8.5): for linear algebra operations;
 * stb_: to load image files;
