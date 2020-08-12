@@ -106,12 +106,6 @@ function (luggcgl_new_assignment assignment_name sources common_sources)
 			"${CMAKE_BINARY_DIR}"
 	)
 
-	target_include_directories (
-		${assignment_name}
-		SYSTEM PRIVATE
-			"${CMAKE_SOURCE_DIR}/src/external"
-	)
-
 	set_target_properties (
 		${assignment_name}
 		PROPERTIES

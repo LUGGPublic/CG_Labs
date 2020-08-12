@@ -34,12 +34,6 @@ target_include_directories (
 		"${ASSIMP_INCLUDE_DIRS}"
 )
 
-target_include_directories (
-	${PROJECT_NAME}
-	SYSTEM PRIVATE
-		"${CMAKE_SOURCE_DIR}/src/external"
-)
-
 set_target_properties (
 	${PROJECT_NAME}
 	PROPERTIES
