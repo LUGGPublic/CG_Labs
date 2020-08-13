@@ -48,6 +48,7 @@ getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
 {
 	auto const path = config::resources_path(filename);
 	auto const channels_nb = 4u;
+	stbi_set_flip_vertically_on_load_thread(flip ? 1 : 0);
 	unsigned char* image_data = stbi_load(path.c_str(), reinterpret_cast<int*>(&width), reinterpret_cast<int*>(&height), nullptr, channels_nb);
 	if (image_data == nullptr) {
 		LogWarning("Couldn't load or decode image file %s", path.c_str());
@@ -57,16 +58,9 @@ getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
 		height = 16;
 		return std::vector<unsigned char>(width * height * channels_nb);
 	}
-    
-	std::vector<unsigned char> image(width * height * channels_nb);
-	if (!flip) {
-		std::memcpy(image.data(), image_data, image.size());
-		stbi_image_free(image_data);
-		return image;
-	}
 
-	for (u32 y = 0; y < height; y++)
-		memcpy(image.data() + (height - 1 - y) * width * channels_nb, &image_data[y * width * channels_nb], width * channels_nb);
+	std::vector<unsigned char> image(width * height * channels_nb);
+	std::memcpy(image.data(), image_data, image.size());
 	stbi_image_free(image_data);
 
 	return image;
@@ -76,6 +70,7 @@ std::vector<bonobo::mesh_data>
 bonobo::loadObjects(std::string const& filename)
 {
 	std::vector<bonobo::mesh_data> objects;
+	std::vector<texture_bindings> materials_bindings;
 
 	auto const scene_filepath = config::resources_path("scenes/" + filename);
 	LogInfo("Loading \"%s\"", scene_filepath.c_str());
@@ -91,10 +86,8 @@ bonobo::loadObjects(std::string const& filename)
 		return objects;
 	}
 
-	std::vector<texture_bindings> materials_bindings;
-	materials_bindings.reserve(assimp_scene->mNumMaterials);
-
 	LogInfo("\t* materials");
+	materials_bindings.reserve(assimp_scene->mNumMaterials);
 	for (size_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
 		texture_bindings bindings;
 		auto const material = assimp_scene->mMaterials[i];
