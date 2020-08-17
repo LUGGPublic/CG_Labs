@@ -50,7 +50,7 @@ link_directories (${ASSIMP_LIBRARY_DIRS})
 
 # GLFW is used for inputs and windows handling
 set (LUGGCGL_GLFW_MIN_VERSION 3.2.0)
-set (LUGGCGL_GLFW_DOWNLOAD_VERSION 3.2.1)
+set (LUGGCGL_GLFW_DOWNLOAD_VERSION 3.3.2)
 include (CMake/InstallGLFW.cmake)
 find_package (glfw3 ${LUGGCGL_GLFW_MIN_VERSION} REQUIRED)
 
