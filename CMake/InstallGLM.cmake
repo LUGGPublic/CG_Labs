@@ -1,4 +1,4 @@
-find_package (glm QUIET ${LUGGCGL_GLM_MIN_VERSION})
+find_package (glm EXACT QUIET ${LUGGCGL_GLM_DOWNLOAD_VERSION})
 if (NOT glm_FOUND)
 	set (glm_SOURCE_DIR ${FETCHCONTENT_BASE_DIR}/glm-source)
 	set (glm_BINARY_DIR ${FETCHCONTENT_BASE_DIR}/glm-build)
@@ -8,7 +8,7 @@ if (NOT glm_FOUND)
 		message (STATUS "Cloning glm…")
 		execute_process (
 			COMMAND ${GIT_EXECUTABLE} clone --depth=1
-			                                -b ${LUGGCGL_GLM_MIN_VERSION}
+			                                -b ${LUGGCGL_GLM_DOWNLOAD_VERSION}
 			                                https://github.com/g-truc/glm.git
 			                                ${glm_SOURCE_DIR}
 			OUTPUT_VARIABLE stdout
@@ -22,6 +22,21 @@ if (NOT glm_FOUND)
 			                     "Error output: ${stderr}")
 		endif ()
 
+		# GLM does not set its revision version in its number string,
+		# making it impossible to match on it.
+		execute_process (
+			COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/0001-Fix-GLM-version.patch
+			OUTPUT_VARIABLE stdout
+			ERROR_VARIABLE stderr
+			RESULT_VARIABLE result
+			WORKING_DIRECTORY "${glm_SOURCE_DIR}"
+		)
+		if (result)
+			message (FATAL_ERROR "Failed to patch glm: ${result}\n"
+			                     "Standard output: ${stdout}\n"
+			                     "Error output: ${stderr}")
+		endif ()
+
 		file (MAKE_DIRECTORY ${glm_BINARY_DIR})
 		file (MAKE_DIRECTORY ${glm_INSTALL_DIR})
 
@@ -31,6 +46,7 @@ if (NOT glm_FOUND)
 			                         -A "${CMAKE_GENERATOR_PLATFORM}"
 			                         -DCMAKE_INSTALL_PREFIX=${glm_INSTALL_DIR}
 			                         -DCMAKE_BUILD_TYPE=Release
+						 -DGLM_TEST_ENABLE=OFF
 			                         ${glm_SOURCE_DIR}
 			OUTPUT_VARIABLE stdout
 			ERROR_VARIABLE stderr
@@ -59,7 +75,7 @@ if (NOT glm_FOUND)
 		endif ()
 	endif ()
 
-	list (APPEND CMAKE_PREFIX_PATH ${glm_INSTALL_DIR}/lib/cmake)
+	list (APPEND CMAKE_PREFIX_PATH ${glm_INSTALL_DIR}/lib64/cmake)
 
 	set (glm_INSTALL_DIR)
 endif ()

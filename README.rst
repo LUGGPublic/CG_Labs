@@ -22,7 +22,7 @@ CG_Labs uses the following dependencies:
 * Git_: to clone missing dependencies;
 * GLAD_ (0.1.33): to load OpenGL extensions;
 * GLFW_ (>= 3.2.1): to create a window and an OpenGL context, as well as handle inputs;
-* GLM_ (>= 0.9.8.5): for linear algebra operations;
+* GLM_ (0.9.9.5): for linear algebra operations;
 * stb_: to load image files;
 * tinyfiledialogs_: to display dialogue windows to the user, in case of errors
   for example.
