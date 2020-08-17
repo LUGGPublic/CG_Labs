@@ -8,7 +8,7 @@ if (NOT glfw3_FOUND)
 		message (STATUS "Cloning glfw…")
 		execute_process (
 			COMMAND ${GIT_EXECUTABLE} clone --depth=1
-			                                -b ${LUGGCGL_GLFW_MIN_VERSION}
+			                                -b ${LUGGCGL_GLFW_DOWNLOAD_VERSION}
 			                                https://github.com/glfw/glfw.git
 			                                ${glfw_SOURCE_DIR}
 			OUTPUT_VARIABLE stdout

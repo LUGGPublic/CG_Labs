@@ -8,7 +8,7 @@ if (NOT assimp_FOUND)
 		message (STATUS "Cloning assimp…")
 		execute_process (
 			COMMAND ${GIT_EXECUTABLE} clone --depth=1
-			                                -b v${LUGGCGL_ASSIMP_MIN_VERSION}
+			                                -b v${LUGGCGL_ASSIMP_DOWNLOAD_VERSION}
 			                                https://github.com/assimp/assimp.git
 			                                ${assimp_SOURCE_DIR}
 			OUTPUT_VARIABLE stdout
