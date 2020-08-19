@@ -1,88 +1,97 @@
-set (
-	COMMON_SOURCES
-
-	"interpolation.cpp"
-	"interpolation.hpp"
-	"parametric_shapes.cpp"
-	"parametric_shapes.hpp"
+add_library (interpolation STATIC)
+target_sources (
+       interpolation
+       PUBLIC [[interpolation.hpp]]
+       PRIVATE [[interpolation.cpp]]
 )
+target_link_libraries (interpolation PRIVATE CG_Labs_options glm)
 
-set (
-	ASSIGNMENT1_SOURCES
-
-	"assignment1.cpp"
+add_library (parametric_shapes STATIC)
+target_sources (
+       parametric_shapes
+       PUBLIC [[parametric_shapes.hpp]]
+       PRIVATE [[parametric_shapes.cpp]]
 )
+target_link_libraries (parametric_shapes PRIVATE bonobo CG_Labs_options)
 
-set (
-	ASSIGNMENT2_SOURCES
 
-	"assignment2.cpp"
-	"assignment2.hpp"
+# Assignment 1
+add_executable (EDAF80_Assignment1)
+target_sources (
+	EDAF80_Assignment1
+	PRIVATE
+		[[assignment1.cpp]]
 )
-
-source_group (
-	EDAF80${PATH_SEP}Assignment2
-
-	FILES
-	${PROJECT_SOURCE_DIR}/interpolation.cpp
-	${PROJECT_SOURCE_DIR}/interpolation.hpp
-	${PROJECT_SOURCE_DIR}/assignment2.cpp
-	${PROJECT_SOURCE_DIR}/assignment2.hpp
-	${PROJECT_SOURCE_DIR}/parametric_shapes.cpp
-	${PROJECT_SOURCE_DIR}/parametric_shapes.hpp
-	${SHADERS_DIR}/EDAF80/LambertTexture.vert
-	${SHADERS_DIR}/EDAF80/LambertTexture.frag
+target_link_libraries (
+	EDAF80_Assignment1
+	PRIVATE assignment_setup parametric_shapes
 )
+copy_dlls (EDAF80_Assignment1 "${CMAKE_CURRENT_BINARY_DIR}")
 
-set (
-	ASSIGNMENT3_SOURCES
 
-	"assignment3.cpp"
-	"assignment3.hpp"
+# Assignment 2
+add_executable (EDAF80_Assignment2)
+target_sources (
+	EDAF80_Assignment2
+	PRIVATE
+		[[assignment2.hpp]]
+		[[assignment2.cpp]]
 )
-
-source_group (
-	EDAF80${PATH_SEP}Assignment3
-
-	FILES
-	${PROJECT_SOURCE_DIR}/assignment3.cpp
-	${PROJECT_SOURCE_DIR}/assignment3.hpp
-	${SHADERS_DIR}/EDAF80/LambertTexture.vert
-	${SHADERS_DIR}/EDAF80/LambertTexture.frag
+target_link_libraries (
+	EDAF80_Assignment2
+	PRIVATE assignment_setup interpolation parametric_shapes
 )
+copy_dlls (EDAF80_Assignment2 "${CMAKE_CURRENT_BINARY_DIR}")
 
-set (
-	ASSIGNMENT4_SOURCES
 
-	"assignment4.cpp"
-	"assignment4.hpp"
+# Assignment 3
+add_executable (EDAF80_Assignment3)
+target_sources (
+	EDAF80_Assignment3
+	PRIVATE
+		[[assignment3.hpp]]
+		[[assignment3.cpp]]
 )
-
-source_group (
-	EDAF80${PATH_SEP}Assignment4
-
-	FILES
-	${PROJECT_SOURCE_DIR}/assignment4.cpp
-	${PROJECT_SOURCE_DIR}/assignment4.hpp
+target_link_libraries (
+	EDAF80_Assignment3
+	PRIVATE assignment_setup parametric_shapes
 )
+copy_dlls (EDAF80_Assignment3 "${CMAKE_CURRENT_BINARY_DIR}")
 
-set (
-	ASSIGNMENT5_SOURCES
 
-	"assignment5.cpp"
-	"assignment5.hpp"
+# Assignment 4
+add_executable (EDAF80_Assignment4)
+target_sources (
+	EDAF80_Assignment4
+	PRIVATE
+		[[assignment4.hpp]]
+		[[assignment4.cpp]]
 )
-
-source_group (
-	EDAF80${PATH_SEP}Assignment5
-
-	FILES
-	${PROJECT_SOURCE_DIR}/assignment5.cpp
-	${PROJECT_SOURCE_DIR}/assignment5.hpp
+target_link_libraries (
+	EDAF80_Assignment4
+	PRIVATE assignment_setup parametric_shapes
 )
+copy_dlls (EDAF80_Assignment4 "${CMAKE_CURRENT_BINARY_DIR}")
 
-luggcgl_new_assignment ("EDAF80_Assignment1" "${ASSIGNMENT1_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")
-luggcgl_new_assignment ("EDAF80_Assignment2" "${ASSIGNMENT2_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")
-luggcgl_new_assignment ("EDAF80_Assignment3" "${ASSIGNMENT3_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")
-luggcgl_new_assignment ("EDAF80_Assignment4" "${ASSIGNMENT4_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")
-luggcgl_new_assignment ("EDAF80_Assignment5" "${ASSIGNMENT5_SOURCES}" "${COMMON_SOURCES}" "${CMAKE_CURRENT_BINARY_DIR}")
+
+# Assignment 5
+add_executable (EDAF80_Assignment5)
+target_sources (
+	EDAF80_Assignment5
+	PRIVATE
+		[[assignment5.hpp]]
+		[[assignment5.cpp]]
+)
+target_link_libraries (EDAF80_Assignment5 PRIVATE assignment_setup)
+copy_dlls (EDAF80_Assignment5 "${CMAKE_CURRENT_BINARY_DIR}")
+
+
+install (
+	TARGETS
+		EDAF80_Assignment1
+		EDAF80_Assignment2
+		EDAF80_Assignment3
+		EDAF80_Assignment4
+		EDAF80_Assignment5
+	DESTINATION [[bin]]
+)

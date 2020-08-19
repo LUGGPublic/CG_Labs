@@ -107,6 +107,19 @@ add_library (CG_Labs_options INTERFACE)
 target_compile_features (CG_Labs_options INTERFACE cxx_std_14)
 
 
+# Define another “fake” library that provides a common setup for all
+# assignments. At the moment it only contains all common dependencies but it
+# could contain more, like specific compilation flags.
+add_library (assignment_setup INTERFACE)
+target_link_libraries (
+       assignment_setup
+       INTERFACE
+               bonobo
+               CG_Labs_options
+               tinyfiledialogs::tinyfiledialogs
+)
+
+
 function (copy_dlls target target_folder)
 	if (WIN32)
 		set (assimp_dll "assimp${ASSIMP_LIBRARY_SUFFIX}.dll")
@@ -123,19 +136,6 @@ function (copy_dlls target target_folder)
 	endif ()
 endfunction ()
 
-function (luggcgl_new_assignment assignment_name sources common_sources output_dir)
-	add_executable (${assignment_name} ${sources} ${common_sources})
-
-	target_link_libraries (${assignment_name} bonobo CG_Labs_options tinyfiledialogs::tinyfiledialogs)
-
-	install (TARGETS ${assignment_name} DESTINATION bin)
-
-	copy_dlls (${assignment_name} "${output_dir}")
-endfunction ()
-
-
-# Define groups of files for IDEs
-set (PATH_SEP \\)
 
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/external")
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/core")
