@@ -3,7 +3,6 @@
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 
@@ -16,6 +15,8 @@
 
 int main()
 {
+	using namespace std::literals::chrono_literals;
+
 	//
 	// Set up the framework
 	//
@@ -30,7 +31,7 @@ int main()
 	                  0.01f, 1000.0f);
 	camera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	camera.mMouseSensitivity = 0.003f;
-	camera.mMovementSpeed = 0.25f * 12.0f;
+	camera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
 
 	//
 	// Create the window
@@ -122,9 +123,7 @@ int main()
 	glEnable(GL_DEPTH_TEST);
 
 
-	size_t fpsSamples = 0;
-	double lastTime = GetTimeSeconds();
-	double fpsNextTick = lastTime + 1.0;
+	auto last_time = std::chrono::high_resolution_clock::now();
 
 
 	bool show_logs = true;
@@ -134,14 +133,9 @@ int main()
 		//
 		// Compute timings information
 		//
-		double const nowTime = GetTimeSeconds();
-		double const delta_time = nowTime - lastTime;
-		lastTime = nowTime;
-		if (nowTime > fpsNextTick) {
-			fpsNextTick += 1.0;
-			fpsSamples = 0;
-		}
-		++fpsSamples;
+		auto const now_time = std::chrono::high_resolution_clock::now();
+		auto const delta_time_us = std::chrono::duration_cast<std::chrono::microseconds>(now_time - last_time);
+		last_time = now_time;
 
 
 		//
@@ -152,7 +146,7 @@ int main()
 		ImGuiIO const& io = ImGui::GetIO();
 		input_handler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 		input_handler.Advance();
-		camera.Update(delta_time, input_handler);
+		camera.Update(delta_time_us, input_handler);
 
 		if (input_handler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
@@ -175,7 +169,7 @@ int main()
 		//
 		// Update the transforms
 		//
-		sun_transform_reference.RotateY(sun_spin_speed * delta_time);
+		sun_transform_reference.RotateY(sun_spin_speed * delta_time_s.count());
 
 
 		//

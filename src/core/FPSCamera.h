@@ -7,6 +7,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/io.hpp>
 
+#include <chrono>
 #include <iostream>
 
 template<typename T, glm::precision P>
@@ -17,7 +18,7 @@ public:
 	~FPSCamera();
 
 public:
-	void Update(double dt, InputHandler &ih, bool ignoreKeyEvents = false, bool ignoreMouseEvents = false);
+	void Update(std::chrono::microseconds deltaTime, InputHandler &ih, bool ignoreKeyEvents = false, bool ignoreMouseEvents = false);
 	void SetProjection(T fovy, T aspect, T nnear, T nfar);
 	void SetFov(T fovy);
 	T GetFov();

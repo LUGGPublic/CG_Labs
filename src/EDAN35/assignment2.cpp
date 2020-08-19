@@ -10,7 +10,6 @@
 #include "core/GLStateInspection.h"
 #include "core/GLStateInspectionView.h"
 #include "core/helpers.hpp"
-#include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 
@@ -88,9 +87,9 @@ edan35::Assignment2::run()
 	//
 	// Setup the camera
 	//
-	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 100.0f, 180.0f));
+	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 1.0f, 1.8f) * 100.0f); // the scene is expressed in centimetres rather than metres, hence the x100.
 	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 0.25f;
+	mCamera.mMovementSpeed = 3.0f * 100.0f; // 3 m/s => 10.8 km/h; the scene is expressed in centimetres rather than metres, hence the x100.
 
 	//
 	// Load all the shader programs used
@@ -236,10 +235,7 @@ edan35::Assignment2::run()
 	glEnable(GL_CULL_FACE);
 
 
-	double ddeltatime;
-	size_t fpsSamples = 0;
-	double nowTime, lastTime = GetTimeMilliseconds();
-	double fpsNextTick = lastTime + 1000.0;
+	auto lastTime = std::chrono::high_resolution_clock::now();
 	bool show_textures = true;
 	bool show_cone_wireframe = false;
 
@@ -248,22 +244,18 @@ edan35::Assignment2::run()
 	bool shader_reload_failed = false;
 
 	while (!glfwWindowShouldClose(window)) {
-		nowTime = GetTimeMilliseconds();
-		ddeltatime = nowTime - lastTime;
-		if (nowTime > fpsNextTick) {
-			fpsNextTick += 1000.0;
-			fpsSamples = 0;
-		}
-		fpsSamples++;
+		auto const nowTime = std::chrono::high_resolution_clock::now();
+		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
+		lastTime = nowTime;
 		if (!are_lights_paused)
-			seconds_nb += static_cast<float>(ddeltatime / 1000.0);
+			seconds_nb += std::chrono::duration<decltype(seconds_nb)>(deltaTimeUs).count();
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
 		inputHandler.Advance();
-		mCamera.Update(ddeltatime, inputHandler);
+		mCamera.Update(deltaTimeUs, inputHandler);
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
@@ -448,7 +440,7 @@ edan35::Assignment2::run()
 
 		bool opened = ImGui::Begin("Render Time", nullptr, ImGuiWindowFlags_None);
 		if (opened)
-			ImGui::Text("%.3f ms", ddeltatime);
+			ImGui::Text("%.3f ms", std::chrono::duration<float, std::milli>(deltaTimeUs).count());
 		ImGui::End();
 
 		opened = ImGui::Begin("Scene Controls", nullptr, ImGuiWindowFlags_None);
@@ -466,7 +458,6 @@ edan35::Assignment2::run()
 			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
-		lastTime = nowTime;
 	}
 
 	glDeleteProgram(resolve_deferred_shader);

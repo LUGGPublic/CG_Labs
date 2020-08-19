@@ -5,7 +5,6 @@
 #include "config.hpp"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
-#include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 
@@ -45,7 +44,7 @@ edaf80::Assignment3::run()
 	// Set up the camera
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 0.025;
+	mCamera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
 
 	// Create the shader programs
 	ShaderProgramManager program_manager;
@@ -114,10 +113,7 @@ edaf80::Assignment3::run()
 	//glCullFace(GL_BACK);
 
 
-	double ddeltatime;
-	size_t fpsSamples = 0;
-	double nowTime, lastTime = GetTimeMilliseconds();
-	double fpsNextTick = lastTime + 1000.0;
+	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	std::int32_t circle_ring_program_index = 0;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
@@ -126,20 +122,16 @@ edaf80::Assignment3::run()
 	bool shader_reload_failed = false;
 
 	while (!glfwWindowShouldClose(window)) {
-		nowTime = GetTimeMilliseconds();
-		ddeltatime = nowTime - lastTime;
-		if (nowTime > fpsNextTick) {
-			fpsNextTick += 1000.0;
-			fpsSamples = 0;
-		}
-		fpsSamples++;
+		auto const nowTime = std::chrono::high_resolution_clock::now();
+		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
+		lastTime = nowTime;
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
 		inputHandler.Advance();
-		mCamera.Update(ddeltatime, inputHandler);
+		mCamera.Update(deltaTimeUs, inputHandler);
 
 		mWindowManager.NewImGuiFrame();
 
@@ -188,7 +180,7 @@ edaf80::Assignment3::run()
 
 		opened = ImGui::Begin("Render Time", nullptr, ImGuiWindowFlags_None);
 		if (opened)
-			ImGui::Text("%.3f ms", ddeltatime);
+			ImGui::Text("%.3f ms", std::chrono::duration<float, std::milli>(deltaTimeUs).count());
 		ImGui::End();
 
 		if (show_logs)
@@ -197,7 +189,6 @@ edaf80::Assignment3::run()
 			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
-		lastTime = nowTime;
 	}
 }
 

@@ -5,7 +5,6 @@
 #include "config.hpp"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
-#include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 #include <imgui.h>
@@ -42,7 +41,7 @@ edaf80::Assignment2::run()
 	// Set up the camera
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 0.25f * 12.0f;
+	mCamera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
 
 	// Create the shader programs
 	ShaderProgramManager program_manager;
@@ -130,10 +129,7 @@ edaf80::Assignment2::run()
 	//glCullFace(GL_BACK);
 
 
-	double ddeltatime;
-	size_t fpsSamples = 0;
-	double nowTime, lastTime = GetTimeSeconds();
-	double fpsNextTick = lastTime + 1.0;
+	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	std::int32_t program_index = 0;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
@@ -141,20 +137,16 @@ edaf80::Assignment2::run()
 	bool show_gui = true;
 
 	while (!glfwWindowShouldClose(window)) {
-		nowTime = GetTimeSeconds();
-		ddeltatime = nowTime - lastTime;
-		if (nowTime > fpsNextTick) {
-			fpsNextTick += 1.0;
-			fpsSamples = 0;
-		}
-		fpsSamples++;
+		auto const nowTime = std::chrono::high_resolution_clock::now();
+		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
+		lastTime = nowTime;
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
 		inputHandler.Advance();
-		mCamera.Update(ddeltatime, inputHandler);
+		mCamera.Update(deltaTimeUs, inputHandler);
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
@@ -214,7 +206,6 @@ edaf80::Assignment2::run()
 			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
-		lastTime = nowTime;
 	}
 }
 

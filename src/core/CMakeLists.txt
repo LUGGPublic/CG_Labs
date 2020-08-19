@@ -5,7 +5,6 @@ add_library (bonobo
 	"InputHandler.cpp"
 	"Log.cpp"
 	"LogView.cpp"
-	"Misc.cpp"
 	"opengl.cpp"
 	"ShaderProgramManager.cpp"
 	"various.cpp"

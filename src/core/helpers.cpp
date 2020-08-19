@@ -2,7 +2,6 @@
 #include "helpers.hpp"
 
 #include "core/Log.h"
-#include "core/Misc.h"
 #include "core/opengl.hpp"
 #include "core/various.hpp"
 

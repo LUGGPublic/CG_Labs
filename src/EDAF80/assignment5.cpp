@@ -4,7 +4,6 @@
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/Misc.h"
 #include "core/ShaderProgramManager.hpp"
 
 #include <imgui.h>
@@ -32,7 +31,7 @@ edaf80::Assignment5::run()
 	// Set up the camera
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 0.025;
+	mCamera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
 
 	// Create the shader programs
 	ShaderProgramManager program_manager;
@@ -63,30 +62,23 @@ edaf80::Assignment5::run()
 	//glCullFace(GL_BACK);
 
 
-	double ddeltatime;
-	size_t fpsSamples = 0;
-	double nowTime, lastTime = GetTimeMilliseconds();
-	double fpsNextTick = lastTime + 1000.0;
+	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	bool show_logs = true;
 	bool show_gui = true;
 	bool shader_reload_failed = false;
 
 	while (!glfwWindowShouldClose(window)) {
-		nowTime = GetTimeMilliseconds();
-		ddeltatime = nowTime - lastTime;
-		if (nowTime > fpsNextTick) {
-			fpsNextTick += 1000.0;
-			fpsSamples = 0;
-		}
-		fpsSamples++;
+		auto const nowTime = std::chrono::high_resolution_clock::now();
+		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
+		lastTime = nowTime;
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
 		inputHandler.Advance();
-		mCamera.Update(ddeltatime, inputHandler);
+		mCamera.Update(deltaTimeUs, inputHandler);
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
@@ -134,7 +126,6 @@ edaf80::Assignment5::run()
 			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
-		lastTime = nowTime;
 	}
 }
 

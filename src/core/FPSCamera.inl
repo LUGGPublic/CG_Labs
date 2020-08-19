@@ -46,7 +46,7 @@ T FPSCamera<T, P>::GetAspect()
 
 
 template<typename T, glm::precision P>
-void FPSCamera<T, P>::Update(double dt, InputHandler &ih, bool ignoreKeyEvents, bool ignoreMouseEvents)
+void FPSCamera<T, P>::Update(std::chrono::microseconds deltaTime, InputHandler &ih, bool ignoreKeyEvents, bool ignoreMouseEvents)
 {
 	glm::tvec2<T, P> newMousePosition = glm::tvec2<T, P>(ih.GetMousePosition().x, ih.GetMousePosition().y);
 	glm::tvec2<T, P> mouse_diff = newMousePosition - mMousePosition;
@@ -62,7 +62,8 @@ void FPSCamera<T, P>::Update(double dt, InputHandler &ih, bool ignoreKeyEvents, 
 	}
 
 	T movementModifier = ((ih.GetKeycodeState(GLFW_MOD_SHIFT) & PRESSED)) ? 0.25f : ((ih.GetKeycodeState(GLFW_MOD_CONTROL) & PRESSED)) ? 4.0f : 1.0f;
-	T movement = movementModifier * T(dt) * mMovementSpeed;
+	auto const deltaTime_s = std::chrono::duration<T>(deltaTime);
+	T movement = movementModifier * deltaTime_s.count() * mMovementSpeed;
 
 	T move = 0.0f, strafe = 0.0f, levitate = 0.0f;
 	if (!ih.IsKeyboardCapturedByUI() && !ignoreKeyEvents) {
