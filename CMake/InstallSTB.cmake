@@ -1,21 +1,14 @@
-set (stb_SOURCE_DIR ${FETCHCONTENT_BASE_DIR}/stb-source)
+FetchContent_Declare (
+	stb
+	GIT_REPOSITORY [[https://github.com/nothings/stb]]
+	GIT_TAG [[origin/master]]
+	GIT_SHALLOW ON
+)
 
-if (NOT EXISTS ${stb_SOURCE_DIR})
+FetchContent_GetProperties (stb)
+if (NOT stb_POPULATED)
 	message (STATUS "Cloning stb…")
-	execute_process (
-		COMMAND ${GIT_EXECUTABLE} clone --depth=1
-		                                https://github.com/nothings/stb
-		                                ${stb_SOURCE_DIR}
-		OUTPUT_VARIABLE stdout
-		ERROR_VARIABLE stderr
-		RESULT_VARIABLE result
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies
-	)
-	if (result)
-		message (FATAL_ERROR "Failed to clone stb: ${result}\n"
-		                     "Standard output: ${stdout}\n"
-		                     "Error output: ${stderr}")
-	endif ()
+	FetchContent_Populate (stb)
 endif ()
 
 add_library( stb::stb INTERFACE IMPORTED)

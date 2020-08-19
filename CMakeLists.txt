@@ -1,6 +1,7 @@
 ﻿# Requirements reason:
 # 3.0:  using the `VERSION` option of the `project()` command;
 # 3.9:  using the `DESCRIPTION` option of the `project()` command;
+# 3.11: using the `FetchContent` module;
 # 3.12: using the `HOMEPAGE_URL` option of the `project()` command;
 cmake_minimum_required (VERSION 3.12)
 
@@ -39,10 +40,11 @@ set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPE
 
 # To be able to dowload and compile the dependencies
 find_package (Git REQUIRED)
-set (FETCHCONTENT_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
+include (FetchContent)
+set (FETCHCONTENT_BASE_DIR "${PROJECT_SOURCE_DIR}/dependencies" CACHE PATH "Base folder where dependencies are processed." FORCE)
 
-if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
-	file (MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
+if (NOT EXISTS "${FETCHCONTENT_BASE_DIR}")
+	file (MAKE_DIRECTORY "${FETCHCONTENT_BASE_DIR}")
 endif ()
 
 # assimp is used for loading the objects’s models
