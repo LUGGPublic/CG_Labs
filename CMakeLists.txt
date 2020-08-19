@@ -1,6 +1,8 @@
-﻿# As we use the VERSION option---which was introduced in CMAKE 3.0---of the
-# project() command, set the minimum required version to 3.0.
-cmake_minimum_required (VERSION 3.0)
+﻿# Requirements reason:
+# 3.0:  using the `VERSION` option of the `project()` command;
+# 3.9:  using the `DESCRIPTION` option of the `project()` command;
+# 3.12: using the `HOMEPAGE_URL` option of the `project()` command;
+cmake_minimum_required (VERSION 3.12)
 
 # Workaround for the lab computers
 if (WIN32)
@@ -11,10 +13,12 @@ if (WIN32)
 	set (ENV{TMP} ${LUGGCGL_TMP_DIR})
 endif ()
 
-# Set the project name, versions and languages used.
+# Set project attributes.
 project (
 	CG_Labs
 	VERSION 2019.1
+	DESCRIPTION [[Repository for Computer Graphics courses EDAF80 and EDAN35 at Lund University, Sweden.]]
+	HOMEPAGE_URL [[https://github.com/LUGGPublic/CG_Labs/]]
 	LANGUAGES CXX C
 )
 
