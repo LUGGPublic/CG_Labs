@@ -126,13 +126,7 @@ endfunction ()
 function (luggcgl_new_assignment assignment_name sources common_sources output_dir)
 	add_executable (${assignment_name} ${sources} ${common_sources})
 
-	target_include_directories (
-		${assignment_name}
-		PRIVATE
-			"${CMAKE_SOURCE_DIR}/src"
-			"${CMAKE_BINARY_DIR}"
-	)
-	target_link_libraries (${assignment_name} bonobo CG_Labs_options glm stb::stb tinyfiledialogs::tinyfiledialogs)
+	target_link_libraries (${assignment_name} bonobo CG_Labs_options tinyfiledialogs::tinyfiledialogs)
 
 	install (TARGETS ${assignment_name} DESTINATION bin)
 

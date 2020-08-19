@@ -1,27 +1,45 @@
-add_library (bonobo
-	"Bonobo.cpp"
-	"GLStateInspection.cpp"
-	"GLStateInspectionView.cpp"
-	"InputHandler.cpp"
-	"Log.cpp"
-	"LogView.cpp"
-	"opengl.cpp"
-	"ShaderProgramManager.cpp"
-	"various.cpp"
-	"WindowManager.cpp"
-
-	"node.cpp"
-	"node.hpp"
-	"helpers.cpp"
-	"helpers.hpp"
+add_library (bonobo)
+target_sources (
+	bonobo
+	PUBLIC
+		[[Bonobo.h]]
+		[[BuildSettings.h]]
+		"${CMAKE_BINARY_DIR}/config.hpp"
+		[[FPSCamera.h]]
+		[[FPSCamera.inl]]
+		[[GLStateInspection.h]]
+		[[GLStateInspectionView.h]]
+		[[helpers.hpp]]
+		[[InputHandler.h]]
+		[[Log.h]]
+		[[LogView.h]]
+		[[node.hpp]]
+		[[opengl.hpp]]
+		[[ShaderProgramManager.hpp]]
+		[[TRSTransform.h]]
+		[[TRSTransform.inl]]
+		[[various.hpp]]
+		[[WindowManager.hpp]]
+	PRIVATE
+		[[Bonobo.cpp]]
+		[[GLStateInspection.cpp]]
+		[[GLStateInspectionView.cpp]]
+		[[helpers.cpp]]
+		[[InputHandler.cpp]]
+		[[Log.cpp]]
+		[[LogView.cpp]]
+		[[node.cpp]]
+		[[opengl.cpp]]
+		[[ShaderProgramManager.cpp]]
+		[[various.cpp]]
+		[[WindowManager.cpp]]
 )
 
 target_include_directories (
 	bonobo
-	PRIVATE
+	PUBLIC
 		"${CMAKE_SOURCE_DIR}/src"
 		"${CMAKE_BINARY_DIR}"
-	PUBLIC
 		"${ASSIMP_INCLUDE_DIRS}"
 )
 
@@ -32,6 +50,7 @@ target_link_libraries (
 		external_libs
 		glfw
 		glm
+		$<$<NOT:$<BOOL:WIN32>>:dl>
 	PRIVATE
 		CG_Labs_options
 		stb::stb
