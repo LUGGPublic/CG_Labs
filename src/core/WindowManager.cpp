@@ -136,18 +136,16 @@ GLFWwindow* WindowManager::CreateGLFWWindow(std::string const& title, WindowDatu
 	glfwSetScrollCallback(window, ImGui_ImplGlfwGL3_ScrollCallback);
 	glfwSetCharCallback(window, ImGui_ImplGlfwGL3_CharCallback);
 
-	GLint major_version = 0, minor_version = 0, context_flags = 0, profile_mask = 0;
-	glGetIntegerv(GL_MAJOR_VERSION, &major_version);
-	glGetIntegerv(GL_MINOR_VERSION, &minor_version);
+	GLint context_flags = 0, profile_mask = 0;
 	glGetIntegerv(GL_CONTEXT_FLAGS, &context_flags);
 	glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile_mask);
-	LogInfo("Using OpenGL %d.%d with context options: profile=%s, debug=%s, forward compatible=%s.", major_version, minor_version
+	LogInfo("Using OpenGL %d.%d with context options: profile=%s, debug=%s, forward compatible=%s.", GLVersion.major, GLVersion.minor
 	       , (profile_mask & GL_CONTEXT_CORE_PROFILE_BIT) ? "core" : (profile_mask & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) ? "compatibility" : "unknown"
 	       , (context_flags & GL_CONTEXT_FLAG_DEBUG_BIT) ? "true" : "false"
 	       , (context_flags & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT) ? "true" : "false"
 	       );
 
-	if ((major_version >= 4 && minor_version >= 3) || GLAD_GL_KHR_debug)
+	if (GLAD_GL_VERSION_4_3 || GLAD_GL_KHR_debug)
 	{
 #if DEBUG_LEVEL >= 2
 		glEnable(GL_DEBUG_OUTPUT);
@@ -164,7 +162,7 @@ GLFWwindow* WindowManager::CreateGLFWWindow(std::string const& title, WindowDatu
 	}
 	else
 	{
-		LogInfo("DebugCallback is not core in OpenGL %d.%d, and sadly the GL_KHR_DEBUG extension is not available either.", major_version, minor_version);
+		LogInfo("DebugCallback is not core in OpenGL %d.%d, and sadly the GL_KHR_DEBUG extension is not available either.", GLVersion.major, GLVersion.minor);
 	}
 
 	glfwSwapInterval(static_cast<std::underlying_type<SwapStrategy>::type>(swap));
