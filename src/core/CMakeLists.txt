@@ -1,11 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
-
-project (bonobo
-	VERSION 0.2
-	LANGUAGES CXX
-)
-
-add_library (${PROJECT_NAME}
+add_library (bonobo
 	"Bonobo.cpp"
 	"GLStateInspection.cpp"
 	"GLStateInspectionView.cpp"
@@ -26,7 +19,7 @@ add_library (${PROJECT_NAME}
 )
 
 target_include_directories (
-	${PROJECT_NAME}
+	bonobo
 	PRIVATE
 		"${CMAKE_SOURCE_DIR}/src"
 		"${CMAKE_BINARY_DIR}"
@@ -35,12 +28,12 @@ target_include_directories (
 )
 
 set_target_properties (
-	${PROJECT_NAME}
+	bonobo
 	PROPERTIES
 		CXX_STANDARD 14
 		CXX_STANDARD_REQUIRED ON
 		CXX_EXTENSIONS OFF
 )
-target_link_libraries (${PROJECT_NAME} ${ASSIMP_LIBRARIES} external_libs glfw glm stb::stb)
+target_link_libraries (bonobo ${ASSIMP_LIBRARIES} external_libs glfw glm stb::stb)
 
-install (TARGETS ${PROJECT_NAME} DESTINATION lib)
+install (TARGETS bonobo DESTINATION lib)
