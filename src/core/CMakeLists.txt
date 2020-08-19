@@ -27,13 +27,6 @@ target_include_directories (
 		"${ASSIMP_INCLUDE_DIRS}"
 )
 
-set_target_properties (
-	bonobo
-	PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED ON
-		CXX_EXTENSIONS OFF
-)
-target_link_libraries (bonobo ${ASSIMP_LIBRARIES} external_libs glfw glm stb::stb)
+target_link_libraries (bonobo ${ASSIMP_LIBRARIES} CG_Labs_options external_libs glfw glm stb::stb)
 
 install (TARGETS bonobo DESTINATION lib)

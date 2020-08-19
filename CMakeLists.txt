@@ -98,6 +98,15 @@ if (LUGGCGL_BUILD_DOCUMENTATION)
 	)
 endif ()
 
+
+# Define a “fake” library to store the C++ configuration:
+# all libraries and executables linking against this target will automatically
+# inherit its configuration such as C++ standard version and additional C++
+# flags.
+add_library (CG_Labs_options INTERFACE)
+target_compile_features (CG_Labs_options INTERFACE cxx_std_14)
+
+
 function (copy_dlls target target_folder)
 	if (WIN32)
 		set (assimp_dll "assimp${ASSIMP_LIBRARY_SUFFIX}.dll")
@@ -123,14 +132,7 @@ function (luggcgl_new_assignment assignment_name sources common_sources output_d
 			"${CMAKE_SOURCE_DIR}/src"
 			"${CMAKE_BINARY_DIR}"
 	)
-	set_target_properties (
-		${assignment_name}
-		PROPERTIES
-			CXX_STANDARD 14
-			CXX_STANDARD_REQUIRED ON
-			CXX_EXTENSIONS OFF
-	)
-	target_link_libraries (${assignment_name} bonobo glm stb::stb tinyfiledialogs::tinyfiledialogs)
+	target_link_libraries (${assignment_name} bonobo CG_Labs_options glm stb::stb tinyfiledialogs::tinyfiledialogs)
 
 	install (TARGETS ${assignment_name} DESTINATION bin)
 
