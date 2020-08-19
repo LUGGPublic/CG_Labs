@@ -27,6 +27,16 @@ target_include_directories (
 		"${ASSIMP_INCLUDE_DIRS}"
 )
 
-target_link_libraries (bonobo ${ASSIMP_LIBRARIES} CG_Labs_options external_libs glfw glm stb::stb)
+target_link_libraries (
+	bonobo
+	PUBLIC
+		${ASSIMP_LIBRARIES}
+		external_libs
+		glfw
+		glm
+	PRIVATE
+		CG_Labs_options
+		stb::stb
+)
 
 install (TARGETS bonobo DESTINATION lib)
