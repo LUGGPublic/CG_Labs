@@ -80,7 +80,7 @@ double GetTimeMilliseconds()
 	return static_cast<double>(GetTimeNanoseconds()) * 0.000001;
 }
 
-u64 GetTimeNanoseconds()
+std::uint64_t GetTimeNanoseconds()
 {
 	auto time = std::chrono::high_resolution_clock::now();
 	return std::chrono::duration_cast<std::chrono::nanoseconds>(time.time_since_epoch()).count();
@@ -96,13 +96,13 @@ double EndTimerSeconds(std::chrono::high_resolution_clock::time_point const& sta
 	return static_cast<double>(EndTimerNanoseconds(startTime)) * 0.000000001;
 }
 
-u64 EndTimerMilliseconds(std::chrono::high_resolution_clock::time_point const& startTime)
+std::uint64_t EndTimerMilliseconds(std::chrono::high_resolution_clock::time_point const& startTime)
 {
 	auto endTime = std::chrono::high_resolution_clock::now();
 	return std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
 }
 
-u64 EndTimerNanoseconds(std::chrono::high_resolution_clock::time_point const& startTime)
+std::uint64_t EndTimerNanoseconds(std::chrono::high_resolution_clock::time_point const& startTime)
 {
 	auto endTime = std::chrono::high_resolution_clock::now();
 	return std::chrono::duration_cast<std::chrono::nanoseconds>(endTime - startTime).count();

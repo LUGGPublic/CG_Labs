@@ -2,9 +2,8 @@
 
 
 #include <chrono>
+#include <cstdint>
 #include <thread>
-
-#include "Types.h"
 
 
 void *AlignedMalloc(size_t size, size_t alignment);
@@ -19,11 +18,11 @@ double RandomUniform(double from, double to);
 
 double GetTimeSeconds();
 double GetTimeMilliseconds();
-u64 GetTimeNanoseconds();
+std::uint64_t GetTimeNanoseconds();
 std::chrono::high_resolution_clock::time_point StartTimer();
 double EndTimerSeconds(std::chrono::high_resolution_clock::time_point const& startTime);
-u64 EndTimerMilliseconds(std::chrono::high_resolution_clock::time_point const& startTime);
-u64 EndTimerNanoseconds(std::chrono::high_resolution_clock::time_point const& startTime);
+std::uint64_t EndTimerMilliseconds(std::chrono::high_resolution_clock::time_point const& startTime);
+std::uint64_t EndTimerNanoseconds(std::chrono::high_resolution_clock::time_point const& startTime);
 
 template<typename T> T Exchange(T &a, T &b)
 {

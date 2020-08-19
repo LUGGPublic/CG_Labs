@@ -15,6 +15,7 @@
 
 #include <array>
 #include <cassert>
+#include <cstdint>
 
 namespace local
 {
@@ -43,8 +44,8 @@ bonobo::deinit()
 	glDeleteVertexArrays(1, &local::display_vao);
 }
 
-static std::vector<u8>
-getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
+static std::vector<std::uint8_t>
+getTextureData(std::string const& filename, std::uint32_t& width, std::uint32_t& height, bool flip)
 {
 	auto const path = config::resources_path(filename);
 	auto const channels_nb = 4u;
@@ -263,7 +264,7 @@ bonobo::createTexture(uint32_t width, uint32_t height, GLenum target, GLint inte
 GLuint
 bonobo::loadTexture2D(std::string const& filename, bool generate_mipmap)
 {
-	u32 width, height;
+	std::uint32_t width, height;
 	auto const data = getTextureData("textures/" + filename, width, height, true);
 	if (data.empty())
 		return 0u;
@@ -314,9 +315,9 @@ bonobo::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 
 	// We need to fill in the cube map using the images passed in as
 	// argument. The function `getTextureData()` uses stb to read in the
-	// image files and return a `std::vector<u8>` containing all the
+	// image files and return a `std::vector<std::uint8_t>` containing all the
 	// texels.
-	u32 width, height;
+	std::uint32_t width, height;
 	auto data = getTextureData("cubemaps/" + negx, width, height, false);
 	if (data.empty()) {
 		glDeleteTextures(1, &texture);

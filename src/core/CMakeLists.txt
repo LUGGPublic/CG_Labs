@@ -8,7 +8,6 @@ add_library (bonobo
 	"Misc.cpp"
 	"opengl.cpp"
 	"ShaderProgramManager.cpp"
-	"Types.cpp"
 	"various.cpp"
 	"WindowManager.cpp"
 

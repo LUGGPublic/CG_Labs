@@ -63,7 +63,7 @@ edaf80::Assignment5::run()
 	//glCullFace(GL_BACK);
 
 
-	f64 ddeltatime;
+	double ddeltatime;
 	size_t fpsSamples = 0;
 	double nowTime, lastTime = GetTimeMilliseconds();
 	double fpsNextTick = lastTime + 1000.0;
