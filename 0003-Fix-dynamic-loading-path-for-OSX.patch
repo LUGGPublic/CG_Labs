@@ -1,0 +1,38 @@
+From f227c66273d08b3e0c5e58a5eaf819a033ecb255 Mon Sep 17 00:00:00 2001
+From: Nick Overdijk <nick.overdijk@circlecvi.com>
+Date: Mon, 23 Mar 2020 09:59:16 +0100
+Subject: [PATCH] Fix dynamic loading path for OSX
+
+This commit sets the INSTALL_RPATH to $ORIGIN on not OSX, or the
+OSX-sort-of-equivalent @loader_path. It tells the dynamic loader to
+check the path 'from the binary directory to the library directory'.
+This fixes not being able to find IrrXML.dylib when things are not
+installed to a default location. This fixes issue
+https://github.com/assimp/assimp/issues/2872 for me.
+
+The patch is pretty much straight from the book 'professional cmake'.
+---
+ CMakeLists.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index dcafb649f5..9faa2ae489 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -163,6 +163,16 @@ IF(NOT BUILD_SHARED_LIBS)
+   SET(LINK_SEARCH_START_STATIC TRUE)
+ ELSE()
+   MESSAGE(STATUS "Shared libraries enabled")
++  IF(APPLE)
++      SET(basePoint @loader_path)
++    ELSE()
++        SET(basePoint $ORIGIN)
++  ENDIF()
++  FILE(RELATIVE_PATH relDir
++    ${CMAKE_CURRENT_BINARY_DIR}/${ASSIMP_BIN_INSTALL_DIR}
++    ${CMAKE_CURRENT_BINARY_DIR}/${ASSIMP_LIB_INSTALL_DIR}
++  )
++  SET(CMAKE_INSTALL_RPATH ${basePoint} ${basePoint}/${relDir})
+ ENDIF(NOT BUILD_SHARED_LIBS)
+ 
+ # Define here the needed parameters
