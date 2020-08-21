@@ -1,7 +1,7 @@
 FetchContent_Declare (
 	stb
 	GIT_REPOSITORY [[https://github.com/nothings/stb]]
-	GIT_TAG [[origin/master]]
+	GIT_TAG [[b42009b3b9d4ca35bc703f5310eedc74f584be58]]
 	GIT_SHALLOW ON
 )
 
