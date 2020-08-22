@@ -67,7 +67,7 @@ void
 edan35::Assignment2::run()
 {
 	// Load the geometry of Sponza
-	auto const sponza_geometry = bonobo::loadObjects("../crysponza/sponza.obj");
+	auto const sponza_geometry = bonobo::loadObjects(config::resources_path("crysponza/sponza.obj"));
 	if (sponza_geometry.empty()) {
 		LogError("Failed to load the Sponza model");
 		return;

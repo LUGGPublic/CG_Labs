@@ -57,13 +57,12 @@ namespace bonobo
 
 	//! \brief Load objects found in an object/scene file, using assimp.
 	//!
-	//! @param [in] filename of the object/scene file to load, relative to
-	//!             the `res/scenes` folder
+	//! @param [in] filename of the object/scene file to load.
 	//! @return a vector of filled in `mesh_data` structures, one per
 	//!         object found in the input file
 	std::vector<mesh_data> loadObjects(std::string const& filename);
 
-	//! \brief Creates an OpenGL texture without any content nor parameterised.
+	//! \brief Creates an OpenGL texture without any content nor parameters.
 	//!
 	//! @param [in] width width of the texture to create
 	//! @param [in] height height of the texture to create
@@ -82,16 +81,15 @@ namespace bonobo
 	                     GLenum type = GL_UNSIGNED_BYTE,
 	                     GLvoid const* data = nullptr);
 
-	//! \brief Load a PNG image into an OpenGL 2D-texture.
+	//! \brief Load an image into an OpenGL 2D-texture.
 	//!
-	//! @param [in] filename of the PNG image, relative to the `textures`
-	//!             folder within the `resources` folder.
+	//! @param [in] filename of the image.
 	//! @param [in] generate_mipmap whether or not to generate a mipmap hierarchy
 	//! @return the name of the OpenGL 2D-texture
 	GLuint loadTexture2D(std::string const& filename,
 	                     bool generate_mipmap = true);
 
-	//! \brief Load six PNG images into an OpenGL cubemap-texture.
+	//! \brief Load six images into an OpenGL cubemap-texture.
 	//!
 	//! @param [in] posx path to the texture on the left of the cubemap
 	//! @param [in] negx path to the texture on the right of the cubemap
@@ -101,8 +99,6 @@ namespace bonobo
 	//! @param [in] negz path to the texture on the front of the cubemap
 	//! @param [in] generate_mipmap whether or not to generate a mipmap hierarchy
 	//! @return the name of the OpenGL cubemap-texture
-	//!
-	//! All paths are relative to the `res/cubemaps` folder.
 	GLuint loadTextureCubeMap(std::string const& posx, std::string const& negx,
                                   std::string const& posy, std::string const& negy,
                                   std::string const& posz, std::string const& negz,

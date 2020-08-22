@@ -46,12 +46,11 @@ bonobo::deinit()
 static std::vector<std::uint8_t>
 getTextureData(std::string const& filename, std::uint32_t& width, std::uint32_t& height, bool flip)
 {
-	auto const path = config::resources_path(filename);
 	auto const channels_nb = 4u;
 	stbi_set_flip_vertically_on_load_thread(flip ? 1 : 0);
-	unsigned char* image_data = stbi_load(path.c_str(), reinterpret_cast<int*>(&width), reinterpret_cast<int*>(&height), nullptr, channels_nb);
+	unsigned char* image_data = stbi_load(filename.c_str(), reinterpret_cast<int*>(&width), reinterpret_cast<int*>(&height), nullptr, channels_nb);
 	if (image_data == nullptr) {
-		LogWarning("Couldn't load or decode image file %s", path.c_str());
+		LogWarning("Couldn't load or decode image file %s", filename.c_str());
 
 		// Provide a small empty image instead in case of failure.
 		width = 16;
@@ -72,17 +71,18 @@ bonobo::loadObjects(std::string const& filename)
 	std::vector<bonobo::mesh_data> objects;
 	std::vector<texture_bindings> materials_bindings;
 
-	auto const scene_filepath = config::resources_path("scenes/" + filename);
-	LogInfo("Loading \"%s\"", scene_filepath.c_str());
+	auto const end_of_basedir = filename.rfind("/");
+	auto const parent_folder = (end_of_basedir != std::string::npos ? filename.substr(0, end_of_basedir) : ".") + "/";
+	LogInfo("Loading \"%s\"", filename.c_str());
 	Assimp::Importer importer;
-	auto const assimp_scene = importer.ReadFile(scene_filepath, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_CalcTangentSpace);
+	auto const assimp_scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_CalcTangentSpace);
 	if (assimp_scene == nullptr || assimp_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || assimp_scene->mRootNode == nullptr) {
-		LogError("Assimp failed to load \"%s\": %s", scene_filepath.c_str(), importer.GetErrorString());
+		LogError("Assimp failed to load \"%s\": %s", filename.c_str(), importer.GetErrorString());
 		return objects;
 	}
 
 	if (assimp_scene->mNumMeshes == 0u) {
-		LogError("No mesh available; loading \"%s\" must have had issues", scene_filepath.c_str());
+		LogError("No mesh available; loading \"%s\" must have had issues", filename.c_str());
 		return objects;
 	}
 
@@ -92,13 +92,13 @@ bonobo::loadObjects(std::string const& filename)
 		texture_bindings bindings;
 		auto const material = assimp_scene->mMaterials[i];
 
-		auto const process_texture = [&bindings,&material,i](aiTextureType type, std::string const& type_as_str, std::string const& name){
+		auto const process_texture = [&bindings,&material,i,&parent_folder](aiTextureType type, std::string const& type_as_str, std::string const& name){
 			if (material->GetTextureCount(type)) {
 				if (material->GetTextureCount(type) > 1)
 					LogWarning("Material %d has more than one %s texture: discarding all but the first one.", i, type_as_str.c_str());
 				aiString path;
 				material->GetTexture(type, 0, &path);
-				auto const id = bonobo::loadTexture2D("../crysponza/" + std::string(path.C_Str()), type_as_str != "opacity");
+				auto const id = bonobo::loadTexture2D(parent_folder + std::string(path.C_Str()), type_as_str != "opacity");
 				if (id != 0u)
 					bindings.emplace(name, id);
 			}
@@ -264,7 +264,7 @@ GLuint
 bonobo::loadTexture2D(std::string const& filename, bool generate_mipmap)
 {
 	std::uint32_t width, height;
-	auto const data = getTextureData("textures/" + filename, width, height, true);
+	auto const data = getTextureData(filename, width, height, true);
 	if (data.empty())
 		return 0u;
 
@@ -317,7 +317,7 @@ bonobo::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 	// image files and return a `std::vector<std::uint8_t>` containing all the
 	// texels.
 	std::uint32_t width, height;
-	auto data = getTextureData("cubemaps/" + negx, width, height, false);
+	auto data = getTextureData(negx, width, height, false);
 	if (data.empty()) {
 		glDeleteTextures(1, &texture);
 		return 0u;
