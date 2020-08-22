@@ -1,3 +1,4 @@
+#include "assignment1.hpp"
 #include "config.hpp"
 #include "parametric_shapes.hpp"
 #include "core/Bonobo.h"
@@ -28,6 +29,7 @@ int main()
 	                  static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
 	                  0.01f, 1000.0f);
 	camera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
+	camera.mWorld.LookAt(glm::vec3(0.0f));
 	camera.mMouseSensitivity = 0.003f;
 	camera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
 
@@ -46,13 +48,14 @@ int main()
 	//
 	// Load the sphere geometry
 	//
-	std::vector<bonobo::mesh_data> const objects = bonobo::loadObjects("sphere.obj");
+	std::vector<bonobo::mesh_data> const objects = bonobo::loadObjects(config::resources_path("scenes/sphere.obj"));
 	if (objects.empty()) {
 		LogError("Failed to load the sphere geometry: exiting.");
 
 		return EXIT_FAILURE;
 	}
 	bonobo::mesh_data const& sphere = objects.front();
+	auto const saturn_ring_shape = parametric_shapes::createCircleRing(10, 256, 0.45f, 0.9f);
 
 
 	//
@@ -88,19 +91,72 @@ int main()
 
 
 	//
+	// Define all the celestial bodies constants.
+	//
+	glm::vec3 const sun_scale{1.0f};
+	SpinConfiguration const sun_spin{glm::radians(0.0f), glm::two_pi<float>() / 6.0f};
+
+	glm::vec3 const mercury_scale{0.02f};
+	SpinConfiguration const mercury_spin{glm::radians(2.0f), glm::two_pi<float>() / 180.0f};
+	OrbitConfiguration const mercury_orbit{2.0f, glm::radians(3.4f), glm::two_pi<float>() / 4.0f};
+
+	glm::vec3 const venus_scale{0.05f};
+	SpinConfiguration const venus_spin{glm::radians(177.0f), glm::two_pi<float>() / 600.0f};
+	OrbitConfiguration const venus_orbit{3.0f, glm::radians(3.9f), glm::two_pi<float>() / 12.0f};
+
+	glm::vec3 const earth_scale{0.05f};
+	SpinConfiguration const earth_spin{glm::radians(23.0f), glm::two_pi<float>() / 3.0f};
+	OrbitConfiguration const earth_orbit{4.0f, glm::radians(7.2f), glm::two_pi<float>() / 20.0f};
+
+	glm::vec3 const moon_scale{0.01f};
+	SpinConfiguration const moon_spin{glm::radians(6.7f), glm::two_pi<float>() / 90.0f};
+	OrbitConfiguration const moon_orbit{0.2f, glm::radians(-66.0f), glm::two_pi<float>() / 1.3f};
+
+	glm::vec3 const mars_scale{0.03f};
+	SpinConfiguration const mars_spin{glm::radians(25.0f), glm::two_pi<float>() / 3.0f};
+	OrbitConfiguration const mars_orbit{5.0f, glm::radians(5.7f), glm::two_pi<float>() / 36.0f};
+
+	glm::vec3 const jupiter_scale{0.5f};
+	SpinConfiguration const jupiter_spin{glm::radians(3.1f), glm::two_pi<float>() / 1.0f};
+	OrbitConfiguration const jupiter_orbit{13.0f, glm::radians(6.1f), glm::two_pi<float>() / 220.0f};
+
+	glm::vec3 const saturn_scale{0.4f};
+	SpinConfiguration const saturn_spin{glm::radians(27.0f), glm::two_pi<float>() / 1.2f};
+	OrbitConfiguration const saturn_orbit{16.0f, glm::radians(5.5f), glm::two_pi<float>() / 400.0f};
+	glm::vec2 const saturn_ring_scale{1.0f, 1.25f};
+
+	glm::vec3 const uranus_scale{0.2f};
+	SpinConfiguration const uranus_spin{glm::radians(98.0f), glm::two_pi<float>() / 2.0f};
+	OrbitConfiguration const uranus_orbit{18.0f, glm::radians(6.5f), glm::two_pi<float>() / 1680.0f};
+
+	glm::vec3 const neptune_scale{0.2f};
+	SpinConfiguration const neptune_spin{glm::radians(28.0f), glm::two_pi<float>() / 2.0f};
+	OrbitConfiguration const neptune_orbit{19.0f, glm::radians(6.4f), glm::two_pi<float>() / 3200.0f};
+
+
+	//
+	// Load all textures.
+	//
+	GLuint const sun_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_sun.jpg"));
+	GLuint const mercury_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_mercury.jpg"));
+	GLuint const venus_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_venus_atmosphere.jpg"));
+	GLuint const earth_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_earth_daymap.jpg"));
+	GLuint const moon_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_moon.jpg"));
+	GLuint const mars_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_mars.jpg"));
+	GLuint const jupiter_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_jupiter.jpg"));
+	GLuint const saturn_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_saturn.jpg"));
+	GLuint const saturn_ring_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_saturn_ring_alpha.png"));
+	GLuint const uranus_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_uranus.jpg"));
+	GLuint const neptune_texture = bonobo::loadTexture2D(config::resources_path("planets/2k_neptune.jpg"));
+
+
+	//
 	// Set up the sun node and other related attributes
 	//
-	GLuint const sun_texture = bonobo::loadTexture2D("sunmap.png");
-	float const sun_spin_speed = glm::two_pi<float>() / 6.0f; // Full rotation in six seconds
 	Node sun;
 	sun.set_geometry(sphere);
 	sun.set_program(&celestial_body_shader);
 	sun.add_texture("diffuse_texture", sun_texture, GL_TEXTURE_2D);
-
-
-	//
-	// TODO: Create nodes for the remaining of the solar system
-	//
 
 
 	// Retrieve the actual framebuffer size: for HiDPI monitors, you might
@@ -112,13 +168,14 @@ int main()
 
 	glViewport(0, 0, framebuffer_width, framebuffer_height);
 	glClearDepthf(1.0f);
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
 
 	auto last_time = std::chrono::high_resolution_clock::now();
 
 
+	bool pause_animation = false;
 	bool show_logs = true;
 	bool show_gui = true;
 
@@ -160,9 +217,15 @@ int main()
 
 
 		//
-		// Update the transforms
+		// Add controls to the scene.
 		//
-		// TODO:
+		bool const opened = ImGui::Begin("Scene controls", nullptr, ImGuiWindowFlags_None);
+		if (opened)
+		{
+			ImGui::Checkbox("Pause the animation", &pause_animation);
+		}
+		ImGui::End();
+		auto const animation_delta_time_us = !pause_animation ? delta_time_us : 0us;
 
 
 		//
@@ -188,6 +251,16 @@ int main()
 		glfwSwapBuffers(window);
 	}
 
+	glDeleteTextures(1, &neptune_texture);
+	glDeleteTextures(1, &uranus_texture);
+	glDeleteTextures(1, &saturn_ring_texture);
+	glDeleteTextures(1, &saturn_texture);
+	glDeleteTextures(1, &jupiter_texture);
+	glDeleteTextures(1, &mars_texture);
+	glDeleteTextures(1, &moon_texture);
+	glDeleteTextures(1, &earth_texture);
+	glDeleteTextures(1, &venus_texture);
+	glDeleteTextures(1, &mars_texture);
 	glDeleteTextures(1, &sun_texture);
 
 	return EXIT_SUCCESS;
