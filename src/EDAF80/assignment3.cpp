@@ -34,13 +34,6 @@ edaf80::Assignment3::Assignment3(WindowManager& windowManager) :
 void
 edaf80::Assignment3::run()
 {
-	// Load the sphere geometry
-	auto circle_ring_shape = parametric_shapes::createCircleRing(2.0f, 0.75f, 40u, 4u);
-	if (circle_ring_shape.vao == 0u) {
-		LogError("Failed to retrieve the circle ring mesh");
-		return;
-	}
-
 	// Set up the camera
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
@@ -87,12 +80,14 @@ edaf80::Assignment3::run()
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 	};
 
+	bool use_normal_mapping = false;
 	auto camera_position = mCamera.mWorld.GetTranslation();
-	auto ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+	auto ambient = glm::vec3(0.1f, 0.1f, 0.1f);
 	auto diffuse = glm::vec3(0.7f, 0.2f, 0.4f);
 	auto specular = glm::vec3(1.0f, 1.0f, 1.0f);
-	auto shininess = 1.0f;
-	auto const phong_set_uniforms = [&light_position,&camera_position,&ambient,&diffuse,&specular,&shininess](GLuint program){
+	auto shininess = 10.0f;
+	auto const phong_set_uniforms = [&use_normal_mapping,&light_position,&camera_position,&ambient,&diffuse,&specular,&shininess](GLuint program){
+		glUniform1i(glGetUniformLocation(program, "use_normal_mapping"), use_normal_mapping ? 1 : 0);
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 		glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, glm::value_ptr(camera_position));
 		glUniform3fv(glGetUniformLocation(program, "ambient"), 1, glm::value_ptr(ambient));
@@ -101,9 +96,30 @@ edaf80::Assignment3::run()
 		glUniform1f(glGetUniformLocation(program, "shininess"), shininess);
 	};
 
-	auto circle_ring = Node();
-	circle_ring.set_geometry(circle_ring_shape);
-	circle_ring.set_program(&fallback_shader, set_uniforms);
+
+	//
+	// Set up the two spheres used.
+	//
+	auto skybox_shape = parametric_shapes::createSphere(20.0f, 100u, 100u);
+	if (skybox_shape.vao == 0u) {
+		LogError("Failed to retrieve the mesh for the skybox");
+		return;
+	}
+
+	Node skybox;
+	skybox.set_geometry(skybox_shape);
+	skybox.set_program(&fallback_shader, set_uniforms);
+
+	auto demo_shape = parametric_shapes::createSphere(1.5f, 40u, 40u);
+	if (demo_shape.vao == 0u) {
+		LogError("Failed to retrieve the mesh for the demo sphere");
+		return;
+	}
+
+	Node demo_sphere;
+	demo_sphere.set_geometry(demo_shape);
+	demo_sphere.set_program(&fallback_shader, set_uniforms);
+
 
 	glClearDepthf(1.0f);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -117,7 +133,7 @@ edaf80::Assignment3::run()
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
-	std::int32_t circle_ring_program_index = 0;
+	std::int32_t demo_sphere_program_index = 0;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
@@ -171,7 +187,8 @@ edaf80::Assignment3::run()
 		bonobo::changePolygonMode(polygon_mode);
 
 
-		circle_ring.render(mCamera.GetWorldToClipMatrix());
+		skybox.render(mCamera.GetWorldToClipMatrix());
+		demo_sphere.render(mCamera.GetWorldToClipMatrix());
 
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -179,15 +196,16 @@ edaf80::Assignment3::run()
 		bool opened = ImGui::Begin("Scene Control", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
 			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
-			auto circle_ring_selection_result = program_manager.SelectProgram("Circle ring", circle_ring_program_index);
-			if (circle_ring_selection_result.was_selection_changed) {
-				circle_ring.set_program(circle_ring_selection_result.program, set_uniforms);
+			auto demo_sphere_selection_result = program_manager.SelectProgram("Demo sphere", demo_sphere_program_index);
+			if (demo_sphere_selection_result.was_selection_changed) {
+				demo_sphere.set_program(demo_sphere_selection_result.program, phong_set_uniforms);
 			}
 			ImGui::Separator();
+			ImGui::Checkbox("Use normal mapping", &use_normal_mapping);
 			ImGui::ColorEdit3("Ambient", glm::value_ptr(ambient));
 			ImGui::ColorEdit3("Diffuse", glm::value_ptr(diffuse));
 			ImGui::ColorEdit3("Specular", glm::value_ptr(specular));
-			ImGui::SliderFloat("Shininess", &shininess, 0.0f, 1000.0f);
+			ImGui::SliderFloat("Shininess", &shininess, 1.0f, 1000.0f);
 			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -20.0f, 20.0f);
 		}
 		ImGui::End();
