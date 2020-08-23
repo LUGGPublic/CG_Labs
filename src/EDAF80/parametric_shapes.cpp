@@ -10,22 +10,29 @@
 #include <vector>
 
 bonobo::mesh_data
-parametric_shapes::createQuad(unsigned int width, unsigned int height)
+parametric_shapes::createQuad(float const width, float const height,
+                              unsigned int const horizontal_split_count,
+                              unsigned int const vertical_split_count)
 {
-	//! \todo Fill in the blanks
 	auto const vertices = std::array<glm::vec3, 4>{
-		glm::vec3(0.0f,                      0.0f,                       0.0f),
-		glm::vec3(static_cast<float>(width), 0.0f,                       0.0f),
-		glm::vec3(static_cast<float>(width), static_cast<float>(height), 0.0f),
-		glm::vec3(0.0f,                      static_cast<float>(height), 0.0f)
+		glm::vec3(0.0f,  0.0f,   0.0f),
+		glm::vec3(width, 0.0f,   0.0f),
+		glm::vec3(width, height, 0.0f),
+		glm::vec3(0.0f,  height, 0.0f)
 	};
 
-	auto const indices = std::array<glm::uvec3, 2>{
+	auto const index_sets = std::array<glm::uvec3, 2>{
 		glm::uvec3(0u, 1u, 2u),
 		glm::uvec3(0u, 2u, 3u)
 	};
 
 	bonobo::mesh_data data;
+
+	if (horizontal_split_count > 0u || horizontal_split_count > 0u)
+	{
+		LogError("parametric_shapes::createQuad() does not support tesselation.");
+		return data;
+	}
 
 	//
 	// NOTE:
@@ -102,7 +109,7 @@ parametric_shapes::createQuad(unsigned int width, unsigned int height)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, /*! \todo bind the previously generated Buffer */0u);
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, /*! \todo how many bytes should the buffer contain? */0u,
-	             /* where is the data stored on the CPU? */indices.data(),
+	             /* where is the data stored on the CPU? */index_sets.data(),
 	             /* inform OpenGL that the data is modified once, but used often */GL_STATIC_DRAW);
 
 	data.indices_nb = /*! \todo how many indices do we have? */0u;

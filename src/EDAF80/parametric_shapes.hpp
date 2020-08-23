@@ -4,14 +4,24 @@
 
 namespace parametric_shapes
 {
-	//! \brief Create a quad consisting of two triangles and make it
+	//! \brief Create a quad a given tesselation level and make it
 	//!        available to OpenGL.
 	//!
 	//! @param width the width of the quad
 	//! @param height the height of the quad
+	//! @param horizontal_split_count the number of times horizontal edges
+	//!                               should be split: 0 means each horizontal
+	//!                               line consist of a single edge, 1 gives
+	//!                               you two edges, and so on.
+	//! @param vertical_split_count the number of times vertical edges
+	//!                             should be split: 0 means each vertical
+	//!                             line consist of a single edge, 1 gives
+	//!                             you two edges, and so on.
 	//! @return wrapper around OpenGL objects' name containing the geometry
 	//!         data
-	bonobo::mesh_data createQuad(unsigned int width, unsigned int height);
+	bonobo::mesh_data createQuad(float const width, float const height,
+	                             unsigned int const horizontal_split_count = 0u,
+	                             unsigned int const vertical_split_count = 0u);
 
 	//! \brief Create a sphere for a given tesselation level and make it
 	//!        available to OpenGL.
