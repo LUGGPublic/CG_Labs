@@ -1,11 +1,14 @@
 #include "assignment4.hpp"
+#include "parametric_shapes.hpp"
 
 #include "config.hpp"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
+#include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 
+#include <glm/gtc/type_ptr.hpp>
 #include <imgui.h>
 #include <tinyfiledialogs.h>
 
@@ -32,6 +35,7 @@ edaf80::Assignment4::run()
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
+	auto camera_position = mCamera.mWorld.GetTranslation();
 
 	// Create the shader programs
 	ShaderProgramManager program_manager;
@@ -50,6 +54,8 @@ edaf80::Assignment4::run()
 	//       (Check how it was done in assignment 3.)
 	//
 
+	float ellapsed_time_s = 0.0f;
+
 	//
 	// Todo: Load your geometry
 	//
@@ -66,6 +72,7 @@ edaf80::Assignment4::run()
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
+	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
 	bool shader_reload_failed = false;
@@ -74,6 +81,7 @@ edaf80::Assignment4::run()
 		auto const nowTime = std::chrono::high_resolution_clock::now();
 		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
 		lastTime = nowTime;
+		ellapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
@@ -81,6 +89,7 @@ edaf80::Assignment4::run()
 		glfwPollEvents();
 		inputHandler.Advance();
 		mCamera.Update(deltaTimeUs, inputHandler);
+		camera_position = mCamera.mWorld.GetTranslation();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			shader_reload_failed = !program_manager.ReloadAllPrograms();
@@ -117,6 +126,7 @@ edaf80::Assignment4::run()
 		mWindowManager.NewImGuiFrame();
 
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		bonobo::changePolygonMode(polygon_mode);
 
 
 		if (!shader_reload_failed) {
@@ -132,6 +142,13 @@ edaf80::Assignment4::run()
 		// Todo: If you want a custom ImGUI window, you can set it up
 		//       here
 		//
+
+
+		bool opened = ImGui::Begin("Scene Control", nullptr, ImGuiWindowFlags_None);
+		if (opened) {
+			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
+		}
+		ImGui::End();
 
 		if (show_logs)
 			Log::View::Render();
