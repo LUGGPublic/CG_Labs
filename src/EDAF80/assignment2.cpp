@@ -121,6 +121,8 @@ edaf80::Assignment2::run()
 	//! \todo Create a tesselated sphere and a tesselated torus
 
 
+	glClearDepthf(1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
 	// Enable face culling to improve performance
@@ -152,8 +154,26 @@ edaf80::Assignment2::run()
 			show_logs = !show_logs;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F11) & JUST_RELEASED)
+			mWindowManager.ToggleFullscreenStatusForWindow(window);
+
+
+		// Retrieve the actual framebuffer size: for HiDPI monitors,
+		// you might end up with a framebuffer larger than what you
+		// actually asked for. For example, if you ask for a 1920x1080
+		// framebuffer, you might get a 3840x2160 one instead.
+		// Also it might change as the user drags the window between
+		// monitors with different DPIs, or if the fullscreen status is
+		// being toggled.
+		int framebuffer_width, framebuffer_height;
+		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
 
 		mWindowManager.NewImGuiFrame();
+
+
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		bonobo::changePolygonMode(polygon_mode);
 
 
 		circle_rings_transform_ref.RotateY(0.01f);
@@ -173,15 +193,6 @@ edaf80::Assignment2::run()
 				//!       variable as your tension argument.
 			}
 		}
-
-
-		int framebuffer_width, framebuffer_height;
-		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
-		glViewport(0, 0, framebuffer_width, framebuffer_height);
-		glClearDepthf(1.0f);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		bonobo::changePolygonMode(polygon_mode);
 
 		circle_rings.render(mCamera.GetWorldToClipMatrix());
 

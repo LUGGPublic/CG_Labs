@@ -257,10 +257,6 @@ edan35::Assignment2::run()
 		inputHandler.Advance();
 		mCamera.Update(deltaTimeUs, inputHandler);
 
-		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
-			show_logs = !show_logs;
-		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
-			show_gui = !show_gui;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			shader_reload_failed = !program_manager.ReloadAllPrograms();
 			if (shader_reload_failed)
@@ -269,6 +265,10 @@ edan35::Assignment2::run()
 				                   "Rendering is suspended until the issue is solved. Once fixed, just reload the shaders again.",
 				                   "error");
 		}
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+			show_logs = !show_logs;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+			show_gui = !show_gui;
 
 		mWindowManager.NewImGuiFrame();
 

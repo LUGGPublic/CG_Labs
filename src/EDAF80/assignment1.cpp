@@ -159,14 +159,6 @@ int main()
 	sun.add_texture("diffuse_texture", sun_texture, GL_TEXTURE_2D);
 
 
-	// Retrieve the actual framebuffer size: for HiDPI monitors, you might
-	// end up with a framebuffer larger than what you actually asked for.
-	// For example, if you ask for a 1920x1080 framebuffer, you might get a
-	// 3840x2160 one instead.
-	int framebuffer_width, framebuffer_height;
-	glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
-
-	glViewport(0, 0, framebuffer_width, framebuffer_height);
 	glClearDepthf(1.0f);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -202,6 +194,20 @@ int main()
 			show_logs = !show_logs;
 		if (input_handler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
+		if (input_handler.GetKeycodeState(GLFW_KEY_F11) & JUST_RELEASED)
+			window_manager.ToggleFullscreenStatusForWindow(window);
+
+
+		// Retrieve the actual framebuffer size: for HiDPI monitors,
+		// you might end up with a framebuffer larger than what you
+		// actually asked for. For example, if you ask for a 1920x1080
+		// framebuffer, you might get a 3840x2160 one instead.
+		// Also it might change as the user drags the window between
+		// monitors with different DPIs, or if the fullscreen status is
+		// being toggled.
+		int framebuffer_width, framebuffer_height;
+		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
 
 
 		//
