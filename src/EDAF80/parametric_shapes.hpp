@@ -13,35 +13,80 @@ namespace parametric_shapes
 	//!         data
 	bonobo::mesh_data createQuad(unsigned int width, unsigned int height);
 
-	//! \brief Create a sphere for some tesselation level and make it
+	//! \brief Create a sphere for a given tesselation level and make it
 	//!        available to OpenGL.
 	//!
-	//! @param res_theta tessellation resolution (nbr of vertices) in the latitude direction ( 0 < theta < PI/2 )
-	//! @param res_phi tessellation resolution (nbr of vertices) in the longitude direction ( 0 < phi < 2PI )
 	//! @param radius radius of the sphere
+	//! @param longitude_split_count the number of times the longitude
+	//!                              angle should be split: 0 means each
+	//!                              longitudinal line consist of a single
+	//!                              edge spanning the full 360°, with 1
+	//!                              you get two edges (each spanning
+	//!                              180°); 2 is the minimum for getting a
+	//!                              3-D shape.
+	//! @param latitude_split_count the number of times the latitude angle
+	//!                             should be split: 0 means each
+	//!                             latitudinal line consist of a single
+	//!                             edge spanning the full 180°, with 1 you
+	//!                             get two edges (each spanning 90°); 1 is
+	//!                             the minimum for getting a 3-D shape.
 	//! @return wrapper around OpenGL objects' name containing the geometry
 	//!         data
-	bonobo::mesh_data createSphere(unsigned int const res_theta, unsigned int const res_phi, float const radius);
+	bonobo::mesh_data createSphere(float const radius,
+	                               unsigned int const longitude_split_count,
+	                               unsigned int const latitude_split_count);
 
-	//! \brief Create a torus for some tesselation level and make it
+	//! \brief Create a torus for a given tesselation level and make it
 	//!        available to OpenGL.
 	//!
-	//! @param res_theta tessellation resolution (nbr of vertices) in the latitude direction ( 0 < theta < 2PI )
-	//! @param res_phi tessellation resolution (nbr of vertices) in the longitude direction ( 0 < phi < 2PI )
-	//! @param rA radius of the innermost border of the torus
-	//! @param rB radius of the outermost border of the torus
+	//! @param major_radius radius from the centre to the middle of the
+	//!                     cross-section
+	//! @param minor_radius radius of the cross-section (giving the torus
+	//!                     its thickness)
+	//! @param major_split_count the number of times the angle for the
+	//!                          major ring should be split: 0 means each
+	//!                          line going around the major ring consist
+	//!                          of a single edge spanning the full 360°,
+	//!                          with 1 you get two edges (each spanning
+	//!                          180°); 2 is the minimum for getting a 3-D
+	//!                          shape.
+	//! @param minor_split_count the number of times the angle for the
+	//!                          minor ring should be split: 0 means each
+	//!                          line going around the minor ring consist
+	//!                          of a single edge spanning the full 360°,
+	//!                          with 1 you get two edges (each spanning
+	//!                          180°); 2 is the minimum for getting a 3-D
+	//!                          shape.
 	//! @return wrapper around OpenGL objects' name containing the geometry
 	//!         data
-	bonobo::mesh_data createTorus(unsigned int const res_theta, unsigned int const res_phi, float const rA, float const rB);
+	bonobo::mesh_data createTorus(float const major_radius,
+	                              float const minor_radius,
+	                              unsigned int const major_split_count,
+	                              unsigned int const minor_split_count);
 
-	//! \brief Create a circle ring for some tesselation level and make it
+	//! \brief Create a circle ring for a given tesselation level and make it
 	//!        available to OpenGL.
 	//!
-	//! @param radius_res tessellation resolution (nbr of vertices) in the radial direction ( inner_radius < radius < outer_radius )
-	//! @param theta_res tessellation resolution (nbr of vertices) in the angular direction ( 0 < theta < 2PI )
-	//! @param inner_radius radius of the innermost border of the ring
-	//! @param outer_radius radius of the outermost border of the ring
+	//! @param radius radius from the centre to the middle of the
+	//!               cross-section
+	//! @param spread_length length of the cross-section
+	//! @param circle_split_count the number of times the angle for the
+	//!                           circle should be split: 0 means each
+	//!                           line going around the circle consist
+	//!                           of a single edge spanning the full 360°,
+	//!                           with 1 you get two edges (each spanning
+	//!                           180°); 2 is the minimum for getting a 3-D
+	//!                           shape.
+	//! @param spread_split_count the number of times the lines going
+	//!                           out from the centre should be split: 0
+	//!                           means each line going out consists of a
+	//!                           single edge spanning the full spread,
+	//!                           with 1 you get two edges (each spanning
+	//!                           half the spread).
 	//! @return wrapper around OpenGL objects' name containing the geometry
 	//!         data
-	bonobo::mesh_data createCircleRing(unsigned int const radius_res, unsigned int const theta_res, float const inner_radius, float const outer_radius);
+	bonobo::mesh_data createCircleRing(float const radius,
+	                                   float const spread_length,
+	                                   unsigned int const circle_split_count,
+	                                   unsigned int const spread_split_count);
 }

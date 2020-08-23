@@ -55,7 +55,7 @@ int main()
 		return EXIT_FAILURE;
 	}
 	bonobo::mesh_data const& sphere = objects.front();
-	auto const saturn_ring_shape = parametric_shapes::createCircleRing(10, 256, 0.45f, 0.9f);
+	auto const saturn_ring_shape = parametric_shapes::createCircleRing(0.675f, 0.45f, 80u, 8u);
 
 
 	//

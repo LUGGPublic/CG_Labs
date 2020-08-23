@@ -35,7 +35,7 @@ void
 edaf80::Assignment3::run()
 {
 	// Load the sphere geometry
-	auto circle_ring_shape = parametric_shapes::createCircleRing(4u, 60u, 1.0f, 2.0f);
+	auto circle_ring_shape = parametric_shapes::createCircleRing(2.0f, 0.75f, 40u, 4u);
 	if (circle_ring_shape.vao == 0u) {
 		LogError("Failed to retrieve the circle ring mesh");
 		return;
