@@ -176,9 +176,6 @@ edaf80::Assignment2::run()
 		bonobo::changePolygonMode(polygon_mode);
 
 
-		circle_rings_transform_ref.RotateY(0.01f);
-
-
 		if (interpolate) {
 			//! \todo Interpolate the movement of a shape between various
 			//!        control points.
