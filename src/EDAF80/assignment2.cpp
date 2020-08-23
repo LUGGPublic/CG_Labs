@@ -40,7 +40,7 @@ edaf80::Assignment2::run()
 		return;
 
 	// Set up the camera
-	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
+	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 1.0f, 9.0f));
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
 
@@ -157,6 +157,7 @@ edaf80::Assignment2::run()
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	std::int32_t program_index = 0;
+	float ellapsed_time_s = 0.0f;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
@@ -172,6 +173,7 @@ edaf80::Assignment2::run()
 		glfwPollEvents();
 		inputHandler.Advance();
 		mCamera.Update(deltaTimeUs, inputHandler);
+		ellapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
