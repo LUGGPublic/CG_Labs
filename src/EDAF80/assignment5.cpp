@@ -4,11 +4,9 @@
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
 #include "core/helpers.hpp"
-#include "core/Misc.h"
 #include "core/ShaderProgramManager.hpp"
 
 #include <imgui.h>
-#include <external/imgui_impl_glfw_gl3.h>
 #include <tinyfiledialogs.h>
 
 #include <stdexcept>
@@ -33,7 +31,7 @@ edaf80::Assignment5::run()
 	// Set up the camera
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
 	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 0.025;
+	mCamera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
 
 	// Create the shader programs
 	ShaderProgramManager program_manager;
@@ -56,6 +54,8 @@ edaf80::Assignment5::run()
 	// Todo: Load your geometry
 	//
 
+	glClearDepthf(1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
 	// Enable face culling to improve performance:
@@ -64,35 +64,24 @@ edaf80::Assignment5::run()
 	//glCullFace(GL_BACK);
 
 
-	f64 ddeltatime;
-	size_t fpsSamples = 0;
-	double nowTime, lastTime = GetTimeMilliseconds();
-	double fpsNextTick = lastTime + 1000.0;
+	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	bool show_logs = true;
 	bool show_gui = true;
 	bool shader_reload_failed = false;
 
 	while (!glfwWindowShouldClose(window)) {
-		nowTime = GetTimeMilliseconds();
-		ddeltatime = nowTime - lastTime;
-		if (nowTime > fpsNextTick) {
-			fpsNextTick += 1000.0;
-			fpsSamples = 0;
-		}
-		fpsSamples++;
+		auto const nowTime = std::chrono::high_resolution_clock::now();
+		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
+		lastTime = nowTime;
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
 		inputHandler.Advance();
-		mCamera.Update(ddeltatime, inputHandler);
+		mCamera.Update(deltaTimeUs, inputHandler);
 
-		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
-			show_logs = !show_logs;
-		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
-			show_gui = !show_gui;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			shader_reload_failed = !program_manager.ReloadAllPrograms();
 			if (shader_reload_failed)
@@ -101,26 +90,42 @@ edaf80::Assignment5::run()
 				                   "Rendering is suspended until the issue is solved. Once fixed, just reload the shaders again.",
 				                   "error");
 		}
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+			show_logs = !show_logs;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+			show_gui = !show_gui;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F11) & JUST_RELEASED)
+			mWindowManager.ToggleFullscreenStatusForWindow(window);
 
-		ImGui_ImplGlfwGL3_NewFrame();
+
+		// Retrieve the actual framebuffer size: for HiDPI monitors,
+		// you might end up with a framebuffer larger than what you
+		// actually asked for. For example, if you ask for a 1920x1080
+		// framebuffer, you might get a 3840x2160 one instead.
+		// Also it might change as the user drags the window between
+		// monitors with different DPIs, or if the fullscreen status is
+		// being toggled.
+		int framebuffer_width, framebuffer_height;
+		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
+
 
 		//
 		// Todo: If you need to handle inputs, you can do it here
 		//
 
 
-		int framebuffer_width, framebuffer_height;
-		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
-		glViewport(0, 0, framebuffer_width, framebuffer_height);
-		glClearDepthf(1.0f);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		mWindowManager.NewImGuiFrame();
+
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
 
 		if (!shader_reload_failed) {
 			//
 			// Todo: Render all your geometry here.
 			//
 		}
+
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -132,10 +137,9 @@ edaf80::Assignment5::run()
 		if (show_logs)
 			Log::View::Render();
 		if (show_gui)
-			ImGui::Render();
+			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
-		lastTime = nowTime;
 	}
 }
 

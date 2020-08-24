@@ -5,16 +5,15 @@
 #include "config.hpp"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
-#include "core/Misc.h"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
 #include <imgui.h>
-#include "external/imgui_impl_glfw_gl3.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <array>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -36,14 +35,14 @@ void
 edaf80::Assignment2::run()
 {
 	// Load the sphere geometry
-	auto const shape = parametric_shapes::createCircleRing(4u, 60u, 1.0f, 2.0f);
+	auto const shape = parametric_shapes::createCircleRing(2.0f, 0.75f, 40u, 4u);
 	if (shape.vao == 0u)
 		return;
 
 	// Set up the camera
-	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
+	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 1.0f, 9.0f));
 	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 0.25f * 12.0f;
+	mCamera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
 
 	// Create the shader programs
 	ShaderProgramManager program_manager;
@@ -123,6 +122,8 @@ edaf80::Assignment2::run()
 	//! \todo Create a tesselated sphere and a tesselated torus
 
 
+	glClearDepthf(1.0f);
+	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
 	// Enable face culling to improve performance
@@ -131,41 +132,73 @@ edaf80::Assignment2::run()
 	//glCullFace(GL_BACK);
 
 
-	f64 ddeltatime;
-	size_t fpsSamples = 0;
-	double nowTime, lastTime = GetTimeSeconds();
-	double fpsNextTick = lastTime + 1.0;
+
+	auto const control_point_sphere = parametric_shapes::createSphere(0.1f, 10u, 10u);
+	std::array<glm::vec3, 9> control_point_locations = {
+		glm::vec3( 0.0f,  0.0f,  0.0f),
+		glm::vec3( 1.0f,  1.8f,  1.0f),
+		glm::vec3( 2.0f,  1.2f,  2.0f),
+		glm::vec3( 3.0f,  3.0f,  3.0f),
+		glm::vec3( 3.0f,  0.0f,  3.0f),
+		glm::vec3(-2.0f, -1.0f,  3.0f),
+		glm::vec3(-3.0f, -3.0f, -3.0f),
+		glm::vec3(-2.0f, -1.2f, -2.0f),
+		glm::vec3(-1.0f, -1.8f, -1.0f)
+	};
+	std::array<Node, control_point_locations.size()> control_points;
+	for (std::size_t i = 0; i < control_point_locations.size(); ++i) {
+		auto& control_point = control_points[i];
+		control_point.set_geometry(control_point_sphere);
+		control_point.set_program(&diffuse_shader, set_uniforms);
+		control_point.get_transform().SetTranslate(control_point_locations[i]);
+	}
+
+
+	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	std::int32_t program_index = 0;
+	float ellapsed_time_s = 0.0f;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
 
 	while (!glfwWindowShouldClose(window)) {
-		nowTime = GetTimeSeconds();
-		ddeltatime = nowTime - lastTime;
-		if (nowTime > fpsNextTick) {
-			fpsNextTick += 1.0;
-			fpsSamples = 0;
-		}
-		fpsSamples++;
+		auto const nowTime = std::chrono::high_resolution_clock::now();
+		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
+		lastTime = nowTime;
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
 		inputHandler.Advance();
-		mCamera.Update(ddeltatime, inputHandler);
+		mCamera.Update(deltaTimeUs, inputHandler);
+		ellapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
 			show_gui = !show_gui;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F11) & JUST_RELEASED)
+			mWindowManager.ToggleFullscreenStatusForWindow(window);
 
-		ImGui_ImplGlfwGL3_NewFrame();
+
+		// Retrieve the actual framebuffer size: for HiDPI monitors,
+		// you might end up with a framebuffer larger than what you
+		// actually asked for. For example, if you ask for a 1920x1080
+		// framebuffer, you might get a 3840x2160 one instead.
+		// Also it might change as the user drags the window between
+		// monitors with different DPIs, or if the fullscreen status is
+		// being toggled.
+		int framebuffer_width, framebuffer_height;
+		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+		glViewport(0, 0, framebuffer_width, framebuffer_height);
+
+		mWindowManager.NewImGuiFrame();
 
 
-		circle_rings_transform_ref.RotateY(0.01f);
+		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+		bonobo::changePolygonMode(polygon_mode);
 
 
 		if (interpolate) {
@@ -183,18 +216,12 @@ edaf80::Assignment2::run()
 			}
 		}
 
-
-		int framebuffer_width, framebuffer_height;
-		glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
-		glViewport(0, 0, framebuffer_width, framebuffer_height);
-		glClearDepthf(1.0f);
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		bonobo::changePolygonMode(polygon_mode);
-
 		circle_rings.render(mCamera.GetWorldToClipMatrix());
+		for (auto const& control_point : control_points) {
+			control_point.render(mCamera.GetWorldToClipMatrix());
+		}
 
-		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(300, 100), -1.0f, 0);
+		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
 			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
 			auto selection_result = program_manager.SelectProgram("Shader", program_index);
@@ -212,10 +239,9 @@ edaf80::Assignment2::run()
 		if (show_logs)
 			Log::View::Render();
 		if (show_gui)
-			ImGui::Render();
+			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
-		lastTime = nowTime;
 	}
 }
 

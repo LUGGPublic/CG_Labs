@@ -17,6 +17,11 @@ namespace opengl
 namespace debug
 {
 
+bool isSupported()
+{
+	return GLAD_GL_VERSION_4_3 || GLAD_GL_KHR_debug;
+}
+
 std::string
 getStringForType( GLenum type )
 {
@@ -34,6 +39,10 @@ getStringForType( GLenum type )
 		return "Performance Issue";
 	case GL_DEBUG_TYPE_MARKER:
 		return "Stream Annotation";
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		return "Push group";
+	case GL_DEBUG_TYPE_POP_GROUP:
+		return "Pop group";
 	case GL_DEBUG_TYPE_OTHER:
 		return "Other";
 	default:
@@ -93,6 +102,9 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
                      , void const* /*data*/
                      )
 {
+	if (type == GL_DEBUG_TYPE_PUSH_GROUP || type == GL_DEBUG_TYPE_POP_GROUP)
+		return;
+
 	std::ostringstream oss;
 	oss << "[id: " << id << "] of type " << getStringForType(type)
 	    << ", from " << getStringForSource(source) << ":" << std::endl;
@@ -105,7 +117,13 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
 	case GL_DEBUG_SEVERITY_LOW: // fallthrough
 		if (id == 131185) // Will use VIDEO memory
 			break;
-		else
+		else if (id == 131204) { // Texture cannot be used for texture mapping
+			// Discard if this is about the “default texture”, i.e. ID 0.
+			if (s_msg.find("The texture object (0)") != std::string::npos)
+				break;
+			else
+				LogInfo(c_msg);
+		} else
 			LogInfo(c_msg);
 		break;
 	case GL_DEBUG_SEVERITY_MEDIUM:

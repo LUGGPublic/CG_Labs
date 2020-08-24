@@ -1,20 +1,14 @@
-cmake_minimum_required (VERSION 3.0)
+add_executable (EDAN35_Assignment2)
 
-set (
-	ASSIGNMENT2_SOURCES
-
-	"assignment2.cpp"
-	"assignment2.hpp"
+target_sources (
+	EDAN35_Assignment2
+	PRIVATE
+		[[assignment2.hpp]]
+		[[assignment2.cpp]]
 )
 
-source_group (
-	EDAN35${PATH_SEP}Assignment2
+target_link_libraries (EDAN35_Assignment2 PRIVATE assignment_setup)
 
-	FILES
-	${PROJECT_SOURCE_DIR}/assignment2.cpp
-	${PROJECT_SOURCE_DIR}/assignment2.hpp
-)
+install (TARGETS EDAN35_Assignment2 DESTINATION bin)
 
-luggcgl_new_assignment ("EDAN35_Assignment2" "${ASSIGNMENT2_SOURCES}" "")
-
-copy_dlls (EDAN35_Assignment2 "${CMAKE_BINARY_DIR}/src/EDAN35")
+copy_dlls (EDAN35_Assignment2 "${CMAKE_CURRENT_BINARY_DIR}")

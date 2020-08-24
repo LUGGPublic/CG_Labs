@@ -1,6 +1,4 @@
-﻿# As we use the VERSION option---which was introduced in CMAKE 3.0---of the
-# project() command, set the minimum required version to 3.0.
-cmake_minimum_required (VERSION 3.0)
+﻿cmake_minimum_required (VERSION 3.13)
 
 # Workaround for the lab computers
 if (WIN32)
@@ -11,10 +9,12 @@ if (WIN32)
 	set (ENV{TMP} ${LUGGCGL_TMP_DIR})
 endif ()
 
-# Set the project name, versions and languages used.
+# Set project attributes.
 project (
 	CG_Labs
-	VERSION 2019.1
+	VERSION 2020.0
+	DESCRIPTION [[Repository for Computer Graphics courses EDAF80 and EDAN35 at Lund University, Sweden.]]
+	HOMEPAGE_URL [[https://github.com/LUGGPublic/CG_Labs/]]
 	LANGUAGES CXX C
 )
 
@@ -35,32 +35,30 @@ set_property (CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${CMAKE_CONFIGURATION_TYPE
 
 # To be able to dowload and compile the dependencies
 find_package (Git REQUIRED)
-set (FETCHCONTENT_BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
+include (FetchContent)
+set (FETCHCONTENT_BASE_DIR "${PROJECT_SOURCE_DIR}/dependencies" CACHE PATH "Base folder where dependencies are processed." FORCE)
 
-if (NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
-	file (MAKE_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dependencies")
+if (NOT EXISTS "${FETCHCONTENT_BASE_DIR}")
+	file (MAKE_DIRECTORY "${FETCHCONTENT_BASE_DIR}")
 endif ()
 
 # assimp is used for loading the objects’s models
-set (LUGGCGL_ASSIMP_MIN_VERSION 4.1.0)
+set (LUGGCGL_ASSIMP_MIN_VERSION 5.0.0)
+set (LUGGCGL_ASSIMP_DOWNLOAD_VERSION 5.0.1)
 include (CMake/InstallAssimp.cmake)
 find_package (assimp ${LUGGCGL_ASSIMP_MIN_VERSION} REQUIRED)
 link_directories (${ASSIMP_LIBRARY_DIRS})
 
 # GLFW is used for inputs and windows handling
-set (LUGGCGL_GLFW_MIN_VERSION 3.2.1)
+set (LUGGCGL_GLFW_MIN_VERSION 3.2.0)
+set (LUGGCGL_GLFW_DOWNLOAD_VERSION 3.3.2)
 include (CMake/InstallGLFW.cmake)
 find_package (glfw3 ${LUGGCGL_GLFW_MIN_VERSION} REQUIRED)
 
 # GLM is used for matrices, vectors and camera handling
-set (LUGGCGL_GLM_MIN_VERSION 0.9.9.0)
+set (LUGGCGL_GLM_DOWNLOAD_VERSION 0.9.9.5)
 include (CMake/InstallGLM.cmake)
-find_package (glm ${LUGGCGL_GLM_MIN_VERSION} REQUIRED)
-
-# ImGui is used for the windowing system inside the application
-set (LUGGCGL_IMGUI_MIN_VERSION 1.51)
-include (CMake/InstallImGui.cmake)
-find_package (imgui ${LUGGCGL_IMGUI_MIN_VERSION} REQUIRED)
+find_package (glm ${LUGGCGL_GLM_DOWNLOAD_VERSION} EXACT REQUIRED)
 
 # TinyFileDialogs is used for displaying error popups.
 include (CMake/InstallTinyFileDialogs.cmake)
@@ -100,56 +98,44 @@ if (LUGGCGL_BUILD_DOCUMENTATION)
 	)
 endif ()
 
-function (luggcgl_new_assignment assignment_name sources common_sources)
-	add_executable (${assignment_name} ${sources} ${common_sources})
+
+# Define a “fake” library to store the C++ configuration:
+# all libraries and executables linking against this target will automatically
+# inherit its configuration such as C++ standard version and additional C++
+# flags.
+add_library (CG_Labs_options INTERFACE)
+target_compile_features (CG_Labs_options INTERFACE cxx_std_14)
 
 
-	target_include_directories (
-		${assignment_name}
-		PRIVATE
-			"${CMAKE_SOURCE_DIR}/src"
-			"${CMAKE_BINARY_DIR}"
-	)
+# Define another “fake” library that provides a common setup for all
+# assignments. At the moment it only contains all common dependencies but it
+# could contain more, like specific compilation flags.
+add_library (assignment_setup INTERFACE)
+target_link_libraries (
+       assignment_setup
+       INTERFACE
+               bonobo
+               CG_Labs_options
+               tinyfiledialogs::tinyfiledialogs
+)
 
-	target_include_directories (
-		${assignment_name}
-		SYSTEM PRIVATE
-			"${CMAKE_SOURCE_DIR}/src/external"
-	)
-
-	set_target_properties (
-		${assignment_name}
-		PROPERTIES
-			CXX_STANDARD 14
-			CXX_STANDARD_REQUIRED ON
-			CXX_EXTENSIONS OFF
-	)
-
-	add_dependencies (${assignment_name} bonobo)
-
-	target_link_libraries (${assignment_name} bonobo imgui::imgui glm stb::stb tinyfiledialogs::tinyfiledialogs)
-
-	install (TARGETS ${assignment_name} DESTINATION bin)
-endfunction ()
 
 function (copy_dlls target target_folder)
 	if (WIN32)
-		set (assimp_dll "${ASSIMP_ROOT_DIR}/bin/assimp${ASSIMP_LIBRARY_SUFFIX}.dll")
+		set (assimp_dll "assimp${ASSIMP_LIBRARY_SUFFIX}.dll")
+		set (assimp_dll_path "${ASSIMP_ROOT_DIR}/bin/${assimp_dll}")
 
-		add_custom_command (
-			TARGET ${target}
-			POST_BUILD
-			COMMAND ${CMAKE_COMMAND} -E copy ${assimp_dll} ${target_folder}
-			COMMENT "Copying dependent DLLs"
-		)
+		if (NOT EXISTS "${target_folder}/${assimp_dll}")
+			add_custom_command (
+				TARGET ${target}
+				POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy ${assimp_dll_path} ${target_folder}
+				COMMENT "Copying dependent DLLs"
+			)
+		endif ()
 	endif ()
 endfunction ()
 
-
-# Define groups of files for IDEs
-set (PATH_SEP \\)
-source_group (Source\ Files${PATH_SEP}External${PATH_SEP}GLFW FILES ${PROJECT_SOURCE_DIR}/src/external/imgui_impl_glfw_gl3.cpp ${PROJECT_SOURCE_DIR}/src/external/imgui_impl_glfw_gl3.h)
-source_group (Source\ Files${PATH_SEP}External${PATH_SEP}GL3W FILES ${PROJECT_SOURCE_DIR}/src/external/gl3w.cpp)
 
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/external")
 add_subdirectory ("${CMAKE_SOURCE_DIR}/src/core")

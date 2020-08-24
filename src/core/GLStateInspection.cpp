@@ -1,6 +1,6 @@
 #include "GLStateInspection.h"
 
-#include "external/glad/glad.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <cstring>
@@ -225,7 +225,7 @@ bool ToString(std::ostream &os, std::string uniqueIdentifier)
 	os << "Render buffer binding: " << s->mRenderbufferBinding		<< "\n";
 	os << "Array buffer binding: " << s->mArrayBufferBinding			<< "\n";
 	os << "Draw framebuffer binding: " << s->mDrawFramebufferBinding		<< "\n";
-	os << "Red framebuffer binding: " << s->mReadFramebufferBinding		<< "\n";
+	os << "Read framebuffer binding: " << s->mReadFramebufferBinding		<< "\n";
 	os << "Element array buffer binding: " << s->mElementArrayBufferBinding	<< "\n";
 	os << "Active texture: " << (s->mActiveTexture - GL_TEXTURE0)				<< "\n";
 	os << "Current sampler binding: " << s->mCurrentSamplerBinding		<< "\n";

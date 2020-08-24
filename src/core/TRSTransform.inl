@@ -210,7 +210,7 @@ void TRSTransform<T, P>::LookTowards(glm::tvec3<T, P> front_vec, glm::tvec3<T, P
 	front_vec = normalize(front_vec);
 	up_vec = normalize(up_vec);
 
-	if (abs(dot(up_vec, front_vec)) > 0.99999f)
+	if (std::abs(dot(up_vec, front_vec)) > 0.99999f)
 		return;
 
 	glm::tvec3<T, P> prev_up = up_vec;

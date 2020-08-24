@@ -10,12 +10,11 @@
 #include "core/GLStateInspection.h"
 #include "core/GLStateInspectionView.h"
 #include "core/helpers.hpp"
-#include "core/Misc.h"
 #include "core/node.hpp"
+#include "core/opengl.hpp"
 #include "core/ShaderProgramManager.hpp"
 
 #include <imgui.h>
-#include <external/imgui_impl_glfw_gl3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -30,10 +29,11 @@ namespace constant
 	constexpr uint32_t shadowmap_res_x = 1024;
 	constexpr uint32_t shadowmap_res_y = 1024;
 
+	constexpr float  scale_lengths       = 100.0f; // The scene is expressed in centimetres rather than metres, hence the x100.
+
 	constexpr size_t lights_nb           = 4;
-	constexpr float  light_intensity     = 720000.0f;
+	constexpr float  light_intensity     = 72.0f * (scale_lengths * scale_lengths);
 	constexpr float  light_angle_falloff = glm::radians(37.0f);
-	constexpr float  light_cutoff        = 0.05f;
 }
 
 static bonobo::mesh_data loadCone();
@@ -41,7 +41,7 @@ static bonobo::mesh_data loadCone();
 edan35::Assignment2::Assignment2(WindowManager& windowManager) :
 	mCamera(0.5f * glm::half_pi<float>(),
 	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
-	        0.01f, 1000.0f),
+	        0.01f * constant::scale_lengths, 30.0f * constant::scale_lengths),
 	inputHandler(), mWindowManager(windowManager), window(nullptr)
 {
 	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
@@ -69,7 +69,7 @@ void
 edan35::Assignment2::run()
 {
 	// Load the geometry of Sponza
-	auto const sponza_geometry = bonobo::loadObjects("../crysponza/sponza.obj");
+	auto const sponza_geometry = bonobo::loadObjects(config::resources_path("sponza/sponza.obj"));
 	if (sponza_geometry.empty()) {
 		LogError("Failed to load the Sponza model");
 		return;
@@ -89,9 +89,9 @@ edan35::Assignment2::run()
 	//
 	// Setup the camera
 	//
-	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 100.0f, 180.0f));
+	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 1.0f, 1.8f) * constant::scale_lengths);
 	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 0.25f;
+	mCamera.mMovementSpeed = 3.0f * constant::scale_lengths; // 3 m/s => 10.8 km/h.
 
 	//
 	// Load all the shader programs used
@@ -144,6 +144,16 @@ edan35::Assignment2::run()
 	                                         resolve_deferred_shader);
 	if (resolve_deferred_shader == 0u) {
 		LogError("Failed to load deferred resolution shader");
+		return;
+	}
+
+	GLuint render_light_cones_shader = 0u;
+	program_manager.CreateAndRegisterProgram("Render light cones",
+	                                         { { ShaderType::vertex, "EDAN35/render_light_cones.vert" },
+	                                           { ShaderType::fragment, "EDAN35/render_light_cones.frag" } },
+	                                         render_light_cones_shader);
+	if (render_light_cones_shader == 0u) {
+		LogError("Failed to load light cones rendering shader");
 		return;
 	}
 
@@ -213,34 +223,35 @@ edan35::Assignment2::run()
 	bool are_lights_paused = false;
 
 	for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
-		lightTransforms[i].SetTranslate(glm::vec3(0.0f, 125.0f, 0.0f));
+		lightTransforms[i].SetTranslate(glm::vec3(0.0f, 1.25f, 0.0f) * constant::scale_lengths);
 		lightColors[i] = glm::vec3(0.5f + 0.5f * (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)),
 		                           0.5f + 0.5f * (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)),
 		                           0.5f + 0.5f * (static_cast<float>(rand()) / static_cast<float>(RAND_MAX)));
 	}
 
-	TRSTransformf coneScaleTransform;
-	coneScaleTransform.SetScale(glm::vec3(std::sqrt(constant::light_intensity / constant::light_cutoff)));
-
-	TRSTransformf lightOffsetTransform;
-	lightOffsetTransform.SetTranslate(glm::vec3(0.0f, 0.0f, -40.0f));
-
+	float const lightProjectionNearPlane = 0.01f * constant::scale_lengths;
+	float const lightProjectionFarPlane = 20.0f * constant::scale_lengths;
 	auto lightProjection = glm::perspective(0.5f * glm::pi<float>(),
 	                                        static_cast<float>(constant::shadowmap_res_x) / static_cast<float>(constant::shadowmap_res_y),
-	                                        1.0f, 10000.0f);
+	                                        lightProjectionNearPlane, lightProjectionFarPlane);
+
+	TRSTransformf coneScaleTransform;
+	coneScaleTransform.SetScale(glm::vec3(lightProjectionFarPlane * 0.8f));
+
+	TRSTransformf lightOffsetTransform;
+	lightOffsetTransform.SetTranslate(glm::vec3(0.0f, 0.0f, -0.4f) * constant::scale_lengths);
 
 
 	auto seconds_nb = 0.0f;
 
 
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClearDepthf(1.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
 
-	double ddeltatime;
-	size_t fpsSamples = 0;
-	double nowTime, lastTime = GetTimeMilliseconds();
-	double fpsNextTick = lastTime + 1000.0;
+	auto lastTime = std::chrono::high_resolution_clock::now();
 	bool show_textures = true;
 	bool show_cone_wireframe = false;
 
@@ -249,27 +260,19 @@ edan35::Assignment2::run()
 	bool shader_reload_failed = false;
 
 	while (!glfwWindowShouldClose(window)) {
-		nowTime = GetTimeMilliseconds();
-		ddeltatime = nowTime - lastTime;
-		if (nowTime > fpsNextTick) {
-			fpsNextTick += 1000.0;
-			fpsSamples = 0;
-		}
-		fpsSamples++;
+		auto const nowTime = std::chrono::high_resolution_clock::now();
+		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
+		lastTime = nowTime;
 		if (!are_lights_paused)
-			seconds_nb += static_cast<float>(ddeltatime / 1000.0);
+			seconds_nb += std::chrono::duration<decltype(seconds_nb)>(deltaTimeUs).count();
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
 
 		glfwPollEvents();
 		inputHandler.Advance();
-		mCamera.Update(ddeltatime, inputHandler);
+		mCamera.Update(deltaTimeUs, inputHandler);
 
-		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
-			show_logs = !show_logs;
-		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
-			show_gui = !show_gui;
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			shader_reload_failed = !program_manager.ReloadAllPrograms();
 			if (shader_reload_failed)
@@ -278,8 +281,12 @@ edan35::Assignment2::run()
 				                   "Rendering is suspended until the issue is solved. Once fixed, just reload the shaders again.",
 				                   "error");
 		}
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
+			show_logs = !show_logs;
+		if (inputHandler.GetKeycodeState(GLFW_KEY_F2) & JUST_RELEASED)
+			show_gui = !show_gui;
 
-		ImGui_ImplGlfwGL3_NewFrame();
+		mWindowManager.NewImGuiFrame();
 
 
 		if (!shader_reload_failed) {
@@ -287,6 +294,11 @@ edan35::Assignment2::run()
 			//
 			// Pass 1: Render scene into the g-buffer
 			//
+			if (utils::opengl::debug::isSupported())
+			{
+				std::string const group_name = "Fill G-buffer";
+				glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
+			}
 			glBindFramebuffer(GL_FRAMEBUFFER, deferred_fbo);
 			GLenum const deferred_draw_buffers[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
 			glDrawBuffers(3, deferred_draw_buffers);
@@ -303,6 +315,10 @@ edan35::Assignment2::run()
 
 			for (auto const& element : sponza_elements)
 				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform().GetMatrix(), fill_gbuffer_shader, set_uniforms);
+			if (utils::opengl::debug::isSupported())
+			{
+				glPopDebugGroup();
+			}
 
 
 
@@ -324,6 +340,11 @@ edan35::Assignment2::run()
 				//
 				// Pass 2.1: Generate shadow map for light i
 				//
+				if (utils::opengl::debug::isSupported())
+				{
+					std::string const group_name = "Create shadow map " + std::to_string(i);
+					glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
+				}
 				glBindFramebuffer(GL_FRAMEBUFFER, shadowmap_fbo);
 				glViewport(0, 0, constant::shadowmap_res_x, constant::shadowmap_res_y);
 				// XXX: Is any clearing needed?
@@ -331,7 +352,11 @@ edan35::Assignment2::run()
 				GLStateInspection::CaptureSnapshot("Shadow Map Generation");
 
 				for (auto const& element : sponza_elements)
-					element.render(light_matrix, glm::mat4(1.0f), fill_gbuffer_shader, set_uniforms);
+					element.render(light_matrix, glm::mat4(1.0f), fill_shadowmap_shader, set_uniforms);
+				if (utils::opengl::debug::isSupported())
+				{
+					glPopDebugGroup();
+				}
 
 
 				glEnable(GL_BLEND);
@@ -341,6 +366,11 @@ edan35::Assignment2::run()
 				glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
 				//
 				// Pass 2.2: Accumulate light i contribution
+				if (utils::opengl::debug::isSupported())
+				{
+					std::string const group_name = "Accumulate light " + std::to_string(i);
+					glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
+				}
 				glBindFramebuffer(GL_FRAMEBUFFER, light_fbo);
 				glDrawBuffers(2, light_draw_buffers);
 				glUseProgram(accumulate_lights_shader);
@@ -384,6 +414,10 @@ edan35::Assignment2::run()
 				glDepthMask(GL_TRUE);
 				glDepthFunc(GL_LESS);
 				glDisable(GL_BLEND);
+				if (utils::opengl::debug::isSupported())
+				{
+					glPopDebugGroup();
+				}
 			}
 
 
@@ -392,6 +426,11 @@ edan35::Assignment2::run()
 			//
 			// Pass 3: Compute final image using both the g-buffer and  the light accumulation buffer
 			//
+			if (utils::opengl::debug::isSupported())
+			{
+				std::string const group_name = "Resolve";
+				glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
+			}
 			glBindFramebuffer(GL_FRAMEBUFFER, 0u);
 			glUseProgram(resolve_deferred_shader);
 			glViewport(0, 0, framebuffer_width, framebuffer_height);
@@ -411,6 +450,10 @@ edan35::Assignment2::run()
 			glBindSampler(1, 0u);
 			glBindSampler(0, 0u);
 			glUseProgram(0u);
+			if (utils::opengl::debug::isSupported())
+			{
+				glPopDebugGroup();
+			}
 		}
 
 
@@ -422,7 +465,7 @@ edan35::Assignment2::run()
 			for (size_t i = 0; i < lights_nb; ++i) {
 				cone.render(mCamera.GetWorldToClipMatrix(),
 				            lightTransforms[i].GetMatrix() * lightOffsetTransform.GetMatrix() * coneScaleTransform.GetMatrix(),
-				            fill_shadowmap_shader, set_uniforms);
+				            render_light_cones_shader, set_uniforms);
 			}
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
@@ -435,8 +478,8 @@ edan35::Assignment2::run()
 			bonobo::displayTexture({-0.95f, -0.95f}, {-0.55f, -0.55f}, diffuse_texture,                     default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 			bonobo::displayTexture({-0.45f, -0.95f}, {-0.05f, -0.55f}, specular_texture,                    default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 			bonobo::displayTexture({ 0.05f, -0.95f}, { 0.45f, -0.55f}, normal_texture,                      default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
-			bonobo::displayTexture({ 0.55f, -0.95f}, { 0.95f, -0.55f}, depth_texture,                       default_sampler, {0, 0, 0, -1}, glm::uvec2(framebuffer_width, framebuffer_height), &mCamera);
-			bonobo::displayTexture({-0.95f,  0.55f}, {-0.55f,  0.95f}, shadowmap_texture,                   default_sampler, {0, 0, 0, -1}, glm::uvec2(framebuffer_width, framebuffer_height), &mCamera);
+			bonobo::displayTexture({ 0.55f, -0.95f}, { 0.95f, -0.55f}, depth_texture,                       default_sampler, {0, 0, 0, -1}, glm::uvec2(framebuffer_width, framebuffer_height), true, mCamera.mNear, mCamera.mFar);
+			bonobo::displayTexture({-0.95f,  0.55f}, {-0.55f,  0.95f}, shadowmap_texture,                   default_sampler, {0, 0, 0, -1}, glm::uvec2(framebuffer_width, framebuffer_height), true, lightProjectionNearPlane, lightProjectionFarPlane);
 			bonobo::displayTexture({-0.45f,  0.55f}, {-0.05f,  0.95f}, light_diffuse_contribution_texture,  default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 			bonobo::displayTexture({ 0.05f,  0.55f}, { 0.45f,  0.95f}, light_specular_contribution_texture, default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 		}
@@ -447,12 +490,12 @@ edan35::Assignment2::run()
 
 		GLStateInspection::View::Render();
 
-		bool opened = ImGui::Begin("Render Time", nullptr, ImVec2(120, 50), -1.0f, 0);
+		bool opened = ImGui::Begin("Render Time", nullptr, ImGuiWindowFlags_None);
 		if (opened)
-			ImGui::Text("%.3f ms", ddeltatime);
+			ImGui::Text("%.3f ms", std::chrono::duration<float, std::milli>(deltaTimeUs).count());
 		ImGui::End();
 
-		opened = ImGui::Begin("Scene Controls", nullptr, ImVec2(350, 100), -1.0f, 0);
+		opened = ImGui::Begin("Scene Controls", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
 			ImGui::Checkbox("Pause lights", &are_lights_paused);
 			ImGui::SliderInt("Number of lights", &lights_nb, 1, static_cast<int>(constant::lights_nb));
@@ -464,10 +507,9 @@ edan35::Assignment2::run()
 		if (show_logs)
 			Log::View::Render();
 		if (show_gui)
-			ImGui::Render();
+			mWindowManager.RenderImGuiFrame();
 
 		glfwSwapBuffers(window);
-		lastTime = nowTime;
 	}
 
 	glDeleteProgram(resolve_deferred_shader);

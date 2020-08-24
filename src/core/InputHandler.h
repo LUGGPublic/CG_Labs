@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Types.h"
-
+#include <cstdint>
 #include <unordered_map>
 
 #define GLFW_INCLUDE_NONE
@@ -21,10 +20,9 @@ class InputHandler
 {
 public:
 	struct IState {
-		IState() : mDownTick(-1), mUpTick(-1), mIsDown(false) {}
-		u64		mDownTick;
-		u64		mUpTick;
-		bool	mIsDown;
+		std::uint64_t mDownTick{std::numeric_limits<std::uint64_t>::max()};
+		std::uint64_t mUpTick{std::numeric_limits<std::uint64_t>::max()};
+		bool mIsDown{false};
 	};
 
 public:
@@ -35,10 +33,10 @@ public:
 	void FeedMouseButtons(int button, int action, int mods);
 	void FeedMouseMotion(glm::vec2 const& position);
 	void Advance();
-	u32 GetScancodeState(int scancode);
-	u32 GetKeycodeState(int key);
-	u32 GetMouseState(u32 button);
-	glm::vec2 GetMousePositionAtStateShift(u32 button);
+	std::uint32_t GetScancodeState(int scancode);
+	std::uint32_t GetKeycodeState(int key);
+	std::uint32_t GetMouseState(std::uint32_t button);
+	glm::vec2 GetMousePositionAtStateShift(std::uint32_t button);
 	glm::vec2 GetMousePosition();
 	bool IsMouseCapturedByUI() const;
 	bool IsKeyboardCapturedByUI() const;
@@ -46,11 +44,11 @@ public:
 
 private:
 	void DownEvent(std::unordered_map<size_t, IState> &map, size_t loc);
-	void DownModEvent(std::unordered_map<size_t, IState> &map, u32 mods);
+	void DownModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods);
 	void UpEvent(std::unordered_map<size_t, IState> &map, size_t loc);
-	void UpModEvent(std::unordered_map<size_t, IState> &map, u32 mods);
+	void UpModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods);
 
-	u32 GetState(std::unordered_map<size_t, IState> &map, size_t loc);
+	std::uint32_t GetState(std::unordered_map<size_t, IState> &map, size_t loc);
 
 	std::unordered_map<size_t, IState> mScancodeMap;
 	std::unordered_map<size_t, IState> mKeycodeMap;
@@ -62,7 +60,7 @@ private:
 	bool mMouseCapturedByUI;
 	bool mKeyboardCapturedByUI;
 
-	u64 mTick;
+	std::uint64_t mTick;
 
 };
 

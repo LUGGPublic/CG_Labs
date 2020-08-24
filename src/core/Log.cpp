@@ -1,10 +1,10 @@
 #include "Log.h"
-#include "Misc.h"
 #include <cstring>
 #include <cstdio>
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <thread>
 #include <unordered_map>
 #ifdef _WIN32
 #	include <Windows.h>
@@ -148,7 +148,7 @@ void Report(
 
 	std::ostringstream os;
 	if (logIncludeThreadID) {
-		std::thread::id tid = GetThreadID();
+		std::thread::id tid = std::this_thread::get_id();
 		os << "{" << tid << "} ";
 	}
 	if (logSettings[t].verbosity == LOUD) {

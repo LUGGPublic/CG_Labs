@@ -1,51 +1,59 @@
-cmake_minimum_required (VERSION 3.0)
-
-project (bonobo
-	VERSION 0.2
-	LANGUAGES CXX
-)
-
-add_library (${PROJECT_NAME}
-	"Bonobo.cpp"
-	"GLStateInspection.cpp"
-	"GLStateInspectionView.cpp"
-	"InputHandler.cpp"
-	"Log.cpp"
-	"LogView.cpp"
-	"Misc.cpp"
-	"opengl.cpp"
-	"ShaderProgramManager.cpp"
-	"Types.cpp"
-	"various.cpp"
-	"WindowManager.cpp"
-
-	"node.cpp"
-	"node.hpp"
-	"helpers.cpp"
-	"helpers.hpp"
+add_library (bonobo)
+target_sources (
+	bonobo
+	PUBLIC
+		[[Bonobo.h]]
+		[[BuildSettings.h]]
+		"${CMAKE_BINARY_DIR}/config.hpp"
+		[[FPSCamera.h]]
+		[[FPSCamera.inl]]
+		[[GLStateInspection.h]]
+		[[GLStateInspectionView.h]]
+		[[helpers.hpp]]
+		[[InputHandler.h]]
+		[[Log.h]]
+		[[LogView.h]]
+		[[node.hpp]]
+		[[opengl.hpp]]
+		[[ShaderProgramManager.hpp]]
+		[[TRSTransform.h]]
+		[[TRSTransform.inl]]
+		[[various.hpp]]
+		[[WindowManager.hpp]]
+	PRIVATE
+		[[Bonobo.cpp]]
+		[[GLStateInspection.cpp]]
+		[[GLStateInspectionView.cpp]]
+		[[helpers.cpp]]
+		[[InputHandler.cpp]]
+		[[Log.cpp]]
+		[[LogView.cpp]]
+		[[node.cpp]]
+		[[opengl.cpp]]
+		[[ShaderProgramManager.cpp]]
+		[[various.cpp]]
+		[[WindowManager.cpp]]
 )
 
 target_include_directories (
-	${PROJECT_NAME}
-	PRIVATE
+	bonobo
+	PUBLIC
 		"${CMAKE_SOURCE_DIR}/src"
 		"${CMAKE_BINARY_DIR}"
+		"${ASSIMP_INCLUDE_DIRS}"
 )
 
-target_include_directories (
-	${PROJECT_NAME}
-	SYSTEM PRIVATE
-		${ASSIMP_INCLUDE_DIRS}
-		"${CMAKE_SOURCE_DIR}/src/external"
+target_link_libraries (
+	bonobo
+	PUBLIC
+		${ASSIMP_LIBRARIES}
+		external_libs
+		glfw
+		glm
+		$<$<NOT:$<BOOL:WIN32>>:dl>
+	PRIVATE
+		CG_Labs_options
+		stb::stb
 )
 
-set_target_properties (
-	${PROJECT_NAME}
-	PROPERTIES
-		CXX_STANDARD 14
-		CXX_STANDARD_REQUIRED ON
-		CXX_EXTENSIONS OFF
-)
-target_link_libraries (${PROJECT_NAME} imgui::imgui external_libs glfw glm ${ASSIMP_LIBRARIES} stb::stb)
-
-install (TARGETS ${PROJECT_NAME} DESTINATION lib)
+install (TARGETS bonobo DESTINATION lib)

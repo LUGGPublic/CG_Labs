@@ -1,6 +1,6 @@
 #pragma once
 
-#include "external/glad/glad.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <string>
@@ -16,6 +16,7 @@ namespace opengl
 namespace debug
 {
 
+bool isSupported();
 std::string getStringForType(GLenum type);
 std::string getStringForSource(GLenum source);
 std::string getStringForSeverity(GLenum severity);

@@ -1,0 +1,25 @@
+From Pierre Moreau <pierre.moreau@cs.lth.se>
+Date: Fri, 21 Aug 2020 21:21:21 +0200
+Subject: [Patch] Turn multi-configuration off
+
+If multi-configuration is detected, assimp will install both Debug and Release
+target configurations (which is fine in itself).
+However when using `find_package()` on assimp, it loops over all installed
+target configurations and ensure that everything is there which will not work
+as we only built and installed the Release version so CMake ends up failing due
+to trying to locate the referenced libraries from the Debug version.
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index ab1a8d2c..afef9cbd 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -347,7 +347,7 @@ if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 2.5)
+ SET( ASSIMP_BIN_INSTALL_DIR "bin" CACHE STRING
+   "Path the tool executables are installed to." )
+ 
+-get_cmake_property(is_multi_config GENERATOR_IS_MULTI_CONFIG)
++set(is_multi_config OFF)
+ 
+ IF (INJECT_DEBUG_POSTFIX AND (is_multi_config OR CMAKE_BUILD_TYPE STREQUAL "Debug"))
+   SET(CMAKE_DEBUG_POSTFIX "d" CACHE STRING "Debug Postfix for lib, samples and tools")
+

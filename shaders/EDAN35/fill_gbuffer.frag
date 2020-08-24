@@ -1,10 +1,13 @@
 #version 410
 
+uniform bool has_diffuse_texture;
+uniform bool has_specular_texture;
+uniform bool has_normals_texture;
+uniform bool has_opacity_texture;
 uniform sampler2D diffuse_texture;
 uniform sampler2D specular_texture;
 uniform sampler2D normals_texture;
 uniform sampler2D opacity_texture;
-uniform bool has_opacity_texture;
 uniform mat4 normal_model_to_world;
 
 in VS_OUT {
@@ -25,11 +28,15 @@ void main()
 		discard;
 
 	// Diffuse color
-	geometry_diffuse = texture(diffuse_texture, fs_in.texcoord);
+	geometry_diffuse = vec4(0.0f);
+	if (has_diffuse_texture)
+		geometry_diffuse = texture(diffuse_texture, fs_in.texcoord);
 
 	// Specular color
-	geometry_specular = texture(specular_texture, fs_in.texcoord);
+	geometry_specular = vec4(0.0f);
+	if (has_specular_texture)
+		geometry_specular = texture(specular_texture, fs_in.texcoord);
 
 	// Worldspace normal
-	geometry_normal.xyz = vec3(0.0, 0.0, 0.0);
+	geometry_normal.xyz = vec3(0.0);
 }

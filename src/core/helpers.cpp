@@ -2,7 +2,6 @@
 #include "helpers.hpp"
 
 #include "core/Log.h"
-#include "core/Misc.h"
 #include "core/opengl.hpp"
 #include "core/various.hpp"
 
@@ -15,6 +14,7 @@
 
 #include <array>
 #include <cassert>
+#include <cstdint>
 
 namespace local
 {
@@ -43,30 +43,23 @@ bonobo::deinit()
 	glDeleteVertexArrays(1, &local::display_vao);
 }
 
-static std::vector<u8>
-getTextureData(std::string const& filename, u32& width, u32& height, bool flip)
+static std::vector<std::uint8_t>
+getTextureData(std::string const& filename, std::uint32_t& width, std::uint32_t& height, bool flip)
 {
-	auto const path = config::resources_path(filename);
 	auto const channels_nb = 4u;
-	unsigned char* image_data = stbi_load(path.c_str(), reinterpret_cast<int*>(&width), reinterpret_cast<int*>(&height), nullptr, channels_nb);
+	stbi_set_flip_vertically_on_load_thread(flip ? 1 : 0);
+	unsigned char* image_data = stbi_load(filename.c_str(), reinterpret_cast<int*>(&width), reinterpret_cast<int*>(&height), nullptr, channels_nb);
 	if (image_data == nullptr) {
-		LogWarning("Couldn't load or decode image file %s", path.c_str());
+		LogWarning("Couldn't load or decode image file %s", filename.c_str());
 
 		// Provide a small empty image instead in case of failure.
 		width = 16;
 		height = 16;
 		return std::vector<unsigned char>(width * height * channels_nb);
 	}
-    
-	std::vector<unsigned char> image(width * height * channels_nb);
-	if (!flip) {
-		std::memcpy(image.data(), image_data, image.size());
-		stbi_image_free(image_data);
-		return image;
-	}
 
-	for (u32 y = 0; y < height; y++)
-		memcpy(image.data() + (height - 1 - y) * width * channels_nb, &image_data[y * width * channels_nb], width * channels_nb);
+	std::vector<unsigned char> image(width * height * channels_nb);
+	std::memcpy(image.data(), image_data, image.size());
 	stbi_image_free(image_data);
 
 	return image;
@@ -76,36 +69,36 @@ std::vector<bonobo::mesh_data>
 bonobo::loadObjects(std::string const& filename)
 {
 	std::vector<bonobo::mesh_data> objects;
+	std::vector<texture_bindings> materials_bindings;
 
-	auto const scene_filepath = config::resources_path("scenes/" + filename);
-	LogInfo("Loading \"%s\"", scene_filepath.c_str());
+	auto const end_of_basedir = filename.rfind("/");
+	auto const parent_folder = (end_of_basedir != std::string::npos ? filename.substr(0, end_of_basedir) : ".") + "/";
+	LogInfo("Loading \"%s\"", filename.c_str());
 	Assimp::Importer importer;
-	auto const assimp_scene = importer.ReadFile(scene_filepath, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_CalcTangentSpace);
+	auto const assimp_scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_CalcTangentSpace);
 	if (assimp_scene == nullptr || assimp_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || assimp_scene->mRootNode == nullptr) {
-		LogError("Assimp failed to load \"%s\": %s", scene_filepath.c_str(), importer.GetErrorString());
+		LogError("Assimp failed to load \"%s\": %s", filename.c_str(), importer.GetErrorString());
 		return objects;
 	}
 
 	if (assimp_scene->mNumMeshes == 0u) {
-		LogError("No mesh available; loading \"%s\" must have had issues", scene_filepath.c_str());
+		LogError("No mesh available; loading \"%s\" must have had issues", filename.c_str());
 		return objects;
 	}
 
-	std::vector<texture_bindings> materials_bindings;
-	materials_bindings.reserve(assimp_scene->mNumMaterials);
-
 	LogInfo("\t* materials");
+	materials_bindings.reserve(assimp_scene->mNumMaterials);
 	for (size_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
 		texture_bindings bindings;
 		auto const material = assimp_scene->mMaterials[i];
 
-		auto const process_texture = [&bindings,&material,i](aiTextureType type, std::string const& type_as_str, std::string const& name){
+		auto const process_texture = [&bindings,&material,i,&parent_folder](aiTextureType type, std::string const& type_as_str, std::string const& name){
 			if (material->GetTextureCount(type)) {
 				if (material->GetTextureCount(type) > 1)
 					LogWarning("Material %d has more than one %s texture: discarding all but the first one.", i, type_as_str.c_str());
 				aiString path;
 				material->GetTexture(type, 0, &path);
-				auto const id = bonobo::loadTexture2D("../crysponza/" + std::string(path.C_Str()), type_as_str != "opacity");
+				auto const id = bonobo::loadTexture2D(parent_folder + std::string(path.C_Str()), type_as_str != "opacity");
 				if (id != 0u)
 					bindings.emplace(name, id);
 			}
@@ -144,6 +137,10 @@ bonobo::loadObjects(std::string const& filename)
 		}
 
 		bonobo::mesh_data object;
+		if (assimp_object_mesh->mName.length != 0)
+		{
+			object.name = std::string(assimp_object_mesh->mName.C_Str());
+		}
 
 		glGenVertexArrays(1, &object.vao);
 		assert(object.vao != 0u);
@@ -270,8 +267,8 @@ bonobo::createTexture(uint32_t width, uint32_t height, GLenum target, GLint inte
 GLuint
 bonobo::loadTexture2D(std::string const& filename, bool generate_mipmap)
 {
-	u32 width, height;
-	auto const data = getTextureData("textures/" + filename, width, height, true);
+	std::uint32_t width, height;
+	auto const data = getTextureData(filename, width, height, true);
 	if (data.empty())
 		return 0u;
 
@@ -321,10 +318,10 @@ bonobo::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 
 	// We need to fill in the cube map using the images passed in as
 	// argument. The function `getTextureData()` uses stb to read in the
-	// image files and return a `std::vector<u8>` containing all the
+	// image files and return a `std::vector<std::uint8_t>` containing all the
 	// texels.
-	u32 width, height;
-	auto data = getTextureData("cubemaps/" + negx, width, height, false);
+	std::uint32_t width, height;
+	auto data = getTextureData(negx, width, height, false);
 	if (data.empty()) {
 		glDeleteTextures(1, &texture);
 		return 0u;
@@ -380,7 +377,7 @@ bonobo::createProgram(std::string const& vert_shader_source_path, std::string co
 }
 
 void
-bonobo::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right, GLuint texture, GLuint sampler, glm::ivec4 const& swizzle, glm::ivec2 const& window_size, FPSCameraf const* camera)
+bonobo::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right, GLuint texture, GLuint sampler, glm::ivec4 const& swizzle, glm::ivec2 const& window_size, bool linearise, float nearPlane, float farPlane)
 {
 	auto const relative_to_absolute = [](float coord, int size) {
 		return static_cast<GLint>((coord + 1.0f) / 2.0f * size);
@@ -391,8 +388,6 @@ bonobo::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right
 	                                      relative_to_absolute(upper_right.y, window_size.y))
 	                         - viewport_origin;
 
-	int const linearise = camera != nullptr;
-
 	glViewport(viewport_origin.x, viewport_origin.y, viewport_size.x, viewport_size.y);
 	glUseProgram(local::fullscreen_shader);
 	glBindVertexArray(local::display_vao);
@@ -402,8 +397,8 @@ bonobo::displayTexture(glm::vec2 const& lower_left, glm::vec2 const& upper_right
 	glUniform1i(glGetUniformLocation(local::fullscreen_shader, "tex"), 0);
 	glUniform4iv(glGetUniformLocation(local::fullscreen_shader, "swizzle"), 1, glm::value_ptr(swizzle));
 	glUniform1i(glGetUniformLocation(local::fullscreen_shader, "linearise"), linearise);
-	glUniform1f(glGetUniformLocation(local::fullscreen_shader, "near"), linearise ? camera->mNear : 0.0f);
-	glUniform1f(glGetUniformLocation(local::fullscreen_shader, "far"), linearise ? camera->mFar : 0.0f);
+	glUniform1f(glGetUniformLocation(local::fullscreen_shader, "near"), nearPlane);
+	glUniform1f(glGetUniformLocation(local::fullscreen_shader, "far"), farPlane);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glBindSampler(0, 0u);
 	glBindTexture(GL_TEXTURE_2D, 0);

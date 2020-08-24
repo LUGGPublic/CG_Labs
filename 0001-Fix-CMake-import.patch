@@ -1,0 +1,29 @@
+From fa1dc3b8f1603622d33ba3010b9ed5962e8f39c4 Mon Sep 17 00:00:00 2001
+From: Bradley Austin Davis <bdavis@saintandreas.org>
+Date: Fri, 18 Oct 2019 13:02:32 -0700
+Subject: [PATCH] Fix CMake import
+
+Using CMake 3.15 & Visual Studio 2019 to build on windows produced a cmake configuration which was unable to be used by clients.  Investigating this I was eventually able to determine this was caused by a mismatch in the target properties.  Specifically, it was setting the TYPE property to STATIC_LIBRARY even though it was building as a SHARED_LIBRARY.
+
+This in turn was because the if clause on line `if(@BUILD_SHARED_LIBS@)` of this file was evaluating to `if (ON)` which was then not properly evaluated while under the CMake 2.6 policy.  Explicitly setting the `CMP0012` policy to NEW fixes the problem.
+---
+ assimpTargets.cmake.in | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/assimpTargets.cmake.in b/assimpTargets.cmake.in
+index ab1a8d2c..afef9cbd 100644
+--- a/assimpTargets.cmake.in
++++ b/assimpTargets.cmake.in
+@@ -5,6 +5,9 @@ if("${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}" LESS 2.5)
+ endif()
+ cmake_policy(PUSH)
+ cmake_policy(VERSION 2.6)
++# Required for the evaluation of "if(@BUILD_SHARED_LIBS@)" below to function
++cmake_policy(SET CMP0012 NEW)
++
+ #----------------------------------------------------------------
+ # Generated CMake target import file.
+ #----------------------------------------------------------------
+-- 
+2.28.0.windows.1
+

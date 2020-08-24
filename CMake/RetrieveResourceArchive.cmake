@@ -1,30 +1,12 @@
-set (resources_SOURCE_FILE ${FETCHCONTENT_BASE_DIR}/resources.zip)
+FetchContent_Declare (
+	resources
+	URL [[http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDAF80_resources.zip]]
+	URL_HASH [[SHA512=1ed9a167e4b06eaa7f0a000881ce7bc315cdc8fd38156cf66adc194f0922d1930ef7591275b37229a0261a84ed1c6869a1b3ac237a3cdca1e8b21d90f484dd11]]
+	SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res"
+)
 
-if (NOT EXISTS ${resources_SOURCE_FILE})
+FetchContent_GetProperties (resources)
+if (NOT resources_POPULATED)
 	message (STATUS "Downloading resource archive…")
-	file (DOWNLOAD
-		http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDA221_resources.zip
-		${resources_SOURCE_FILE}
-		STATUS status
-		SHOW_PROGRESS
-		EXPECTED_HASH SHA256=c9ae3e0f0b1186b2b9559a642e7db2b64cd28994fc76053c784238f8dddf6388
-	)
-	list (GET status 0 result)
-	if (NOT (result EQUAL 0))
-		list (GET status 1 stderr)
-		message (FATAL_ERROR "Download step for resources failed: ${result}\n"
-		                     "Error output: ${stderr}")
-	endif ()
-
-	execute_process (
-		COMMAND ${CMAKE_COMMAND} -E tar xf ${resources_SOURCE_FILE}
-		OUTPUT_QUIET
-		ERROR_VARIABLE stderr
-		RESULT_VARIABLE result
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-	)
-	if (result)
-		message (FATAL_ERROR "Extraction step for resources failed: ${result}\n"
-		                     "Error output: ${stderr}")
-	endif ()
+	FetchContent_Populate (resources)
 endif ()

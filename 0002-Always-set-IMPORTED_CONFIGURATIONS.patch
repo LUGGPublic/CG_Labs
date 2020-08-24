@@ -1,0 +1,73 @@
+From a6152b0eecd8c5a56b894030b47c4d75bc5301f8 Mon Sep 17 00:00:00 2001
+From: Nick Overdijk <nick.overdijk@circlecvi.com>
+Date: Fri, 20 Mar 2020 15:22:05 +0100
+Subject: [PATCH] Always set IMPORTED_CONFIGURATIONS, always add to
+ IMPORT_CHECK_TARGETS
+
+Without the IMPORTED_CONFIGURATIONS set, I had errors like:
+`ninja: error: 'assimp::assimp-NOTFOUND', needed by 'bin/HeartVision.app/Contents/MacOS/MyApp', missing and no known rule to make it`
+
+This was only set for linux/windows.
+---
+ assimpTargets-release.cmake.in | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/assimpTargets-release.cmake.in b/assimpTargets-release.cmake.in
+index f3db8f12cd..4245e08446 100644
+--- a/assimpTargets-release.cmake.in
++++ b/assimpTargets-release.cmake.in
+@@ -7,6 +7,8 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
+ 
+ set(ASSIMP_BUILD_SHARED_LIBS @BUILD_SHARED_LIBS@)
+ 
++set_property(TARGET assimp::assimp APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
++
+ if(MSVC)
+   if(MSVC_TOOLSET_VERSION)
+     set(MSVC_PREFIX "vc${MSVC_TOOLSET_VERSION}")
+@@ -39,24 +41,19 @@ if(MSVC)
+     set(sharedLibraryName "assimp${ASSIMP_LIBRARY_SUFFIX}@CMAKE_SHARED_LIBRARY_SUFFIX@")
+     set(importLibraryName "assimp${ASSIMP_LIBRARY_SUFFIX}@CMAKE_IMPORT_LIBRARY_SUFFIX@")
+ 
+-    # Import target "assimp::assimp" for configuration "Release"
+-    set_property(TARGET assimp::assimp APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+     set_target_properties(assimp::assimp PROPERTIES
+       IMPORTED_IMPLIB_RELEASE "${_IMPORT_PREFIX}/lib/${importLibraryName}"
+       IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/bin/${sharedLibraryName}"
+     )
+-    list(APPEND _IMPORT_CHECK_TARGETS assimp::assimp )
+     list(APPEND _IMPORT_CHECK_FILES_FOR_assimp::assimp "${_IMPORT_PREFIX}/lib/${importLibraryName}")
+     list(APPEND _IMPORT_CHECK_FILES_FOR_assimp::assimp "${_IMPORT_PREFIX}/bin/${sharedLibraryName}" )
+   else()
+     set(staticLibraryName "assimp${ASSIMP_LIBRARY_SUFFIX}@CMAKE_STATIC_LIBRARY_SUFFIX@")
+ 
+     # Import target "assimp::assimp" for configuration "Release"
+-    set_property(TARGET assimp::assimp APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+     set_target_properties(assimp::assimp PROPERTIES
+       IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/${staticLibraryName}"
+     )
+-    list(APPEND _IMPORT_CHECK_TARGETS assimp::assimp )
+     list(APPEND _IMPORT_CHECK_FILES_FOR_assimp::assimp "${_IMPORT_PREFIX}/lib/${staticLibraryName}")
+   endif()
+ 
+@@ -72,18 +69,18 @@ else()
+       IMPORTED_SONAME_RELEASE "${sharedLibraryName}"
+       IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/${sharedLibraryName}"
+     )
+-    list(APPEND _IMPORT_CHECK_TARGETS assimp::assimp )
+     list(APPEND _IMPORT_CHECK_FILES_FOR_assimp::assimp "${_IMPORT_PREFIX}/lib/${sharedLibraryName}" )
+   else()
+     set(staticLibraryName "libassimp${ASSIMP_LIBRARY_SUFFIX}@CMAKE_STATIC_LIBRARY_SUFFIX@")
+     set_target_properties(assimp::assimp PROPERTIES
+       IMPORTED_LOCATION_RELEASE "${_IMPORT_PREFIX}/lib/${staticLibraryName}"
+     )
+-    list(APPEND _IMPORT_CHECK_TARGETS assimp::assimp )
+     list(APPEND _IMPORT_CHECK_FILES_FOR_assimp::assimp "${_IMPORT_PREFIX}/lib/${staticLibraryName}" )
+   endif()
+ endif()
+ 
++list(APPEND _IMPORT_CHECK_TARGETS assimp::assimp )
++
+ # Commands beyond this point should not need to know the version.
+ set(CMAKE_IMPORT_FILE_VERSION)
+ 

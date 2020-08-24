@@ -1,6 +1,6 @@
 #pragma once
 
-#include "external/glad/glad.h"
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
@@ -30,17 +30,14 @@ namespace bonobo
 
 	//! \brief Contains the data for a mesh in OpenGL.
 	struct mesh_data {
-		GLuint vao;                //!< OpenGL name of the Vertex Array Object
-		GLuint bo;                 //!< OpenGL name of the Buffer Object
-		GLuint ibo;                //!< OpenGL name of the Buffer Object for indices
-		size_t vertices_nb;        //!< number of vertices stored in bo
-		size_t indices_nb;         //!< number of indices stored in ibo
-		texture_bindings bindings; //!< texture bindings for this mesh
-		GLenum drawing_mode;       //!< OpenGL drawing mode, i.e. GL_TRIANGLES, GL_LINES, etc.
-
-		mesh_data() : vao(0u), bo(0u), ibo(0u), vertices_nb(0u), indices_nb(0u), bindings(), drawing_mode(GL_TRIANGLES)
-		{
-		}
+		GLuint vao{0u};                          //!< OpenGL name of the Vertex Array Object
+		GLuint bo{0u};                           //!< OpenGL name of the Buffer Object
+		GLuint ibo{0u};                          //!< OpenGL name of the Buffer Object for indices
+		size_t vertices_nb{0u};                  //!< number of vertices stored in bo
+		size_t indices_nb{0u};                   //!< number of indices stored in ibo
+		texture_bindings bindings{};             //!< texture bindings for this mesh
+		GLenum drawing_mode{GL_TRIANGLES};       //!< OpenGL drawing mode, i.e. GL_TRIANGLES, GL_LINES, etc.
+		std::string name{};                      //!< Name of the mesh; used for debugging purposes.
 	};
 
 	enum class polygon_mode_t : unsigned int {
@@ -57,13 +54,12 @@ namespace bonobo
 
 	//! \brief Load objects found in an object/scene file, using assimp.
 	//!
-	//! @param [in] filename of the object/scene file to load, relative to
-	//!             the `res/scenes` folder
+	//! @param [in] filename of the object/scene file to load.
 	//! @return a vector of filled in `mesh_data` structures, one per
 	//!         object found in the input file
 	std::vector<mesh_data> loadObjects(std::string const& filename);
 
-	//! \brief Creates an OpenGL texture without any content nor parameterised.
+	//! \brief Creates an OpenGL texture without any content nor parameters.
 	//!
 	//! @param [in] width width of the texture to create
 	//! @param [in] height height of the texture to create
@@ -82,16 +78,15 @@ namespace bonobo
 	                     GLenum type = GL_UNSIGNED_BYTE,
 	                     GLvoid const* data = nullptr);
 
-	//! \brief Load a PNG image into an OpenGL 2D-texture.
+	//! \brief Load an image into an OpenGL 2D-texture.
 	//!
-	//! @param [in] filename of the PNG image, relative to the `textures`
-	//!             folder within the `resources` folder.
+	//! @param [in] filename of the image.
 	//! @param [in] generate_mipmap whether or not to generate a mipmap hierarchy
 	//! @return the name of the OpenGL 2D-texture
 	GLuint loadTexture2D(std::string const& filename,
 	                     bool generate_mipmap = true);
 
-	//! \brief Load six PNG images into an OpenGL cubemap-texture.
+	//! \brief Load six images into an OpenGL cubemap-texture.
 	//!
 	//! @param [in] posx path to the texture on the left of the cubemap
 	//! @param [in] negx path to the texture on the right of the cubemap
@@ -101,8 +96,6 @@ namespace bonobo
 	//! @param [in] negz path to the texture on the front of the cubemap
 	//! @param [in] generate_mipmap whether or not to generate a mipmap hierarchy
 	//! @return the name of the OpenGL cubemap-texture
-	//!
-	//! All paths are relative to the `res/cubemaps` folder.
 	GLuint loadTextureCubeMap(std::string const& posx, std::string const& negx,
                                   std::string const& posy, std::string const& negy,
                                   std::string const& posz, std::string const& negz,
@@ -133,14 +126,18 @@ namespace bonobo
 	//!             alpha channel
 	//! @param [in] window_size the size in pixels of the main window, the
 	//!             one relative to which you want to draw this texture
-	//! @param [in] camera the camera used for rendering the texture; this
-	//!             is only useful for displaying a depth map texture, and
-	//!             should be nul for rendering other types of textures.
+	//! @param [in] linearise whether the given texture should be
+	//!             linearised using the provided |nearPlane| and
+	//!             |farPlane|.
+	//! @param [in] nearPlane the near plane used when linearising depth
+	//!             textures; it is ignored if |linearise| is false.
+	//! @param [in] farPlane the far plane used when linearising depth
+	//!             textures; it is ignored if |linearise| is false.
 	void displayTexture(glm::vec2 const& lower_left,
 	                    glm::vec2 const& upper_right, GLuint texture,
 	                    GLuint sampler, glm::ivec4 const& swizzle,
-	                    glm::ivec2 const& window_size,
-	                    FPSCameraf const* camera = nullptr);
+	                    glm::ivec2 const& window_size, bool linearise = false,
+	                    float nearPlane = 0.0f, float farPlane = 0.0f);
 
 	//! \brief Create an OpenGL FrameBuffer Object using the specified
 	//!        attachments.

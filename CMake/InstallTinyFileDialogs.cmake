@@ -1,20 +1,14 @@
-set (tinyfiledialogs_SOURCE_DIR ${FETCHCONTENT_BASE_DIR}/tinyfiledialogs-source)
+FetchContent_Declare (
+	tinyfiledialogs
+	GIT_REPOSITORY [[https://git.code.sf.net/p/tinyfiledialogs/code]]
+	GIT_TAG [[fb228c5bcd7d0574d08b71b4fae84676328addaf]]
+	GIT_SHALLOW ON
+)
 
-if (NOT EXISTS ${tinyfiledialogs_SOURCE_DIR})
+FetchContent_GetProperties (tinyfiledialogs)
+if (NOT tinyfiledialogs_POPULATED)
 	message (STATUS "Cloning tinyfiledialogs…")
-	execute_process (
-		COMMAND ${GIT_EXECUTABLE} clone --depth=1
-		                                https://git.code.sf.net/p/tinyfiledialogs/code
-		                                ${tinyfiledialogs_SOURCE_DIR}
-		OUTPUT_QUIET
-		ERROR_VARIABLE stderr
-		RESULT_VARIABLE result
-		WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies
-	)
-	if (result)
-		message (FATAL_ERROR "Failed to clone tinyfiledialogs: ${result}\n"
-		                     "Error output: ${stderr}")
-	endif ()
+	FetchContent_Populate (tinyfiledialogs)
 endif ()
 
 add_library( tinyfiledialogs::tinyfiledialogs INTERFACE IMPORTED)
