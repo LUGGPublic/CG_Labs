@@ -52,8 +52,6 @@ if (NOT assimp_FOUND)
 		COMMAND ${CMAKE_COMMAND} --build ${assimp_BINARY_DIR}
 		                         --config Release
 		                         --target install
-		OUTPUT_VARIABLE stdout
-		ERROR_VARIABLE stderr
 		RESULT_VARIABLE result
 	)
 	if (result)
