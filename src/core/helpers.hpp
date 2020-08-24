@@ -126,14 +126,18 @@ namespace bonobo
 	//!             alpha channel
 	//! @param [in] window_size the size in pixels of the main window, the
 	//!             one relative to which you want to draw this texture
-	//! @param [in] camera the camera used for rendering the texture; this
-	//!             is only useful for displaying a depth map texture, and
-	//!             should be nul for rendering other types of textures.
+	//! @param [in] linearise whether the given texture should be
+	//!             linearised using the provided |nearPlane| and
+	//!             |farPlane|.
+	//! @param [in] nearPlane the near plane used when linearising depth
+	//!             textures; it is ignored if |linearise| is false.
+	//! @param [in] farPlane the far plane used when linearising depth
+	//!             textures; it is ignored if |linearise| is false.
 	void displayTexture(glm::vec2 const& lower_left,
 	                    glm::vec2 const& upper_right, GLuint texture,
 	                    GLuint sampler, glm::ivec4 const& swizzle,
-	                    glm::ivec2 const& window_size,
-	                    FPSCameraf const* camera = nullptr);
+	                    glm::ivec2 const& window_size, bool linearise = false,
+	                    float nearPlane = 0.0f, float farPlane = 0.0f);
 
 	//! \brief Create an OpenGL FrameBuffer Object using the specified
 	//!        attachments.
