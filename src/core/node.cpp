@@ -2,6 +2,7 @@
 #include "helpers.hpp"
 
 #include "core/Log.h"
+#include "core/opengl.hpp"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -22,6 +23,11 @@ Node::render(glm::mat4 const& WVP, glm::mat4 const& world, GLuint program, std::
 {
 	if (_vao == 0u || program == 0u)
 		return;
+
+	if (utils::opengl::debug::isSupported())
+	{
+		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, _name.size(), _name.data());
+	}
 
 	glUseProgram(program);
 
@@ -59,6 +65,11 @@ Node::render(glm::mat4 const& WVP, glm::mat4 const& world, GLuint program, std::
 	}
 
 	glUseProgram(0u);
+
+	if (utils::opengl::debug::isSupported())
+	{
+		glPopDebugGroup();
+	}
 }
 
 void
@@ -69,6 +80,7 @@ Node::set_geometry(bonobo::mesh_data const& shape)
 	_indices_nb = static_cast<GLsizei>(shape.indices_nb);
 	_drawing_mode = shape.drawing_mode;
 	_has_indices = shape.ibo != 0u;
+	_name = shape.name;
 
 	if (!shape.bindings.empty()) {
 		for (auto const& binding : shape.bindings)

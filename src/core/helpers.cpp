@@ -137,6 +137,10 @@ bonobo::loadObjects(std::string const& filename)
 		}
 
 		bonobo::mesh_data object;
+		if (assimp_object_mesh->mName.length != 0)
+		{
+			object.name = std::string(assimp_object_mesh->mName.C_Str());
+		}
 
 		glGenVertexArrays(1, &object.vao);
 		assert(object.vao != 0u);

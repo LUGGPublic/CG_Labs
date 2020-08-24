@@ -158,7 +158,7 @@ GLFWwindow* WindowManager::CreateGLFWWindow(std::string const& title, WindowDatu
 	       , (context_flags & GL_CONTEXT_FLAG_FORWARD_COMPATIBLE_BIT) ? "true" : "false"
 	       );
 
-	if (GLAD_GL_VERSION_4_3 || GLAD_GL_KHR_debug)
+	if (utils::opengl::debug::isSupported())
 	{
 #if DEBUG_LEVEL >= 2
 		glEnable(GL_DEBUG_OUTPUT);

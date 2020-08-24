@@ -30,17 +30,14 @@ namespace bonobo
 
 	//! \brief Contains the data for a mesh in OpenGL.
 	struct mesh_data {
-		GLuint vao;                //!< OpenGL name of the Vertex Array Object
-		GLuint bo;                 //!< OpenGL name of the Buffer Object
-		GLuint ibo;                //!< OpenGL name of the Buffer Object for indices
-		size_t vertices_nb;        //!< number of vertices stored in bo
-		size_t indices_nb;         //!< number of indices stored in ibo
-		texture_bindings bindings; //!< texture bindings for this mesh
-		GLenum drawing_mode;       //!< OpenGL drawing mode, i.e. GL_TRIANGLES, GL_LINES, etc.
-
-		mesh_data() : vao(0u), bo(0u), ibo(0u), vertices_nb(0u), indices_nb(0u), bindings(), drawing_mode(GL_TRIANGLES)
-		{
-		}
+		GLuint vao{0u};                          //!< OpenGL name of the Vertex Array Object
+		GLuint bo{0u};                           //!< OpenGL name of the Buffer Object
+		GLuint ibo{0u};                          //!< OpenGL name of the Buffer Object for indices
+		size_t vertices_nb{0u};                  //!< number of vertices stored in bo
+		size_t indices_nb{0u};                   //!< number of indices stored in ibo
+		texture_bindings bindings{};             //!< texture bindings for this mesh
+		GLenum drawing_mode{GL_TRIANGLES};       //!< OpenGL drawing mode, i.e. GL_TRIANGLES, GL_LINES, etc.
+		std::string name{};                      //!< Name of the mesh; used for debugging purposes.
 	};
 
 	enum class polygon_mode_t : unsigned int {

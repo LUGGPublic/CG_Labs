@@ -16,6 +16,7 @@ namespace opengl
 namespace debug
 {
 
+bool isSupported();
 std::string getStringForType(GLenum type);
 std::string getStringForSource(GLenum source);
 std::string getStringForSeverity(GLenum severity);

@@ -129,4 +129,7 @@ private:
 
 	// Children data
 	std::vector<Node const*> _children;
+
+	// Debug data
+	std::string _name;
 };
