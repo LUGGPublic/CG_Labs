@@ -17,7 +17,7 @@ namespace
 	void ErrorCallback(int error, char const* description)
 	{
 		if (error == 65543 || error == 65545)
-			LogInfo("Couldn't create an OpenGL %d.%d context.\n", default_opengl_major_version, default_opengl_minor_version);
+			LogError("Couldn't create an OpenGL %d.%d context.\nIf you are using old hardware/drivers which support OpenGL 3.3 but not higher, try using the 'OpenGL_3.3' branch.", default_opengl_major_version, default_opengl_minor_version);
 		else
 			LogError("GLFW error %d was thrown:\n\t%s\n", error, description);
 	}
