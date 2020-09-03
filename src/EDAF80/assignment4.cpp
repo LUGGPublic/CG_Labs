@@ -12,6 +12,7 @@
 #include <imgui.h>
 #include <tinyfiledialogs.h>
 
+#include <clocale>
 #include <stdexcept>
 
 edaf80::Assignment4::Assignment4(WindowManager& windowManager) :
@@ -161,6 +162,8 @@ edaf80::Assignment4::run()
 
 int main()
 {
+	std::setlocale(LC_ALL, "");
+
 	Bonobo framework;
 
 	try {
