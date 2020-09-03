@@ -9,11 +9,14 @@
 
 #include <imgui.h>
 
+#include <clocale>
 #include <cstdlib>
 
 
 int main()
 {
+	std::setlocale(LC_ALL, "");
+
 	using namespace std::literals::chrono_literals;
 
 	//
