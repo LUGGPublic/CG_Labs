@@ -1,5 +1,7 @@
 #include "various.hpp"
 
+#include "core/Log.h"
+
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -10,7 +12,7 @@ utils::slurp_file(std::string const& path)
 {
   std::ifstream file = std::ifstream(path);
   if (!file.is_open()) {
-    std::cerr << "Failed to open \"" << path << "\"" << std::endl;
+    LogError("Failed to open \"%s\"", path.c_str());
     return std::string("");
   }
 
