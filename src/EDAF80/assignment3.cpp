@@ -14,6 +14,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <tinyfiledialogs.h>
 
+#include <clocale>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -226,6 +227,8 @@ edaf80::Assignment3::run()
 
 int main()
 {
+	std::setlocale(LC_ALL, "");
+
 	Bonobo framework;
 
 	try {

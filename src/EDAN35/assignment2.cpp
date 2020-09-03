@@ -21,6 +21,7 @@
 #include <tinyfiledialogs.h>
 
 #include <array>
+#include <clocale>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -526,6 +527,8 @@ edan35::Assignment2::run()
 
 int main()
 {
+	std::setlocale(LC_ALL, "");
+
 	Bonobo framework;
 
 	try {

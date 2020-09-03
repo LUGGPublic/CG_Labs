@@ -1,3 +1,4 @@
+#include "config.hpp"
 #include "Log.h"
 #include <cstring>
 #include <cstdio>
@@ -159,8 +160,14 @@ void Report(
 	}
 	os << logSettings[t].prefix << log_result_string << std::endl;
 
-	if (output_targets & LOG_OUT_STD)
+	if (output_targets & LOG_OUT_STD) {
+#if defined(_WIN32)
+		auto const widened_string = utils::widen(os.str());
+		fwprintf(logSettings[t].severity != Severity::OK ? stderr : stdout, L"%s", widened_string.c_str());
+#else
 		fprintf(logSettings[t].severity != Severity::OK ? stderr : stdout, "%s", os.str().c_str());
+#endif
+	}
 	if (output_targets & LOG_OUT_FILE) {
 		fileMutex.lock();
 		fprintf(logfile, "%s", os.str().c_str());

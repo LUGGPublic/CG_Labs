@@ -86,6 +86,11 @@ void ShaderProgramManager::ProcessProgram(ProgramData const& program_data, GLuin
 	for (auto const& i : program_data) {
 		std::string const full_filename = config::shaders_path(i.second);
 		auto const shader_source = utils::slurp_file(full_filename);
+		if (shader_source.empty()) {
+			LogError("Retrieval of shader '%s' failed; see previous message for details.", full_filename.c_str());
+			return;
+		}
+
 		GLuint shader = utils::opengl::shader::generate_shader(static_cast<std::underlying_type<ShaderType>::type>(i.first), shader_source);
 		if (shader == 0u) {
 			for (auto& shader : shaders)
