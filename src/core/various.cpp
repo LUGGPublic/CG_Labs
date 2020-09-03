@@ -72,7 +72,7 @@ utils::widen(std::string const& utf8)
 std::string
 utils::slurp_file(std::string const& path)
 {
-  std::ifstream file = std::ifstream(path);
+  std::ifstream file = std::ifstream(utils::widen(path));
   if (!file.is_open()) {
     LogError("Failed to open \"%s\"", path.c_str());
     return std::string("");
