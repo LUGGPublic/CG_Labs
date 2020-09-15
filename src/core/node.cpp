@@ -136,8 +136,11 @@ Node::add_texture(std::string const& name, GLuint tex_id, GLenum type)
 void
 Node::add_child(Node const* child)
 {
-	if (child == nullptr)
-		LogError("Trying to add a nullptr as child!");
+	if (child == nullptr) {
+		LogWarning("Trying to add a null pointer as child: this will be discarded.");
+		return;
+	}
+
 	_children.emplace_back(child);
 }
 
