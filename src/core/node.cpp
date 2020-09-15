@@ -119,7 +119,7 @@ Node::add_texture(std::string const& name, GLuint tex_id, GLenum type)
 	glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_combined_texture_image_units);
 	std::size_t const max_active_texture_count
 		= (max_combined_texture_image_units > 0) ? static_cast<std::size_t>(max_combined_texture_image_units)
-		                                         : 80; // OpenGL 4.x guarantees at least 80.
+		                                         : 48; // OpenGL 3.x guarantees at least 48.
 
 	if (_textures.size() >= max_active_texture_count) {
 		LogWarning("Trying to add more textures to an object than supported (%llu); the texture %s with ID %u will **not** be added. If you really need that many textures, do not use the `Node` class and roll your own solution instead.",
