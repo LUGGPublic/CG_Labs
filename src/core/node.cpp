@@ -91,8 +91,10 @@ Node::set_geometry(bonobo::mesh_data const& shape)
 void
 Node::set_program(GLuint const* const program, std::function<void (GLuint)> const& set_uniforms)
 {
-	if (program == nullptr)
-		throw std::runtime_error("Node::set_program: program can not be null.");
+	if (program == nullptr) {
+		LogError("Program can not be a null pointer; this operation will be discarded.");
+		return;
+	}
 
 	_program = program;
 	_set_uniforms = set_uniforms;
