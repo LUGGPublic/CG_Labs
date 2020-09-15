@@ -124,9 +124,13 @@ Node::add_texture(std::string const& name, GLuint tex_id, GLenum type)
 		           max_active_texture_count, name.c_str(), tex_id);
 		return;
 	}
+	if (tex_id == 0u) {
+		LogWarning("0 is not a valid texture ID; the texture %s (with ID %u) will **not** be added.",
+		           name.c_str(), tex_id);
+		return;
+	}
 
-	if (tex_id != 0u)
-		_textures.emplace_back(name, tex_id, type);
+	_textures.emplace_back(name, tex_id, type);
 }
 
 void
