@@ -1,6 +1,53 @@
 Revision history for CG_Labs
 
 
+v2020.1 2020-09-29
+==================
+
+New features
+------------
+
+* Culling can be controlled from the GUI for assignments 2 to 4 of EDAF80.
+
+Improvements
+------------
+
+* Report error and early exit if shader source is empty.
+* `utils::slurp_file()` now uses the framework’s logging function, ensuring
+  that its error messages will be part of the log file and will be displayed in
+  the console inside the framework.
+* If the context creation fails, mention to the user the existence of the
+  *OpenGL_3.3* branch.
+* Output all text to the console as UTF-16 on Windows, to properly display
+  non-ASCII characters.
+* Change the locale to the user-preferred one.
+* Warn when adding too many textures to an instance of the `Node` class, and
+  skip adding those extra textures. Each hardware has a different limit as to
+  how many textures can be bound, and going over that limit results in an
+  `GL_INVALID_ENUM` error which can be hard to understand if one does not know
+  how texture handling works.
+* Warn and skip when adding a texture of ID 0 to an instance of the `Node`
+  class. ID 0 is reserved for the “default” texture and no valid texture should
+  have that ID.
+* Log an error when setting the program for an instance of the `Node` class
+  with a null pointer, rather than throwing an exception.
+
+Fixes
+-----
+
+* Convert paths to UTF-16 on Windows when needed, to ensure that paths
+  containing non-ASCII characters still properly work there.
+* Do not make attributes constant in `SpinConfiguration` and
+  `OrbitConfiguration`, so that the user can use their assignment operator.
+* Do not append null pointers to the list of children in the `Node` class; the
+  code previously warned about it but still went ahead with adding it.
+* Do not make shallow clones for stb and tinyfiledialogs as we check out
+  specific commits, which is not compatible with shallow clones.
+* Fix the tangent and binormal visualisation shaders: they were being affected
+  by translations, when they should not have, and they used the same model to
+  work matrix as vertices which is usually not valid.
+
+
 v2020.0 2020-08-25
 ==================
 

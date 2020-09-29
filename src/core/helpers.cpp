@@ -20,6 +20,11 @@ namespace local
 {
 	static GLuint fullscreen_shader;
 	static GLuint display_vao;
+	static std::array<char const*, 3> const cull_mode_labels{
+		"Disabled",
+		"Back faces",
+		"Front faces"
+	};
 	static std::array<char const*, 3> const polygon_mode_labels{
 		"Fill",
 		"Line",
@@ -444,6 +449,35 @@ bonobo::drawFullscreen()
 	glBindVertexArray(local::display_vao);
 	glDrawArrays(GL_TRIANGLES, 0, 3);
 	glBindVertexArray(0u);
+}
+
+bool
+bonobo::uiSelectCullMode(std::string const& label, enum cull_mode_t& cull_mode) noexcept
+{
+	auto cull_mode_index = static_cast<int>(cull_mode);
+	bool was_modified = ImGui::Combo(label.c_str(), &cull_mode_index,
+	                                 local::cull_mode_labels.data(),
+	                                 local::cull_mode_labels.size());
+	cull_mode = static_cast<cull_mode_t>(cull_mode_index);
+	return was_modified;
+}
+
+void
+bonobo::changeCullMode(enum cull_mode_t const cull_mode) noexcept
+{
+	switch (cull_mode) {
+		case bonobo::cull_mode_t::disabled:
+			glDisable(GL_CULL_FACE);
+			break;
+		case bonobo::cull_mode_t::back_faces:
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_BACK);
+			break;
+		case bonobo::cull_mode_t::front_faces:
+			glEnable(GL_CULL_FACE);
+			glCullFace(GL_FRONT);
+			break;
+	}
 }
 
 bool

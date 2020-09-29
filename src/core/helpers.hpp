@@ -40,6 +40,12 @@ namespace bonobo
 		std::string name{};                      //!< Name of the mesh; used for debugging purposes.
 	};
 
+	enum class cull_mode_t : unsigned int {
+		disabled = 0u,
+		back_faces,
+		front_faces
+	};
+
 	enum class polygon_mode_t : unsigned int {
 		fill = 0u,
 		line,
@@ -158,6 +164,20 @@ namespace bonobo
 
 	//! \brief Draw full screen.
 	void drawFullscreen();
+
+	//! \brief Add a combo box to the current ImGUI window, to choose a
+	//!        cull mode.
+	//!
+	//! @param [in] label Text to be displayed near the combo box.
+	//! @param [inout] cull_mode The currently selected cull mode,
+	//!                which will be modified to contain the newly selected
+	//!                one.
+	//! @return whether the selection was changed
+	bool uiSelectCullMode(std::string const& label, enum cull_mode_t& cull_mode) noexcept;
+
+	//! \brief Enable or disable culling, and call glCullFace with the
+	//!        specified cull mode.
+	void changeCullMode(enum cull_mode_t const cull_mode) noexcept;
 
 	//! \brief Add a combo box to the current ImGUI window, to choose a
 	//!        polygon mode.
