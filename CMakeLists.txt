@@ -12,7 +12,7 @@ endif ()
 # Set project attributes.
 project (
 	CG_Labs
-	VERSION 2020.0
+	VERSION 2020.1
 	DESCRIPTION [[Repository for Computer Graphics courses EDAF80 and EDAN35 at Lund University, Sweden.]]
 	HOMEPAGE_URL [[https://github.com/LUGGPublic/CG_Labs/]]
 	LANGUAGES CXX C
