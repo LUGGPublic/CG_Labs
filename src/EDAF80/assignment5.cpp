@@ -59,11 +59,6 @@ edaf80::Assignment5::run()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
-	// Enable face culling to improve performance:
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
-	//glCullFace(GL_BACK);
-
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 

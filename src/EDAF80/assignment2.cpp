@@ -127,12 +127,6 @@ edaf80::Assignment2::run()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
-	// Enable face culling to improve performance
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
-	//glCullFace(GL_BACK);
-
-
 
 	auto const control_point_sphere = parametric_shapes::createSphere(0.1f, 10u, 10u);
 	std::array<glm::vec3, 9> control_point_locations = {
@@ -159,9 +153,12 @@ edaf80::Assignment2::run()
 
 	std::int32_t program_index = 0;
 	float ellapsed_time_s = 0.0f;
+	auto cull_mode = bonobo::cull_mode_t::disabled;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
+
+	changeCullMode(cull_mode);
 
 	while (!glfwWindowShouldClose(window)) {
 		auto const nowTime = std::chrono::high_resolution_clock::now();
@@ -224,6 +221,10 @@ edaf80::Assignment2::run()
 
 		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
+			auto const cull_mode_changed = bonobo::uiSelectCullMode("Cull mode", cull_mode);
+			if (cull_mode_changed) {
+				changeCullMode(cull_mode);
+			}
 			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
 			auto selection_result = program_manager.SelectProgram("Shader", program_index);
 			if (selection_result.was_selection_changed) {

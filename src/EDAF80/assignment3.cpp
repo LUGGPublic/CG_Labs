@@ -126,19 +126,17 @@ edaf80::Assignment3::run()
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
 
-	// Enable face culling to improve performance:
-	//glEnable(GL_CULL_FACE);
-	//glCullFace(GL_FRONT);
-	//glCullFace(GL_BACK);
-
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	std::int32_t demo_sphere_program_index = 0;
+	auto cull_mode = bonobo::cull_mode_t::disabled;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
 	bool shader_reload_failed = false;
+
+	changeCullMode(cull_mode);
 
 	while (!glfwWindowShouldClose(window)) {
 		auto const nowTime = std::chrono::high_resolution_clock::now();
@@ -196,6 +194,10 @@ edaf80::Assignment3::run()
 
 		bool opened = ImGui::Begin("Scene Control", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
+			auto const cull_mode_changed = bonobo::uiSelectCullMode("Cull mode", cull_mode);
+			if (cull_mode_changed) {
+				changeCullMode(cull_mode);
+			}
 			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
 			auto demo_sphere_selection_result = program_manager.SelectProgram("Demo sphere", demo_sphere_program_index);
 			if (demo_sphere_selection_result.was_selection_changed) {
