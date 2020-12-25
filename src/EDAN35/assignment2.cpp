@@ -335,7 +335,9 @@ edan35::Assignment2::run()
 				auto& lightTransform = lightTransforms[i];
 				lightTransform.SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
 
-				auto light_matrix = lightProjection * lightOffsetTransform.GetMatrixInverse() * lightTransform.GetMatrixInverse();
+				auto const light_view_matrix = lightOffsetTransform.GetMatrixInverse() * lightTransform.GetMatrixInverse();
+				auto const light_world_matrix = glm::inverse(light_view_matrix) * coneScaleTransform.GetMatrix();
+				auto const light_world_to_clip_matrix = lightProjection * light_view_matrix;
 
 				//
 				// Pass 2.1: Generate shadow map for light i
@@ -352,7 +354,7 @@ edan35::Assignment2::run()
 				GLStateInspection::CaptureSnapshot("Shadow Map Generation");
 
 				for (auto const& element : sponza_elements)
-					element.render(light_matrix, element.get_transform().GetMatrix(), fill_shadowmap_shader, set_uniforms);
+					element.render(light_world_to_clip_matrix, element.get_transform().GetMatrix(), fill_shadowmap_shader, set_uniforms);
 				if (utils::opengl::debug::isSupported())
 				{
 					glPopDebugGroup();
@@ -378,7 +380,7 @@ edan35::Assignment2::run()
 				glViewport(0, 0, framebuffer_width, framebuffer_height);
 				// XXX: Is any clearing needed?
 
-				auto const spotlight_set_uniforms = [framebuffer_width,framebuffer_height,this,&light_matrix,&lightColors,&lightTransform,&i](GLuint program){
+				auto const spotlight_set_uniforms = [framebuffer_width,framebuffer_height,this,&light_world_to_clip_matrix,&lightColors,&lightTransform,&i](GLuint program){
 					glUniform2f(glGetUniformLocation(program, "inv_res"),
 					            1.0f / static_cast<float>(framebuffer_width),
 					            1.0f / static_cast<float>(framebuffer_height));
@@ -387,7 +389,7 @@ edan35::Assignment2::run()
 					glUniform3fv(glGetUniformLocation(program, "camera_position"), 1,
 					                   glm::value_ptr(mCamera.mWorld.GetTranslation()));
 					glUniformMatrix4fv(glGetUniformLocation(program, "shadow_view_projection"), 1, GL_FALSE,
-					                   glm::value_ptr(light_matrix));
+					                   glm::value_ptr(light_world_to_clip_matrix));
 					glUniform3fv(glGetUniformLocation(program, "light_color"), 1, glm::value_ptr(lightColors[i]));
 					glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(lightTransform.GetTranslation()));
 					glUniform3fv(glGetUniformLocation(program, "light_direction"), 1, glm::value_ptr(lightTransform.GetFront()));
@@ -404,8 +406,7 @@ edan35::Assignment2::run()
 
 				GLStateInspection::CaptureSnapshot("Accumulating");
 
-				cone.render(mCamera.GetWorldToClipMatrix(),
-				            lightTransform.GetMatrix() * lightOffsetTransform.GetMatrix() * coneScaleTransform.GetMatrix(),
+				cone.render(mCamera.GetWorldToClipMatrix(), light_world_matrix,
 				            accumulate_lights_shader, spotlight_set_uniforms);
 
 				glBindSampler(2u, 0u);
