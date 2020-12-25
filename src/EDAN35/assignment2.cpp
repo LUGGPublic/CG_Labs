@@ -290,6 +290,11 @@ edan35::Assignment2::run()
 		mWindowManager.NewImGuiFrame();
 
 
+		for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
+			lightTransforms[i].SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
+		}
+
+
 		if (!shader_reload_failed) {
 			glDepthFunc(GL_LESS);
 			//
@@ -332,9 +337,7 @@ edan35::Assignment2::run()
 			glViewport(0, 0, framebuffer_width, framebuffer_height);
 			// XXX: Is any clearing needed?
 			for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
-				auto& lightTransform = lightTransforms[i];
-				lightTransform.SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
-
+				auto const& lightTransform = lightTransforms[i];
 				auto const light_view_matrix = lightOffsetTransform.GetMatrixInverse() * lightTransform.GetMatrixInverse();
 				auto const light_world_matrix = glm::inverse(light_view_matrix) * coneScaleTransform.GetMatrix();
 				auto const light_world_to_clip_matrix = lightProjection * light_view_matrix;
