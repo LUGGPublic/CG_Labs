@@ -73,12 +73,13 @@ getTextureData(std::string const& filename, std::uint32_t& width, std::uint32_t&
 std::vector<bonobo::mesh_data>
 bonobo::loadObjects(std::string const& filename)
 {
+	auto const scene_start_time = std::chrono::high_resolution_clock::now();
+
 	std::vector<bonobo::mesh_data> objects;
 	std::vector<texture_bindings> materials_bindings;
 
 	auto const end_of_basedir = filename.rfind("/");
 	auto const parent_folder = (end_of_basedir != std::string::npos ? filename.substr(0, end_of_basedir) : ".") + "/";
-	LogInfo("Loading \"%s\"", filename.c_str());
 	Assimp::Importer importer;
 	auto const assimp_scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_CalcTangentSpace);
 	if (assimp_scene == nullptr || assimp_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || assimp_scene->mRootNode == nullptr) {
@@ -91,21 +92,36 @@ bonobo::loadObjects(std::string const& filename)
 		return objects;
 	}
 
-	LogInfo("\t* materials");
+	LogInfo("┭ Loading \"%s\"…", filename.c_str());
+
+	auto const materials_start_time = std::chrono::high_resolution_clock::now();
 	materials_bindings.reserve(assimp_scene->mNumMaterials);
+	uint32_t texture_count = 0u;
 	for (size_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
+		auto const material_start_time = std::chrono::high_resolution_clock::now();
 		texture_bindings bindings;
 		auto const material = assimp_scene->mMaterials[i];
 
-		auto const process_texture = [&bindings,&material,i,&parent_folder](aiTextureType type, std::string const& type_as_str, std::string const& name){
+		auto const process_texture = [&bindings,&material,i,&parent_folder,&texture_count](aiTextureType type, std::string const& type_as_str, std::string const& name){
 			if (material->GetTextureCount(type)) {
+				auto const texture_start_time = std::chrono::high_resolution_clock::now();
+
 				if (material->GetTextureCount(type) > 1)
-					LogWarning("Material %d has more than one %s texture: discarding all but the first one.", i, type_as_str.c_str());
+					LogWarning("Material \"%s\" has more than one %s texture: discarding all but the first one.", material->GetName().C_Str(), type_as_str.c_str());
 				aiString path;
 				material->GetTexture(type, 0, &path);
 				auto const id = bonobo::loadTexture2D(parent_folder + std::string(path.C_Str()), type_as_str != "opacity");
-				if (id != 0u)
-					bindings.emplace(name, id);
+				if (id == 0u) {
+					LogWarning("Failed to load the %s texture for material \"%s\".", type_as_str.c_str(), material->GetName().C_Str());
+					return;
+				}
+				bindings.emplace(name, id);
+				++texture_count;
+
+				auto const texture_end_time = std::chrono::high_resolution_clock::now();
+				LogTrivia("│ %s Texture \"%s\" loaded in %.3f ms",
+				          bindings.size() == 1 ? "┌" : "├", path.C_Str(),
+				          std::chrono::duration<float, std::milli>(texture_end_time - texture_start_time).count());
 			}
 		};
 
@@ -115,29 +131,37 @@ bonobo::loadObjects(std::string const& filename)
 		process_texture(aiTextureType_OPACITY,  "opacity",  "opacity_texture");
 
 		materials_bindings.push_back(bindings);
-	}
 
-	LogInfo("\t* meshes");
+		auto const material_end_time = std::chrono::high_resolution_clock::now();
+		LogTrivia("│ %s Material \"%s\" loaded in %.3f ms",
+		          bindings.empty() ? "╺" : "┕", material->GetName().C_Str(),
+		          std::chrono::duration<float, std::milli>(material_end_time - material_start_time).count());
+	}
+	auto const materials_end_time = std::chrono::high_resolution_clock::now();
+
+	auto const meshes_start_time = std::chrono::high_resolution_clock::now();
 	objects.reserve(assimp_scene->mNumMeshes);
 	for (size_t j = 0; j < assimp_scene->mNumMeshes; ++j) {
+		auto const mesh_start_time = std::chrono::high_resolution_clock::now();
+
 		auto const assimp_object_mesh = assimp_scene->mMeshes[j];
 
 		if (!assimp_object_mesh->HasFaces()) {
-			LogError("Unsupported object \"%s\": has no faces", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported mesh \"%s\": has no faces", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 		if ((assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_POINT))    != 0u
 		 && (assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_LINE))     != 0u
 		 && (assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_TRIANGLE)) != 0u) {
-			LogError("Unsupported object \"%s\": uses multiple primitive types", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported mesh \"%s\": uses multiple primitive types", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 		if ((assimp_object_mesh->mPrimitiveTypes & static_cast<uint32_t>(aiPrimitiveType_POLYGON)) == static_cast<uint32_t>(aiPrimitiveType_POLYGON)) {
-			LogError("Unsupported object \"%s\": uses polygons", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported mesh \"%s\": uses polygons", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 		if (!assimp_object_mesh->HasPositions()) {
-			LogError("Unsupported object \"%s\": has no positions", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported mesh \"%s\": has no positions", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 
@@ -229,16 +253,36 @@ bonobo::loadObjects(std::string const& filename)
 
 		auto const material_id = assimp_object_mesh->mMaterialIndex;
 		if (material_id >= materials_bindings.size())
-			LogError("Object \"%s\" has a material index of %u, but only %u materials were retrieved.", assimp_object_mesh->mName.C_Str(), material_id, materials_bindings.size());
+			LogError("Mesh \"%s\" has a material index of %u, but only %u materials were retrieved.", assimp_object_mesh->mName.C_Str(), material_id, materials_bindings.size());
 		else
 			object.bindings = materials_bindings[material_id];
 
 		objects.push_back(object);
 
-//		LogInfo("Loaded object \"%s\" with normals:%d, tangents&bitangents:%d, texcoords:%d",
-//		        assimp_object_mesh->mName.C_Str(), assimp_object_mesh->HasNormals(),
-//		        assimp_object_mesh->HasTangentsAndBitangents(), assimp_object_mesh->HasTextureCoords(0));
+		auto const mesh_end_time = std::chrono::high_resolution_clock::now();
+
+		std::string attributes = assimp_object_mesh->HasNormals() ? "normals" : "";
+		if (!attributes.empty())
+		  attributes += " | ";
+		if (assimp_object_mesh->HasTangentsAndBitangents())
+		  attributes += "tangents&bitangents";
+		if (!attributes.empty())
+		  attributes += " | ";
+		if (assimp_object_mesh->HasTextureCoords(0))
+		  attributes += "texture coordinates";
+		LogTrivia("│ %s Mesh \"%s\" loaded with attributes [%s] in %.3f ms",
+		          j == 0 ? "┌" : (j == assimp_scene->mNumMeshes - 1 ? "└" : "├"),
+		          assimp_object_mesh->mName.C_Str(), attributes.c_str(),
+		          std::chrono::duration<float, std::milli>(mesh_end_time - mesh_start_time).count());
 	}
+	auto const meshes_end_time = std::chrono::high_resolution_clock::now();
+	auto const scene_end_time = std::chrono::high_resolution_clock::now();
+	LogInfo("┕ Scene loaded in %.3f s: %u textures loaded in %.3f s and %zu meshes in %.3f s",
+	        std::chrono::duration<float>(scene_end_time - scene_start_time).count(),
+	        texture_count,
+	        std::chrono::duration<float>(materials_end_time - materials_start_time).count(),
+	        objects.size(),
+	        std::chrono::duration<float>(meshes_end_time - meshes_start_time).count());
 
 	return objects;
 }
