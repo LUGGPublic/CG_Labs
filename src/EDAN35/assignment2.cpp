@@ -79,6 +79,19 @@ namespace
 	using FBOs = std::array<GLuint, toU(FBO::Count)>;
 	FBOs createFramebufferObjects(Textures const& textures);
 
+	enum class ElapsedTimeQuery : uint32_t {
+		GbufferGeneration = 0u,
+		ShadowMap0Generation,
+		Light0Accumulation = ShadowMap0Generation + static_cast<uint32_t>(constant::lights_nb),
+		Resolve = Light0Accumulation + static_cast<uint32_t>(constant::lights_nb),
+		ConeWireframe,
+		GUI,
+		CopyToFramebuffer,
+		Count
+	};
+	using ElapsedTimeQueries = std::array<GLuint, toU(ElapsedTimeQuery::Count)>;
+	ElapsedTimeQueries createElapsedTimeQueries();
+
 	bonobo::mesh_data loadCone();
 } // namespace
 
@@ -213,6 +226,7 @@ edan35::Assignment2::run()
 	Textures const textures = createTextures(framebuffer_width, framebuffer_height);
 	FBOs const fbos = createFramebufferObjects(textures);
 	Samplers const samplers = createSamplers();
+	ElapsedTimeQueries const elapsed_time_queries = createElapsedTimeQueries();
 
 	auto const bind_texture_with_sampler = [](GLenum target, unsigned int slot, GLuint program, std::string const& name, GLuint texture, GLuint sampler){
 		glActiveTexture(GL_TEXTURE0 + slot);
@@ -250,15 +264,14 @@ edan35::Assignment2::run()
 	lightOffsetTransform.SetTranslate(glm::vec3(0.0f, 0.0f, -0.4f) * constant::scale_lengths);
 
 
-	auto seconds_nb = 0.0f;
-
-
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glClearDepthf(1.0f);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
 
+	auto seconds_nb = 0.0f;
+	std::array<GLuint64, toU(ElapsedTimeQuery::Count)> pass_elapsed_times;
 	auto lastTime = std::chrono::high_resolution_clock::now();
 	bool show_textures = true;
 	bool show_cone_wireframe = false;
@@ -266,6 +279,8 @@ edan35::Assignment2::run()
 	bool show_logs = true;
 	bool show_gui = true;
 	bool shader_reload_failed = false;
+	bool copy_elapsed_times = true;
+	bool first_frame = true;
 
 	while (!glfwWindowShouldClose(window)) {
 		auto const nowTime = std::chrono::high_resolution_clock::now();
@@ -296,6 +311,13 @@ edan35::Assignment2::run()
 
 		mWindowManager.NewImGuiFrame();
 
+		if (!first_frame && show_gui && copy_elapsed_times) {
+			// Copy all timings back from the GPU to the CPU.
+			for (GLuint i = 0; i < pass_elapsed_times.size(); ++i) {
+				glGetQueryObjectui64v(elapsed_time_queries[i], GL_QUERY_RESULT, pass_elapsed_times.data() + i);
+			}
+		}
+
 
 		for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
 			lightTransforms[i].SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
@@ -311,6 +333,7 @@ edan35::Assignment2::run()
 				std::string const group_name = "Fill G-buffer";
 				glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
 			}
+			glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::GbufferGeneration)]);
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::GBuffer)]);
 			glViewport(0, 0, framebuffer_width, framebuffer_height);
@@ -321,6 +344,8 @@ edan35::Assignment2::run()
 
 			for (auto const& element : sponza_elements)
 				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform().GetMatrix(), fill_gbuffer_shader, set_uniforms);
+
+			glEndQuery(GL_TIME_ELAPSED);
 			if (utils::opengl::debug::isSupported())
 			{
 				glPopDebugGroup();
@@ -348,6 +373,7 @@ edan35::Assignment2::run()
 					std::string const group_name = "Create shadow map " + std::to_string(i);
 					glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
 				}
+				glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::ShadowMap0Generation) + i]);
 
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::ShadowMap)]);
 				glViewport(0, 0, constant::shadowmap_res_x, constant::shadowmap_res_y);
@@ -357,6 +383,8 @@ edan35::Assignment2::run()
 
 				for (auto const& element : sponza_elements)
 					element.render(light_world_to_clip_matrix, element.get_transform().GetMatrix(), fill_shadowmap_shader, set_uniforms);
+
+				glEndQuery(GL_TIME_ELAPSED);
 				if (utils::opengl::debug::isSupported())
 				{
 					glPopDebugGroup();
@@ -376,6 +404,7 @@ edan35::Assignment2::run()
 					std::string const group_name = "Accumulate light " + std::to_string(i);
 					glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
 				}
+				glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::Light0Accumulation) + i]);
 
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::LightAccumulation)]);
 				glUseProgram(accumulate_lights_shader);
@@ -415,14 +444,16 @@ edan35::Assignment2::run()
 				glBindSampler(1u, 0u);
 				glBindSampler(0u, 0u);
 
-				glDepthMask(GL_TRUE);
-				glDepthFunc(GL_LESS);
-				glDisable(GL_BLEND);
-				glCullFace(GL_BACK);
+				glEndQuery(GL_TIME_ELAPSED);
 				if (utils::opengl::debug::isSupported())
 				{
 					glPopDebugGroup();
 				}
+
+				glDepthMask(GL_TRUE);
+				glDepthFunc(GL_LESS);
+				glDisable(GL_BLEND);
+				glCullFace(GL_BACK);
 			}
 
 
@@ -434,6 +465,7 @@ edan35::Assignment2::run()
 				std::string const group_name = "Resolve";
 				glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
 			}
+			glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::Resolve)]);
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
 			glUseProgram(resolve_deferred_shader);
@@ -454,6 +486,8 @@ edan35::Assignment2::run()
 			glBindSampler(1, 0u);
 			glBindSampler(0, 0u);
 			glUseProgram(0u);
+
+			glEndQuery(GL_TIME_ELAPSED);
 			if (utils::opengl::debug::isSupported())
 			{
 				glPopDebugGroup();
@@ -464,6 +498,7 @@ edan35::Assignment2::run()
 		//
 		// Pass 4: Draw wireframe cones on top of the final image for debugging purposes
 		//
+		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::ConeWireframe)]);
 		if (show_cone_wireframe) {
 			if (utils::opengl::debug::isSupported())
 			{
@@ -486,6 +521,7 @@ edan35::Assignment2::run()
 				glPopDebugGroup();
 			}
 		}
+		glEndQuery(GL_TIME_ELAPSED);
 
 
 		if (utils::opengl::debug::isSupported())
@@ -493,6 +529,7 @@ edan35::Assignment2::run()
 			std::string const group_name = "Draw GUI";
 			glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
 		}
+		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::GUI)]);
 
 		//
 		// Output content of the g-buffer as well as of the shadowmap, for debugging purposes
@@ -516,8 +553,60 @@ edan35::Assignment2::run()
 		GLStateInspection::View::Render();
 
 		bool opened = ImGui::Begin("Render Time", nullptr, ImGuiWindowFlags_None);
-		if (opened)
-			ImGui::Text("%.3f ms", std::chrono::duration<float, std::milli>(deltaTimeUs).count());
+		if (opened) {
+			ImGui::Text("Frame CPU time: %.3f ms", std::chrono::duration<float, std::milli>(deltaTimeUs).count());
+
+			if (ImGui::BeginTable("Pass durations", 2, ImGuiTableFlags_SizingFixedFit))
+			{
+				ImGui::TableSetupColumn("Pass");
+				ImGui::TableSetupColumn("GPU time [ms]");
+				ImGui::TableHeadersRow();
+
+				ImGui::TableNextColumn();
+				ImGui::Text("Gbuffer gen.");
+				ImGui::TableNextColumn();
+				ImGui::Text("%.3f", pass_elapsed_times[toU(ElapsedTimeQuery::GbufferGeneration)] / 1000000.0f);
+
+				for (std::size_t i = 0; i < lights_nb; ++i) {
+					ImGui::TableNextColumn();
+					ImGui::Text("Light %zu", i);
+					ImGui::TableNextColumn();
+					ImGui::Text("");
+
+					ImGui::TableNextColumn();
+					ImGui::Text("  Shadow map");
+					ImGui::TableNextColumn();
+					ImGui::Text("%.3f", pass_elapsed_times[toU(ElapsedTimeQuery::ShadowMap0Generation) + i] / 1000000.0f);
+
+					ImGui::TableNextColumn();
+					ImGui::Text("  Light accumulation");
+					ImGui::TableNextColumn();
+					ImGui::Text("%.3f", pass_elapsed_times[toU(ElapsedTimeQuery::Light0Accumulation) + i] / 1000000.0f);
+				}
+
+				ImGui::TableNextColumn();
+				ImGui::Text("Resolve");
+				ImGui::TableNextColumn();
+				ImGui::Text("%.3f", pass_elapsed_times[toU(ElapsedTimeQuery::Resolve)] / 1000000.0f);
+
+				ImGui::TableNextColumn();
+				ImGui::Text("Cone wireframe");
+				ImGui::TableNextColumn();
+				ImGui::Text("%.3f", pass_elapsed_times[toU(ElapsedTimeQuery::ConeWireframe)] / 1000000.0f);
+
+				ImGui::TableNextColumn();
+				ImGui::Text("GUI");
+				ImGui::TableNextColumn();
+				ImGui::Text("%.3f", pass_elapsed_times[toU(ElapsedTimeQuery::GUI)] / 1000000.0f);
+
+				ImGui::TableNextColumn();
+				ImGui::Text("Copy to framebuffer");
+				ImGui::TableNextColumn();
+				ImGui::Text("%.3f", pass_elapsed_times[toU(ElapsedTimeQuery::CopyToFramebuffer)] / 1000000.0f);
+
+				ImGui::EndTable();
+			}
+		}
 		ImGui::End();
 
 		opened = ImGui::Begin("Scene Controls", nullptr, ImGuiWindowFlags_None);
@@ -526,6 +615,7 @@ edan35::Assignment2::run()
 			ImGui::SliderInt("Number of lights", &lights_nb, 1, static_cast<int>(constant::lights_nb));
 			ImGui::Checkbox("Show textures", &show_textures);
 			ImGui::Checkbox("Show light cones wireframe", &show_cone_wireframe);
+			ImGui::Checkbox("Copy elapsed times back to CPU", &copy_elapsed_times);
 		}
 		ImGui::End();
 
@@ -533,6 +623,7 @@ edan35::Assignment2::run()
 			Log::View::Render();
 		mWindowManager.RenderImGuiFrame(show_gui);
 
+		glEndQuery(GL_TIME_ELAPSED);
 		if (utils::opengl::debug::isSupported())
 		{
 			glPopDebugGroup();
@@ -546,20 +637,24 @@ edan35::Assignment2::run()
 			std::string const group_name = "Copy to default framebuffer";
 			glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
 		}
+		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::CopyToFramebuffer)]);
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0u);
 		glBlitFramebuffer(0, 0, framebuffer_width, framebuffer_height, 0, 0, framebuffer_width, framebuffer_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
+		glEndQuery(GL_TIME_ELAPSED);
 		if (utils::opengl::debug::isSupported())
 		{
 			glPopDebugGroup();
 		}
 
 		glfwSwapBuffers(window);
+
+		first_frame = false;
 	}
 
-
+	glDeleteQueries(elapsed_time_queries.size(), elapsed_time_queries.data());
 	glDeleteSamplers(samplers.size(), samplers.data());
 	glDeleteFramebuffers(fbos.size(), fbos.data());
 	glDeleteTextures(textures.size(), textures.data());
@@ -779,6 +874,52 @@ FBOs createFramebufferObjects(Textures const& textures)
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0u);
 	return fbos;
+}
+
+ElapsedTimeQueries createElapsedTimeQueries()
+{
+	ElapsedTimeQueries queries;
+	glGenQueries(queries.size(), queries.data());
+
+	if (utils::opengl::debug::isSupported())
+	{
+		// Queries (like any other OpenGL object) need to have been used at least
+		// once to ensure their resources have been allocated so we can call
+		// `glObjectLabel()` on them.
+		auto const register_query = [](GLuint const query) {
+			glBeginQuery(GL_TIME_ELAPSED, query);
+			glEndQuery(GL_TIME_ELAPSED);
+		};
+
+		register_query(queries[toU(ElapsedTimeQuery::GbufferGeneration)]);
+		std::string const gbuffer_generation_string = "GBuffer generation";
+		glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::GbufferGeneration)], gbuffer_generation_string.size(), gbuffer_generation_string.data());
+
+		for (size_t i = 0; i < constant::lights_nb; ++i)
+		{
+			register_query(queries[toU(ElapsedTimeQuery::ShadowMap0Generation) + i]);
+			std::string const shadow_map_string = "Shadow map " + std::to_string(i) + " generation";
+			glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::ShadowMap0Generation) + i], shadow_map_string.size(), shadow_map_string.data());
+
+			register_query(queries[toU(ElapsedTimeQuery::Light0Accumulation) + i]);
+			std::string const light_accumulation_string = "Light" + std::to_string(i) + " accumulation";
+			glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::Light0Accumulation) + i], light_accumulation_string.size(), light_accumulation_string.data());
+		}
+
+		register_query(queries[toU(ElapsedTimeQuery::Resolve)]);
+		std::string const resolve_string = "Resolve";
+		glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::Resolve)], resolve_string.size(), resolve_string.data());
+
+		register_query(queries[toU(ElapsedTimeQuery::ConeWireframe)]);
+		std::string const cone_wireframe_string = "Cone wireframe";
+		glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::ConeWireframe)], cone_wireframe_string.size(), cone_wireframe_string.data());
+
+		register_query(queries[toU(ElapsedTimeQuery::GUI)]);
+		std::string const gui_string = "GUI";
+		glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::GUI)], gui_string.size(), gui_string.data());
+	}
+
+	return queries;
 }
 
 bonobo::mesh_data
