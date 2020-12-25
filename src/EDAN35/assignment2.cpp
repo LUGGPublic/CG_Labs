@@ -171,7 +171,7 @@ edan35::Assignment2::run()
 	auto const normal_texture                      = bonobo::createTexture(framebuffer_width, framebuffer_height);
 	auto const light_diffuse_contribution_texture  = bonobo::createTexture(framebuffer_width, framebuffer_height);
 	auto const light_specular_contribution_texture = bonobo::createTexture(framebuffer_width, framebuffer_height);
-	auto const depth_texture                       = bonobo::createTexture(framebuffer_width, framebuffer_height, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
+	auto const depth_texture                       = bonobo::createTexture(framebuffer_width, framebuffer_height, GL_TEXTURE_2D, GL_DEPTH24_STENCIL8, GL_DEPTH_COMPONENT, GL_FLOAT);
 	auto const shadowmap_texture                   = bonobo::createTexture(constant::shadowmap_res_x, constant::shadowmap_res_y, GL_TEXTURE_2D, GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT);
 
 
@@ -296,7 +296,6 @@ edan35::Assignment2::run()
 
 
 		if (!shader_reload_failed) {
-			glDepthFunc(GL_LESS);
 			//
 			// Pass 1: Render scene into the g-buffer
 			//
@@ -427,7 +426,7 @@ edan35::Assignment2::run()
 			}
 
 
-			glDepthFunc(GL_ALWAYS);
+			glDisable(GL_DEPTH_TEST);
 			//
 			// Pass 3: Compute final image using both the g-buffer and  the light accumulation buffer
 			//
@@ -459,6 +458,7 @@ edan35::Assignment2::run()
 			{
 				glPopDebugGroup();
 			}
+			glEnable(GL_DEPTH_TEST);
 		}
 
 
@@ -466,6 +466,11 @@ edan35::Assignment2::run()
 		// Pass 4: Draw wireframe cones on top of the final image for debugging purposes
 		//
 		if (show_cone_wireframe) {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, deferred_fbo);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0u);
+			glBlitFramebuffer(0u, 0u, framebuffer_width, framebuffer_height, 0u, 0u, framebuffer_width, framebuffer_height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+			glDisable(GL_CULL_FACE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			for (size_t i = 0; i < lights_nb; ++i) {
 				cone.render(mCamera.GetWorldToClipMatrix(),
@@ -473,6 +478,7 @@ edan35::Assignment2::run()
 				            render_light_cones_shader, set_uniforms);
 			}
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			glEnable(GL_CULL_FACE);
 		}
 
 
@@ -480,6 +486,7 @@ edan35::Assignment2::run()
 		// Output content of the g-buffer as well as of the shadowmap, for debugging purposes
 		//
 		if (show_textures) {
+			glDisable(GL_DEPTH_TEST);
 			bonobo::displayTexture({-0.95f, -0.95f}, {-0.55f, -0.55f}, diffuse_texture,                     default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 			bonobo::displayTexture({-0.45f, -0.95f}, {-0.05f, -0.55f}, specular_texture,                    default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 			bonobo::displayTexture({ 0.05f, -0.95f}, { 0.45f, -0.55f}, normal_texture,                      default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
@@ -487,6 +494,7 @@ edan35::Assignment2::run()
 			bonobo::displayTexture({-0.95f,  0.55f}, {-0.55f,  0.95f}, shadowmap_texture,                   default_sampler, {0, 0, 0, -1}, glm::uvec2(framebuffer_width, framebuffer_height), true, lightProjectionNearPlane, lightProjectionFarPlane);
 			bonobo::displayTexture({-0.45f,  0.55f}, {-0.05f,  0.95f}, light_diffuse_contribution_texture,  default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 			bonobo::displayTexture({ 0.05f,  0.55f}, { 0.45f,  0.95f}, light_specular_contribution_texture, default_sampler, {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
+			glEnable(GL_DEPTH_TEST);
 		}
 		//
 		// Reset viewport back to normal
