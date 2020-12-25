@@ -323,7 +323,6 @@ edan35::Assignment2::run()
 
 
 
-			glCullFace(GL_FRONT);
 			//
 			// Pass 2: Generate shadowmaps and accumulate lights' contribution
 			//
@@ -360,6 +359,7 @@ edan35::Assignment2::run()
 				}
 
 
+				glCullFace(GL_FRONT);
 				glEnable(GL_BLEND);
 				glDepthFunc(GL_GREATER);
 				glDepthMask(GL_FALSE);
@@ -415,6 +415,7 @@ edan35::Assignment2::run()
 				glDepthMask(GL_TRUE);
 				glDepthFunc(GL_LESS);
 				glDisable(GL_BLEND);
+				glCullFace(GL_BACK);
 				if (utils::opengl::debug::isSupported())
 				{
 					glPopDebugGroup();
@@ -422,7 +423,6 @@ edan35::Assignment2::run()
 			}
 
 
-			glCullFace(GL_BACK);
 			glDepthFunc(GL_ALWAYS);
 			//
 			// Pass 3: Compute final image using both the g-buffer and  the light accumulation buffer
