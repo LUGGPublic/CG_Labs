@@ -240,8 +240,7 @@ edaf80::Assignment2::run()
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		if (show_logs)
 			Log::View::Render();
-		if (show_gui)
-			mWindowManager.RenderImGuiFrame();
+		mWindowManager.RenderImGuiFrame(show_gui);
 
 		glfwSwapBuffers(window);
 	}

@@ -220,8 +220,7 @@ edaf80::Assignment3::run()
 
 		if (show_logs)
 			Log::View::Render();
-		if (show_gui)
-			mWindowManager.RenderImGuiFrame();
+		mWindowManager.RenderImGuiFrame(show_gui);
 
 		glfwSwapBuffers(window);
 	}

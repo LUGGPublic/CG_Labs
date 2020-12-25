@@ -208,10 +208,11 @@ void WindowManager::NewImGuiFrame()
 	ImGui::NewFrame();
 }
 
-void WindowManager::RenderImGuiFrame()
+void WindowManager::RenderImGuiFrame(bool show_gui)
 {
 	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	if (show_gui)
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void WindowManager::ToggleFullscreenStatusForWindow(GLFWwindow* const window) noexcept

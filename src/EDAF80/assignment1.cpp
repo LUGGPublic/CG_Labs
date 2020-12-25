@@ -250,8 +250,7 @@ int main()
 		//
 		if (show_logs)
 			Log::View::Render();
-		if (show_gui)
-			window_manager.RenderImGuiFrame();
+		window_manager.RenderImGuiFrame(show_gui);
 
 
 		//

@@ -507,8 +507,7 @@ edan35::Assignment2::run()
 
 		if (show_logs)
 			Log::View::Render();
-		if (show_gui)
-			mWindowManager.RenderImGuiFrame();
+		mWindowManager.RenderImGuiFrame(show_gui);
 
 		glfwSwapBuffers(window);
 	}
