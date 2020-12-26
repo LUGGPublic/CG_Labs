@@ -7,8 +7,6 @@
 #include "config.hpp"
 #include "core/Bonobo.h"
 #include "core/FPSCamera.h"
-#include "core/GLStateInspection.h"
-#include "core/GLStateInspectionView.h"
 #include "core/helpers.hpp"
 #include "core/node.hpp"
 #include "core/opengl.hpp"
@@ -108,18 +106,12 @@ edan35::Assignment2::Assignment2(WindowManager& windowManager) :
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
 
-	GLStateInspection::Init();
-	GLStateInspection::View::Init();
-
 	bonobo::init();
 }
 
 edan35::Assignment2::~Assignment2()
 {
 	bonobo::deinit();
-
-	GLStateInspection::View::Destroy();
-	GLStateInspection::Destroy();
 }
 
 void
@@ -340,8 +332,6 @@ edan35::Assignment2::run()
 			glClear(GL_DEPTH_BUFFER_BIT);
 			// XXX: Is any other clearing needed?
 
-			GLStateInspection::CaptureSnapshot("Filling Pass");
-
 			for (auto const& element : sponza_elements)
 				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform().GetMatrix(), fill_gbuffer_shader, set_uniforms);
 
@@ -378,8 +368,6 @@ edan35::Assignment2::run()
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::ShadowMap)]);
 				glViewport(0, 0, constant::shadowmap_res_x, constant::shadowmap_res_y);
 				// XXX: Is any clearing needed?
-
-				GLStateInspection::CaptureSnapshot("Shadow Map Generation");
 
 				for (auto const& element : sponza_elements)
 					element.render(light_world_to_clip_matrix, element.get_transform().GetMatrix(), fill_shadowmap_shader, set_uniforms);
@@ -435,8 +423,6 @@ edan35::Assignment2::run()
 				bind_texture_with_sampler(GL_TEXTURE_2D, 1, accumulate_lights_shader, "normal_texture", textures[toU(Texture::GBufferWorldSpaceNormal)], samplers[toU(Sampler::Nearest)]);
 				bind_texture_with_sampler(GL_TEXTURE_2D, 2, accumulate_lights_shader, "shadow_texture", textures[toU(Texture::ShadowMap)], samplers[toU(Sampler::Shadow)]);
 
-				GLStateInspection::CaptureSnapshot("Accumulating");
-
 				cone.render(mCamera.GetWorldToClipMatrix(), light_world_matrix,
 				            accumulate_lights_shader, spotlight_set_uniforms);
 
@@ -476,8 +462,6 @@ edan35::Assignment2::run()
 			bind_texture_with_sampler(GL_TEXTURE_2D, 1, resolve_deferred_shader, "specular_texture", textures[toU(Texture::GBufferSpecular)], samplers[toU(Sampler::Nearest)]);
 			bind_texture_with_sampler(GL_TEXTURE_2D, 2, resolve_deferred_shader, "light_d_texture", textures[toU(Texture::LightDiffuseContribution)], samplers[toU(Sampler::Nearest)]);
 			bind_texture_with_sampler(GL_TEXTURE_2D, 3, resolve_deferred_shader, "light_s_texture", textures[toU(Texture::LightSpecularContribution)], samplers[toU(Sampler::Nearest)]);
-
-			GLStateInspection::CaptureSnapshot("Resolve Pass");
 
 			bonobo::drawFullscreen();
 
@@ -549,8 +533,6 @@ edan35::Assignment2::run()
 		// Reset viewport back to normal
 		//
 		glViewport(0, 0, framebuffer_width, framebuffer_height);
-
-		GLStateInspection::View::Render();
 
 		bool opened = ImGui::Begin("Render Time", nullptr, ImGuiWindowFlags_None);
 		if (opened) {

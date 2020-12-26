@@ -7,8 +7,6 @@ target_sources (
 		"${CMAKE_BINARY_DIR}/config.hpp"
 		[[FPSCamera.h]]
 		[[FPSCamera.inl]]
-		[[GLStateInspection.h]]
-		[[GLStateInspectionView.h]]
 		[[helpers.hpp]]
 		[[InputHandler.h]]
 		[[Log.h]]
@@ -22,8 +20,6 @@ target_sources (
 		[[WindowManager.hpp]]
 	PRIVATE
 		[[Bonobo.cpp]]
-		[[GLStateInspection.cpp]]
-		[[GLStateInspectionView.cpp]]
 		[[helpers.cpp]]
 		[[InputHandler.cpp]]
 		[[Log.cpp]]
