@@ -76,7 +76,6 @@ bonobo::loadObjects(std::string const& filename)
 	auto const scene_start_time = std::chrono::high_resolution_clock::now();
 
 	std::vector<bonobo::mesh_data> objects;
-	std::vector<texture_bindings> materials_bindings;
 
 	auto const end_of_basedir = filename.rfind("/");
 	auto const parent_folder = (end_of_basedir != std::string::npos ? filename.substr(0, end_of_basedir) : ".") + "/";
@@ -94,12 +93,25 @@ bonobo::loadObjects(std::string const& filename)
 
 	LogInfo("┭ Loading \"%s\"…", filename.c_str());
 
+	std::vector<bool> are_materials_used(assimp_scene->mNumMaterials, false);
+	for (size_t j = 0; j < assimp_scene->mNumMeshes; ++j) {
+		auto const assimp_object_mesh = assimp_scene->mMeshes[j];
+		auto const material_id = assimp_object_mesh->mMaterialIndex;
+		if (material_id >= assimp_scene->mNumMaterials)
+			LogError("Mesh \"%s\" has a material index of %u, but only %u materials are present.", assimp_object_mesh->mName.C_Str(), material_id, assimp_scene->mNumMaterials);
+		else
+			are_materials_used[material_id] = true;
+	}
+
 	auto const materials_start_time = std::chrono::high_resolution_clock::now();
-	materials_bindings.reserve(assimp_scene->mNumMaterials);
+	std::vector<texture_bindings> materials_bindings(assimp_scene->mNumMaterials);
 	uint32_t texture_count = 0u;
 	for (size_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
+		if (!are_materials_used[i])
+			continue;
+
 		auto const material_start_time = std::chrono::high_resolution_clock::now();
-		texture_bindings bindings;
+		texture_bindings& bindings = materials_bindings[i];
 		auto const material = assimp_scene->mMaterials[i];
 
 		auto const process_texture = [&bindings,&material,i,&parent_folder,&texture_count](aiTextureType type, std::string const& type_as_str, std::string const& name){
@@ -129,8 +141,6 @@ bonobo::loadObjects(std::string const& filename)
 		process_texture(aiTextureType_SPECULAR, "specular", "specular_texture");
 		process_texture(aiTextureType_NORMALS,  "normals",  "normals_texture");
 		process_texture(aiTextureType_OPACITY,  "opacity",  "opacity_texture");
-
-		materials_bindings.push_back(bindings);
 
 		auto const material_end_time = std::chrono::high_resolution_clock::now();
 		LogTrivia("│ %s Material \"%s\" loaded in %.3f ms",
@@ -252,9 +262,7 @@ bonobo::loadObjects(std::string const& filename)
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 
 		auto const material_id = assimp_object_mesh->mMaterialIndex;
-		if (material_id >= materials_bindings.size())
-			LogError("Mesh \"%s\" has a material index of %u, but only %u materials were retrieved.", assimp_object_mesh->mName.C_Str(), material_id, materials_bindings.size());
-		else
+		if (material_id < materials_bindings.size())
 			object.bindings = materials_bindings[material_id];
 
 		objects.push_back(object);
@@ -276,6 +284,7 @@ bonobo::loadObjects(std::string const& filename)
 		          std::chrono::duration<float, std::milli>(mesh_end_time - mesh_start_time).count());
 	}
 	auto const meshes_end_time = std::chrono::high_resolution_clock::now();
+
 	auto const scene_end_time = std::chrono::high_resolution_clock::now();
 	LogInfo("┕ Scene loaded in %.3f s: %u textures loaded in %.3f s and %zu meshes in %.3f s",
 	        std::chrono::duration<float>(scene_end_time - scene_start_time).count(),
