@@ -34,7 +34,7 @@ void ShaderProgramManager::CreateAndRegisterProgram(char const* const program_na
 	program_entries.emplace_back(program, program_data);
 	program_names.emplace_back(program_name);
 
-	ProcessProgram(program_entries.back().second, program_entries.back().first);
+	ProcessProgram(program_entries.size() - 1);
 }
 
 void ShaderProgramManager::CreateAndRegisterComputeProgram(char const* const program_name, std::string const& filename, GLuint& program)
@@ -47,18 +47,19 @@ void ShaderProgramManager::CreateAndRegisterComputeProgram(char const* const pro
 	program_entries.emplace_back(program, ProgramData{ { ShaderType::compute, filename } });
 	program_names.emplace_back(program_name);
 
-	ProcessProgram(program_entries.back().second, program_entries.back().first);
+	ProcessProgram(program_entries.size() - 1);
 }
 
 bool ShaderProgramManager::ReloadAllPrograms()
 {
 	bool encountered_failures = false;
-	for (auto& i : program_entries) {
-		if (i.first != 0u)
-			glDeleteProgram(i.first);
-		i.first = 0u;
-		ProcessProgram(i.second, i.first);
-		encountered_failures |= i.first == 0u;
+	for (std::size_t i = 0; i < program_entries.size(); ++i) {
+		auto& program = program_entries[i].first;
+		if (program != 0u)
+			glDeleteProgram(program);
+		program = 0u;
+		ProcessProgram(i);
+		encountered_failures |= program == 0u;
 	}
 
 	return !encountered_failures;
@@ -78,8 +79,12 @@ ShaderProgramManager::SelectedProgram ShaderProgramManager::SelectProgram(std::s
 	return selection_result;
 }
 
-void ShaderProgramManager::ProcessProgram(ProgramData const& program_data, GLuint& program)
+void ShaderProgramManager::ProcessProgram(std::size_t const program_index)
 {
+	auto& program_entry = program_entries[program_index];
+	auto& program = program_entry.first;
+	auto const& program_data = program_entry.second;
+
 	std::vector<GLuint> shaders;
 	shaders.reserve(program_data.size());
 
@@ -102,6 +107,11 @@ void ShaderProgramManager::ProcessProgram(ProgramData const& program_data, GLuin
 	}
 
 	program = utils::opengl::shader::generate_program(shaders);
+	if (utils::opengl::debug::isSupported())
+	{
+		auto const& program_name = program_names[program_index];
+		glObjectLabel(GL_PROGRAM, program, strlen(program_name), program_name);
+	}
 
 	for (auto& shader : shaders)
 		glDeleteShader(shader);
