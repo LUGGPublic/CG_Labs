@@ -90,6 +90,20 @@ namespace
 	using ElapsedTimeQueries = std::array<GLuint, toU(ElapsedTimeQuery::Count)>;
 	ElapsedTimeQueries createElapsedTimeQueries();
 
+	enum class UBO : uint32_t {
+		CameraViewProjTransforms = 0u,
+		LightViewProjTransforms,
+		Count
+	};
+	using UBOs = std::array<GLuint, toU(UBO::Count)>;
+	UBOs createUniformBufferObjects();
+
+	struct ViewProjTransforms
+	{
+		glm::mat4 view_projection = glm::mat4(1.0f);
+		glm::mat4 view_projection_inverse = glm::mat4(1.0f);
+	};
+
 	struct GeometryTextureData
 	{
 		GLuint diffuse_texture_id{ 0u };
@@ -100,9 +114,9 @@ namespace
 
 	struct GBufferShaderLocations
 	{
+		GLuint ubo_CameraViewProjTransforms{ 0u };
 		GLuint vertex_model_to_world{ 0u };
 		GLuint normal_model_to_world{ 0u };
-		GLuint vertex_world_to_clip{ 0u };
 		GLuint diffuse_texture{ 0u };
 		GLuint specular_texture{ 0u };
 		GLuint normals_texture{ 0u };
@@ -116,8 +130,9 @@ namespace
 
 	struct FillShadowmapShaderLocations
 	{
+		GLuint ubo_LightViewProjTransforms{ 0u };
+		GLuint light_index{ 0u };
 		GLuint vertex_model_to_world{ 0u };
-		GLuint vertex_world_to_clip{ 0u };
 		GLuint opacity_texture{ 0u };
 		GLuint has_opacity_texture{ 0u };
 	};
@@ -125,6 +140,9 @@ namespace
 
 	struct AccumulateLightsShaderLocations
 	{
+		GLuint ubo_CameraViewProjTransforms{ 0u };
+		GLuint ubo_LightViewProjTransforms{ 0u };
+		GLuint light_index{ 0u };
 		GLuint vertex_model_to_world{ 0u };
 		GLuint vertex_world_to_clip{ 0u };
 		GLuint vertex_clip_to_world{ 0u };
@@ -132,7 +150,6 @@ namespace
 		GLuint normal_texture{ 0u };
 		GLuint shadow_texture{ 0u };
 		GLuint camera_position{ 0u };
-		GLuint shadow_view_projection{ 0u };
 		GLuint inverse_screen_resolution{ 0u };
 		GLuint light_color{ 0u };
 		GLuint light_position{ 0u };
@@ -214,6 +231,19 @@ edan35::Assignment2::run()
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 3.0f * constant::scale_lengths; // 3 m/s => 10.8 km/h.
 
+	int framebuffer_width, framebuffer_height;
+	glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
+
+	//
+	// Setup OpenGL objects
+	// Look further down in this file to see the implementation of those functions.
+	//
+	Textures const textures = createTextures(framebuffer_width, framebuffer_height);
+	FBOs const fbos = createFramebufferObjects(textures);
+	Samplers const samplers = createSamplers();
+	ElapsedTimeQueries const elapsed_time_queries = createElapsedTimeQueries();
+	UBOs const ubos = createUniformBufferObjects();
+
 	//
 	// Load all the shader programs used
 	//
@@ -286,17 +316,8 @@ edan35::Assignment2::run()
 
 	auto const set_uniforms = [](GLuint /*program*/){};
 
-	int framebuffer_width, framebuffer_height;
-	glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
-
-	//
-	// Setup OpenGL objects
-	// Look further down in this file to see the implementation of those functions.
-	//
-	Textures const textures = createTextures(framebuffer_width, framebuffer_height);
-	FBOs const fbos = createFramebufferObjects(textures);
-	Samplers const samplers = createSamplers();
-	ElapsedTimeQueries const elapsed_time_queries = createElapsedTimeQueries();
+	ViewProjTransforms camera_view_proj_transforms;
+	std::array<ViewProjTransforms, constant::lights_nb> light_view_proj_transforms;
 
 	const GLuint debug_texture_id = bonobo::getDebugTextureID();
 
@@ -373,7 +394,11 @@ edan35::Assignment2::run()
 		glfwPollEvents();
 		inputHandler.Advance();
 		mCamera.Update(deltaTimeUs, inputHandler);
-		auto const view_projection = mCamera.GetWorldToClipMatrix();
+
+		camera_view_proj_transforms.view_projection = mCamera.GetWorldToClipMatrix();
+		camera_view_proj_transforms.view_projection_inverse = mCamera.GetClipToWorldMatrix();
+
+		auto const view_projection = camera_view_proj_transforms.view_projection;
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			shader_reload_failed = !program_manager.ReloadAllPrograms();
@@ -407,8 +432,26 @@ edan35::Assignment2::run()
 
 
 		for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
-			lightTransforms[i].SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
+			auto& lightTransform = lightTransforms[i];
+			lightTransform.SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
+
+			auto const light_view_matrix = lightOffsetTransform.GetMatrixInverse() * lightTransform.GetMatrixInverse();
+			auto const light_world_matrix = glm::inverse(light_view_matrix) * coneScaleTransform.GetMatrix();
+			auto const light_world_to_clip_matrix = lightProjection * light_view_matrix;
+
+			light_view_proj_transforms[i].view_projection = light_world_to_clip_matrix;
+			light_view_proj_transforms[i].view_projection_inverse = glm::inverse(light_world_to_clip_matrix);
 		}
+
+
+		//
+		// Update per-frame changing UBOs.
+		//
+		glBindBuffer(GL_UNIFORM_BUFFER, ubos[toU(UBO::CameraViewProjTransforms)]);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(camera_view_proj_transforms), &camera_view_proj_transforms);
+		glBindBuffer(GL_UNIFORM_BUFFER, ubos[toU(UBO::LightViewProjTransforms)]);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(light_view_proj_transforms), light_view_proj_transforms.data());
+		glBindBuffer(GL_UNIFORM_BUFFER, 0u);
 
 
 		if (!shader_reload_failed) {
@@ -424,7 +467,6 @@ edan35::Assignment2::run()
 			// XXX: Is any other clearing needed?
 
 			glUseProgram(fill_gbuffer_shader);
-			glUniformMatrix4fv(fill_gbuffer_shader_locations.vertex_world_to_clip, 1, GL_FALSE, glm::value_ptr(view_projection));
 			glUniform1i(fill_gbuffer_shader_locations.diffuse_texture, 0);
 			glUniform1i(fill_gbuffer_shader_locations.specular_texture, 1);
 			glUniform1i(fill_gbuffer_shader_locations.normals_texture, 2);
@@ -506,7 +548,7 @@ edan35::Assignment2::run()
 				// XXX: Is any clearing needed?
 
 				glUseProgram(fill_shadowmap_shader);
-				glUniformMatrix4fv(fill_shadowmap_shader_locations.vertex_world_to_clip, 1, GL_FALSE, glm::value_ptr(light_world_to_clip_matrix));
+				glUniform1i(fill_shadowmap_shader_locations.light_index, static_cast<int>(i));
 				glUniform1i(fill_shadowmap_shader_locations.opacity_texture, 0);
 				for (std::size_t i = 0; i < sponza_geometry.size(); ++i)
 				{
@@ -556,13 +598,9 @@ edan35::Assignment2::run()
 				glViewport(0, 0, framebuffer_width, framebuffer_height);
 				// XXX: Is any clearing needed?
 
+				glUniform1i(accumulate_light_shader_locations.light_index, static_cast<int>(i));
 				glUniformMatrix4fv(accumulate_light_shader_locations.vertex_model_to_world, 1, GL_FALSE, glm::value_ptr(light_world_matrix));
-				glUniformMatrix4fv(accumulate_light_shader_locations.vertex_world_to_clip, 1, GL_FALSE, glm::value_ptr(view_projection));
-				glUniformMatrix4fv(accumulate_light_shader_locations.vertex_clip_to_world, 1, GL_FALSE, glm::value_ptr(mCamera.GetClipToWorldMatrix()));
-				glUniform3fv(accumulate_light_shader_locations.camera_position, 1,
-				                   glm::value_ptr(mCamera.mWorld.GetTranslation()));
-				glUniformMatrix4fv(accumulate_light_shader_locations.shadow_view_projection, 1, GL_FALSE,
-				                   glm::value_ptr(light_world_to_clip_matrix));
+				glUniform3fv(accumulate_light_shader_locations.camera_position, 1, glm::value_ptr(mCamera.mWorld.GetTranslation()));
 				glUniform2f(accumulate_light_shader_locations.inverse_screen_resolution,
 				            1.0f / static_cast<float>(framebuffer_width),
 				            1.0f / static_cast<float>(framebuffer_height));
@@ -794,6 +832,7 @@ edan35::Assignment2::run()
 		first_frame = false;
 	}
 
+	glDeleteBuffers(static_cast<GLsizei>(ubos.size()), ubos.data());
 	glDeleteQueries(static_cast<GLsizei>(elapsed_time_queries.size()), elapsed_time_queries.data());
 	glDeleteSamplers(static_cast<GLsizei>(samplers.size()), samplers.data());
 	glDeleteFramebuffers(static_cast<GLsizei>(fbos.size()), fbos.data());
@@ -1005,11 +1044,30 @@ ElapsedTimeQueries createElapsedTimeQueries()
 	return queries;
 }
 
+UBOs createUniformBufferObjects()
+{
+	UBOs ubos;
+	glGenBuffers(static_cast<GLsizei>(ubos.size()), ubos.data());
+
+	glBindBuffer(GL_UNIFORM_BUFFER, ubos[toU(UBO::CameraViewProjTransforms)]);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(ViewProjTransforms), nullptr, GL_STREAM_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, toU(UBO::CameraViewProjTransforms), ubos[toU(UBO::CameraViewProjTransforms)]);
+	utils::opengl::debug::nameObject(GL_BUFFER, ubos[toU(UBO::CameraViewProjTransforms)], "Camera view-projection transforms");
+
+	glBindBuffer(GL_UNIFORM_BUFFER, ubos[toU(UBO::LightViewProjTransforms)]);
+	glBufferData(GL_UNIFORM_BUFFER, constant::lights_nb * sizeof(ViewProjTransforms), nullptr, GL_STREAM_DRAW);
+	glBindBufferBase(GL_UNIFORM_BUFFER, toU(UBO::LightViewProjTransforms), ubos[toU(UBO::LightViewProjTransforms)]);
+	utils::opengl::debug::nameObject(GL_BUFFER, ubos[toU(UBO::LightViewProjTransforms)], "Light view-projection transforms");
+
+	glBindBuffer(GL_UNIFORM_BUFFER, 0u);
+	return ubos;
+}
+
 void fillGBufferShaderLocations(GLuint gbuffer_shader, GBufferShaderLocations& locations)
 {
+	locations.ubo_CameraViewProjTransforms = glGetUniformBlockIndex(gbuffer_shader, "CameraViewProjTransforms");
 	locations.vertex_model_to_world = glGetUniformLocation(gbuffer_shader, "vertex_model_to_world");
 	locations.normal_model_to_world = glGetUniformLocation(gbuffer_shader, "normal_model_to_world");
-	locations.vertex_world_to_clip = glGetUniformLocation(gbuffer_shader, "vertex_world_to_clip");
 	locations.diffuse_texture = glGetUniformLocation(gbuffer_shader, "diffuse_texture");
 	locations.specular_texture = glGetUniformLocation(gbuffer_shader, "specular_texture");
 	locations.normals_texture = glGetUniformLocation(gbuffer_shader, "normals_texture");
@@ -1019,18 +1077,26 @@ void fillGBufferShaderLocations(GLuint gbuffer_shader, GBufferShaderLocations& l
 	locations.has_normals_texture = glGetUniformLocation(gbuffer_shader, "has_normals_texture");
 	locations.has_opacity_texture = glGetUniformLocation(gbuffer_shader, "has_opacity_texture");
 
+	glUniformBlockBinding(gbuffer_shader, locations.ubo_CameraViewProjTransforms, toU(UBO::CameraViewProjTransforms));
+
 }
 
 void fillShadowmapShaderLocations(GLuint shadowmap_shader, FillShadowmapShaderLocations& locations)
 {
+	locations.ubo_LightViewProjTransforms = glGetUniformBlockIndex(shadowmap_shader, "LightViewProjTransforms");
+	locations.light_index = glGetUniformLocation(shadowmap_shader, "light_index");
 	locations.vertex_model_to_world = glGetUniformLocation(shadowmap_shader, "vertex_model_to_world");
-	locations.vertex_world_to_clip = glGetUniformLocation(shadowmap_shader, "vertex_world_to_clip");
 	locations.opacity_texture = glGetUniformLocation(shadowmap_shader, "opacity_texture");
 	locations.has_opacity_texture = glGetUniformLocation(shadowmap_shader, "has_opacity_texture");
+
+	glUniformBlockBinding(shadowmap_shader, locations.ubo_LightViewProjTransforms, toU(UBO::LightViewProjTransforms));
 }
 
 void fillAccumulateLightsShaderLocations(GLuint accumulate_lights_shader, AccumulateLightsShaderLocations& locations)
 {
+	locations.ubo_CameraViewProjTransforms = glGetUniformBlockIndex(accumulate_lights_shader, "CameraViewProjTransforms");
+	locations.ubo_LightViewProjTransforms = glGetUniformBlockIndex(accumulate_lights_shader, "LightViewProjTransforms");
+	locations.light_index = glGetUniformLocation(accumulate_lights_shader, "light_index");
 	locations.vertex_model_to_world = glGetUniformLocation(accumulate_lights_shader, "vertex_model_to_world");
 	locations.vertex_world_to_clip = glGetUniformLocation(accumulate_lights_shader, "vertex_world_to_clip");
 	locations.vertex_clip_to_world = glGetUniformLocation(accumulate_lights_shader, "vertex_clip_to_world");
@@ -1038,13 +1104,15 @@ void fillAccumulateLightsShaderLocations(GLuint accumulate_lights_shader, Accumu
 	locations.normal_texture = glGetUniformLocation(accumulate_lights_shader, "normal_texture");
 	locations.shadow_texture = glGetUniformLocation(accumulate_lights_shader, "shadow_texture");
 	locations.camera_position = glGetUniformLocation(accumulate_lights_shader, "camera_position");
-	locations.shadow_view_projection = glGetUniformLocation(accumulate_lights_shader, "shadow_view_projection");
 	locations.inverse_screen_resolution = glGetUniformLocation(accumulate_lights_shader, "inverse_screen_resolution");
 	locations.light_color = glGetUniformLocation(accumulate_lights_shader, "light_color");
 	locations.light_position = glGetUniformLocation(accumulate_lights_shader, "light_position");
 	locations.light_direction = glGetUniformLocation(accumulate_lights_shader, "light_direction");
 	locations.light_intensity = glGetUniformLocation(accumulate_lights_shader, "light_intensity");
 	locations.light_angle_falloff = glGetUniformLocation(accumulate_lights_shader, "light_angle_falloff");
+
+	glUniformBlockBinding(accumulate_lights_shader, locations.ubo_CameraViewProjTransforms, toU(UBO::CameraViewProjTransforms));
+	glUniformBlockBinding(accumulate_lights_shader, locations.ubo_LightViewProjTransforms, toU(UBO::LightViewProjTransforms));
 }
 
 bonobo::mesh_data
