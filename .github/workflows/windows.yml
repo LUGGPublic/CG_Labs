@@ -1,0 +1,36 @@
+name: Windows
+
+on:
+  push:
+    paths-ignore:
+      - '*.rst'
+      - 'UNLICENCE'
+      - 'Doxyfile.in'
+      - 'shaders/**'
+  pull_request:
+    paths-ignore:
+      - '*.rst'
+      - 'UNLICENCE'
+      - 'Doxyfile.in'
+      - 'shaders/**'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+    
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Enable MSVC Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1.9.0
+
+    - name: Generate
+      run: cmake -S${{ github.workspace }} -B${{ github.workspace }}/build -G"Ninja" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}

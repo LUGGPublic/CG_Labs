@@ -1,0 +1,38 @@
+name: MacOS
+
+on:
+  push:
+    paths-ignore:
+      - '*.rst'
+      - 'UNLICENCE'
+      - 'Doxyfile.in'
+      - 'shaders/**'
+  pull_request:
+    paths-ignore:
+      - '*.rst'
+      - 'UNLICENCE'
+      - 'Doxyfile.in'
+      - 'shaders/**'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+    
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install MacOS Packages
+      run: |
+        brew install assimp
+        brew install glfw
+
+    - name: Generate
+      run: cmake -S${{ github.workspace }} -B${{ github.workspace }}/build -G"Xcode" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
