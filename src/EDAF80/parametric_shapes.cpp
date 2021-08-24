@@ -28,7 +28,7 @@ parametric_shapes::createQuad(float const width, float const height,
 
 	bonobo::mesh_data data;
 
-	if (horizontal_split_count > 0u || horizontal_split_count > 0u)
+	if (horizontal_split_count > 0u || vertical_split_count > 0u)
 	{
 		LogError("parametric_shapes::createQuad() does not support tesselation.");
 		return data;
