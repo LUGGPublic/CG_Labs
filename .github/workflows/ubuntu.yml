@@ -1,0 +1,44 @@
+name: Ubuntu
+
+on:
+  push:
+    paths-ignore:
+      - '*.rst'
+      - 'UNLICENCE'
+      - 'Doxyfile.in'
+      - 'shaders/**'
+  pull_request:
+    paths-ignore:
+      - '*.rst'
+      - 'UNLICENCE'
+      - 'Doxyfile.in'
+      - 'shaders/**'
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+        compiler:
+          - { cc: gcc, cxx: g++ }
+          - { cc: clang, cxx: clang++ }
+    
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Ubuntu Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build libassimp-dev libglfw3-dev
+
+    - name: Generate
+      env:
+        CC: ${{ matrix.compiler.cc }}
+        CXX: ${{ matrix.compiler.cxx }}
+      run: cmake -S${{ github.workspace }} -B${{ github.workspace }}/build -G"Ninja" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+      
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
