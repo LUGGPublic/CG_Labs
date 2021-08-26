@@ -37,7 +37,7 @@ target_link_libraries (
 	external_libs
 	PRIVATE
 		glfw
-		$<$<NOT:$<BOOL:WIN32>>:dl>
+		$<$<NOT:$<BOOL:${WIN32}>>:dl>
 )
 
 install (TARGETS external_libs DESTINATION lib)

@@ -46,7 +46,7 @@ target_link_libraries (
 		external_libs
 		glfw
 		glm
-		$<$<NOT:$<BOOL:WIN32>>:dl>
+		$<$<NOT:$<BOOL:${WIN32}>>:dl>
 	PRIVATE
 		CG_Labs_options
 		stb::stb
