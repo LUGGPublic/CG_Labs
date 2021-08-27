@@ -21,7 +21,8 @@ target_sources (
 	EDAF80_Assignment1
 	PRIVATE
 		[[assignment1.cpp]]
-		[[assignment1.hpp]]
+		[[CelestialBody.cpp]]
+		[[CelestialBody.hpp]]
 )
 target_link_libraries (
 	EDAF80_Assignment1
