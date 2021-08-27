@@ -25,21 +25,26 @@ public:
 
 	//! \brief Render this node.
 	//!
-	//! @param [in] WVP Matrix transforming from world-space to clip-space
-	//! @param [in] parentTransform Matrix transforming from parent-space to
+	//! @param [in] view_projection Matrix transforming from world-space to clip-space
+	//! @param [in] parent_transform Matrix transforming from parent-space to
 	//!             world-space
-	void render(glm::mat4 const& WVP, glm::mat4 const& parentTransform = glm::mat4(1.0f)) const;
+	void render(glm::mat4 const& view_projection,
+	            glm::mat4 const& parent_transform = glm::mat4(1.0f)) const;
 
 	//! \brief Render this node with a specific shader program.
 	//!
-	//! @param [in] WVP Matrix transforming from world-space to clip-space
+	//! Note that the internal transform of this node is **not** used
+	//! during the rendering, only the |view_projection| and |world|
+	//! matrices are.
+	//!
+	//! @param [in] view_projection Matrix transforming from world-space to clip-space
 	//! @param [in] world Matrix transforming from model-space to
 	//!             world-space
 	//! @param [in] program OpenGL shader program to use
 	//! @param [in] set_uniforms function that will take as argument an
 	//!             OpenGL shader program, and will setup that program's
 	//!             uniforms
-	void render(glm::mat4 const& WVP, glm::mat4 const& world,
+	void render(glm::mat4 const& view_projection, glm::mat4 const& world,
 	            GLuint program,
 	            std::function<void (GLuint)> const& set_uniforms = [](GLuint /*programID*/){}) const;
 

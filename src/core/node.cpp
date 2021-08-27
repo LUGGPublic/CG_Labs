@@ -12,14 +12,14 @@ Node::Node() : _vao(0u), _vertices_nb(0u), _indices_nb(0u), _drawing_mode(GL_TRI
 }
 
 void
-Node::render(glm::mat4 const& WVP, glm::mat4 const& parentTransform) const
+Node::render(glm::mat4 const& view_projection, glm::mat4 const& parent_transform) const
 {
 	if (_program != nullptr)
-		render(WVP, parentTransform * _transform.GetMatrix(), *_program, _set_uniforms);
+		render(view_projection, parent_transform * _transform.GetMatrix(), *_program, _set_uniforms);
 }
 
 void
-Node::render(glm::mat4 const& WVP, glm::mat4 const& world, GLuint program, std::function<void (GLuint)> const& set_uniforms) const
+Node::render(glm::mat4 const& view_projection, glm::mat4 const& world, GLuint program, std::function<void (GLuint)> const& set_uniforms) const
 {
 	if (_vao == 0u || program == 0u)
 		return;
@@ -37,7 +37,7 @@ Node::render(glm::mat4 const& WVP, glm::mat4 const& world, GLuint program, std::
 
 	glUniformMatrix4fv(glGetUniformLocation(program, "vertex_model_to_world"), 1, GL_FALSE, glm::value_ptr(world));
 	glUniformMatrix4fv(glGetUniformLocation(program, "normal_model_to_world"), 1, GL_FALSE, glm::value_ptr(normal_model_to_world));
-	glUniformMatrix4fv(glGetUniformLocation(program, "vertex_world_to_clip"), 1, GL_FALSE, glm::value_ptr(WVP));
+	glUniformMatrix4fv(glGetUniformLocation(program, "vertex_world_to_clip"), 1, GL_FALSE, glm::value_ptr(view_projection));
 
 	for (size_t i = 0u; i < _textures.size(); ++i) {
 		auto const& texture = _textures[i];
