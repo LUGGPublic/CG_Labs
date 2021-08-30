@@ -111,9 +111,9 @@ namespace bonobo
 	//!        fragment shader.
 	//!
 	//! @param [in] vert_shader_source_path of the vertex shader source
-	//!             code, relative to the `shaders/EDAF80` folder
+	//!             code, relative to the `shaders/` folder
 	//! @param [in] frag_shader_source_path of the fragment shader source
-	//!             code, relative to the `shaders/EDAF80` folder
+	//!             code, relative to the `shaders/` folder
 	//! @return the name of the OpenGL shader program
 	GLuint createProgram(std::string const& vert_shader_source_path,
 	                     std::string const& frag_shader_source_path);

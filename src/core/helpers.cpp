@@ -37,7 +37,7 @@ bonobo::init()
 {
 	glGenVertexArrays(1, &local::display_vao);
 	assert(local::display_vao != 0u);
-	local::fullscreen_shader = bonobo::createProgram("fullscreen.vert", "fullscreen.frag");
+	local::fullscreen_shader = bonobo::createProgram("EDAF80/fullscreen.vert", "EDAF80/fullscreen.frag");
 	if (local::fullscreen_shader == 0u)
 		LogError("Failed to load \"fullscreen.vert\" and \"fullscreen.frag\"");
 }
@@ -418,12 +418,12 @@ bonobo::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 GLuint
 bonobo::createProgram(std::string const& vert_shader_source_path, std::string const& frag_shader_source_path)
 {
-	auto const vertex_shader_source = utils::slurp_file(config::shaders_path("EDAF80/" + vert_shader_source_path));
+	auto const vertex_shader_source = utils::slurp_file(config::shaders_path(vert_shader_source_path));
 	GLuint vertex_shader = utils::opengl::shader::generate_shader(GL_VERTEX_SHADER, vertex_shader_source);
 	if (vertex_shader == 0u)
 		return 0u;
 
-	auto const fragment_shader_source = utils::slurp_file(config::shaders_path("EDAF80/" + frag_shader_source_path));
+	auto const fragment_shader_source = utils::slurp_file(config::shaders_path(frag_shader_source_path));
 	GLuint fragment_shader = utils::opengl::shader::generate_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
 	if (fragment_shader == 0u)
 		return 0u;
