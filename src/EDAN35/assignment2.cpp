@@ -71,7 +71,7 @@ namespace
 		ShadowMap,
 		LightAccumulation,
 		Resolve,
-		ConeWireframe,
+		FinalWithDepth,
 		Count
 	};
 	using FBOs = std::array<GLuint, toU(FBO::Count)>;
@@ -480,7 +480,7 @@ edan35::Assignment2::run()
 
 
 		//
-		// Pass 4: Draw wireframe cones on top of the final image for debugging purposes
+		// Draw wireframe cones on top of the final image for debugging purposes
 		//
 		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::ConeWireframe)]);
 		if (show_cone_wireframe) {
@@ -489,7 +489,7 @@ edan35::Assignment2::run()
 				std::string const group_name = "Draw cone wireframe";
 				glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
 			}
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::ConeWireframe)]);
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)]);
 
 			glDisable(GL_CULL_FACE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -515,11 +515,12 @@ edan35::Assignment2::run()
 		}
 		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::GUI)]);
 
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
+
 		//
 		// Output content of the g-buffer as well as of the shadowmap, for debugging purposes
 		//
 		if (show_textures) {
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
 			bonobo::displayTexture({-0.95f, -0.95f}, {-0.55f, -0.55f}, textures[toU(Texture::GBufferDiffuse)],            samplers[toU(Sampler::Linear)], {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 			bonobo::displayTexture({-0.45f, -0.95f}, {-0.05f, -0.55f}, textures[toU(Texture::GBufferSpecular)],           samplers[toU(Sampler::Linear)], {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
 			bonobo::displayTexture({ 0.05f, -0.95f}, { 0.45f, -0.55f}, textures[toU(Texture::GBufferWorldSpaceNormal)],   samplers[toU(Sampler::Linear)], {0, 1, 2, -1}, glm::uvec2(framebuffer_width, framebuffer_height));
@@ -537,6 +538,8 @@ edan35::Assignment2::run()
 		bool opened = ImGui::Begin("Render Time", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
 			ImGui::Text("Frame CPU time: %.3f ms", std::chrono::duration<float, std::milli>(deltaTimeUs).count());
+
+			ImGui::Checkbox("Copy elapsed times back to CPU", &copy_elapsed_times);
 
 			if (ImGui::BeginTable("Pass durations", 2, ImGuiTableFlags_SizingFixedFit))
 			{
@@ -597,7 +600,6 @@ edan35::Assignment2::run()
 			ImGui::SliderInt("Number of lights", &lights_nb, 1, static_cast<int>(constant::lights_nb));
 			ImGui::Checkbox("Show textures", &show_textures);
 			ImGui::Checkbox("Show light cones wireframe", &show_cone_wireframe);
-			ImGui::Checkbox("Copy elapsed times back to CPU", &copy_elapsed_times);
 		}
 		ImGui::End();
 
@@ -829,12 +831,12 @@ FBOs createFramebufferObjects(Textures const& textures)
 	glDrawBuffer(GL_COLOR_ATTACHMENT0); // The fragment shader output at location 0 will be written to colour attachment 0 (i.e. the rendering result texture).
 	validate_fbo("Resolve");
 
-	glBindFramebuffer(GL_FRAMEBUFFER, fbos[toU(FBO::ConeWireframe)]);
+	glBindFramebuffer(GL_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)]);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[toU(Texture::Result)], 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, textures[toU(Texture::DepthBuffer)], 0);
 	glReadBuffer(GL_NONE); // Disable reading back from the colour attachments, as unnecessary in this assignment.
 	glDrawBuffer(GL_COLOR_ATTACHMENT0); // The fragment shader output at location 0 will be written to colour attachment 0 (i.e. the rendering result texture).
-	validate_fbo("Cone wireframe");
+	validate_fbo("Final with depth");
 
 	if (utils::opengl::debug::isSupported())
 	{
@@ -851,7 +853,7 @@ FBOs createFramebufferObjects(Textures const& textures)
 		glObjectLabel(GL_FRAMEBUFFER, fbos[toU(FBO::Resolve)], resolve_string.size(), resolve_string.data());
 
 		std::string const cone_wireframe_string = "Cone wireframe";
-		glObjectLabel(GL_FRAMEBUFFER, fbos[toU(FBO::ConeWireframe)], cone_wireframe_string.size(), cone_wireframe_string.data());
+		glObjectLabel(GL_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)], cone_wireframe_string.size(), cone_wireframe_string.data());
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0u);
