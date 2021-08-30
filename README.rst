@@ -45,76 +45,11 @@ later.
 The different resources used in the assignments, textures, object files, can
 be found in `this ZIP file`_, which should be automatically retrieved by CMake.
 
-Building
-========
+Configuring and building
+========================
 
-Visual Studio 2017
-------------------
-
-We will use the following directory layout::
-
-  * some_random_folder // Wherever you want to store the project on your
-  |                    // computer.
-  |
-  |-> * code           // This is what you downloaded from GitHub.
-
-On the contrary to previous versions, Visual Studio 2017 can use CMake files
-directly, so instead of opening a project, choose “Open a folder” and select
-the “code” folder. After a few seconds, Visual Studio should start processing
-the CMake files and downloading the dependencies: this can take some time.
-
-Once Visual Studio is done with the processing, you should now have a new menu
-called “CMake” in the menu bar. In there you can build and clean the project,
-edit the CMake configuration, and others.
-
-After building, it is now time to run the assignment. In order to do that, you
-need to choose the “Startup Item” by clicking on the combo box preceded by a
-green arrow pointing to the right (similar to the “play” or “start” symbols),
-and select, for example, “EDAF80_Assignment1.exe”.
-
-Others (also works for Visual Studio 2017)
-------------------------------------------
-
-The project uses CMake to automate the building. It is recommended to build in
-a separate folder but you can as well build directly within the source
-directory. We will use the following directory layout::
-
-  * some_random_folder // Wherever you want to store the project on your
-  |                    // computer.
-  |
-  |-> * code           // This is what you downloaded from GitHub.
-  |
-  |-> * build          // A folder you created, and which will contain all the
-                       // build related files.
-
-First, you need to create the project files, be it for Unix Makefiles, Ninja,
-Xcode, or Visual Studio::
-
-  cd build
-  cmake -G $generator ../code
-
-where ``$generator`` can be, among others, ``"Visual Studio 14 2015 Win64"``
-for Visual Studio 2015 on a 64-bit computer, ``"Visual Studio 15 2017 Win64"``
-for Visual Studio 2017 on a 64-bit computer, ``Xcode`` for Xcode,
-``"Unix Makefiles"`` for Unix Makefiles. To see the full list of generators
-supported by CMake, have a look at `cmake-generators(7)`_.
-
-If you prefer to use CMake GUI, just set the source directory to “code” and the
-build directory to “build”. Then, press the “Configure” button, modify some of
-the variables if needed, and press the button again. Finally, press the
-“Generate” button to create the project files.
-
-You should now have your project files available in the “build” folder. To
-build the project, you can either use your IDE’s interface, or run
-``cmake --build .`` from the “build” folder. You can pass
-``--config Debug|RelWithDebInfo|Release`` to build in a specific configuration.
-
-Issues with retrieving the resource archive
--------------------------------------------
-
-If CMake fails to retrieve the resource archive, you will need to make sure to
-extract the zip containing the resources into “code”; this should result in the
-creation of a folder “res” under “code”.
+All the informations regarding the software configuration, how to set it up, and
+how to build the framework, can be found in BUILD.rst_.
 
 Miscellaneous
 =============
@@ -145,4 +80,5 @@ Licence
 .. _Dear ImGui’s licence: src/external/Dear ImGui/LICENSE.txt
 .. _OpenGL 3.3: https://github.com/LUGGPublic/CG_Labs/tree/OpenGL_3.3
 .. _this ZIP file: http://fileadmin.cs.lth.se/cs/Education/EDA221/assignments/EDAF80_resources.zip
+.. _BUILD.rst: BUILD.rst
 .. _the UNLICENCE file: UNLICENCE

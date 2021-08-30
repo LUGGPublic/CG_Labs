@@ -6,12 +6,14 @@ on:
       - '*.rst'
       - 'UNLICENCE'
       - 'Doxyfile.in'
+      - 'images/**'
       - 'shaders/**'
   pull_request:
     paths-ignore:
       - '*.rst'
       - 'UNLICENCE'
       - 'Doxyfile.in'
+      - 'images/**'
       - 'shaders/**'
 
 jobs:
@@ -20,7 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         build_type: [Debug, Release]
-    
+
     runs-on: macos-latest
 
     steps:
@@ -33,6 +35,6 @@ jobs:
 
     - name: Generate
       run: cmake -S${{ github.workspace }} -B${{ github.workspace }}/build -G"Xcode" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-      
+
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config ${{ matrix.build_type }}
