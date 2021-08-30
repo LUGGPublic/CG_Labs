@@ -58,7 +58,7 @@ bonobo::init()
 
 	glGenVertexArrays(1, &local::display_vao);
 	assert(local::display_vao != 0u);
-	local::fullscreen_shader = bonobo::createProgram("EDAF80/fullscreen.vert", "EDAF80/fullscreen.frag");
+	local::fullscreen_shader = bonobo::createProgram("common/fullscreen.vert", "common/fullscreen.frag");
 	if (local::fullscreen_shader == 0u)
 		LogError("Failed to load \"fullscreen.vert\" and \"fullscreen.frag\"");
 }
