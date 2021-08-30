@@ -30,6 +30,13 @@ edaf80::Assignment2::Assignment2(WindowManager& windowManager) :
 	if (window == nullptr) {
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
+
+	bonobo::init();
+}
+
+edaf80::Assignment2::~Assignment2()
+{
+	bonobo::deinit();
 }
 
 void
@@ -157,6 +164,9 @@ edaf80::Assignment2::run()
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
 	bool show_gui = true;
+	bool show_basis = false;
+	float basis_thickness_scale = 1.0f;
+	float basis_length_scale = 1.0f;
 
 	changeCullMode(cull_mode);
 
@@ -234,10 +244,16 @@ edaf80::Assignment2::run()
 			ImGui::Checkbox("Enable interpolation", &interpolate);
 			ImGui::Checkbox("Use linear interpolation", &use_linear);
 			ImGui::SliderFloat("Catmull-Rom tension", &catmull_rom_tension, 0.0f, 1.0f);
+			ImGui::Separator();
+			ImGui::Checkbox("Show basis", &show_basis);
+			ImGui::SliderFloat("Basis thickness scale", &basis_thickness_scale, 0.0f, 100.0f);
+			ImGui::SliderFloat("Basis length scale", &basis_length_scale, 0.0f, 100.0f);
 		}
 		ImGui::End();
 
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		if (show_basis)
+			bonobo::renderBasis(basis_thickness_scale, basis_length_scale, mCamera.GetWorldToClipMatrix());
 		if (show_logs)
 			Log::View::Render();
 		mWindowManager.RenderImGuiFrame(show_gui);

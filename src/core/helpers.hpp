@@ -165,6 +165,15 @@ namespace bonobo
 	//! \brief Draw full screen.
 	void drawFullscreen();
 
+	//! \brief Render a right-hand orthonormal basis.
+	//!
+	//! @param [in] thickness_scale By how much to scale the thickness of the axes
+	//! @param [in] length_scale By how much to scale the length of the axes
+	//! @param [in] view_projection Matrix transforming from world-space to clip-space
+	//! @param [in] world Matrix transforming from model-space to
+	//!             world-space
+	void renderBasis(float thickness_scale, float length_scale, glm::mat4 const& view_projection, glm::mat4 const& world = glm::mat4(1.0f));
+
 	//! \brief Add a combo box to the current ImGUI window, to choose a
 	//!        cull mode.
 	//!

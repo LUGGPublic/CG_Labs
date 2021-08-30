@@ -273,6 +273,9 @@ edan35::Assignment2::run()
 	bool shader_reload_failed = false;
 	bool copy_elapsed_times = true;
 	bool first_frame = true;
+	bool show_basis = false;
+	float basis_thickness_scale = 40.0f;
+	float basis_length_scale = 400.0f;
 
 	while (!glfwWindowShouldClose(window)) {
 		auto const nowTime = std::chrono::high_resolution_clock::now();
@@ -515,6 +518,16 @@ edan35::Assignment2::run()
 		}
 		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::GUI)]);
 
+		//
+		// Display 3D helpers
+		//
+		if (show_basis)
+		{
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)]);
+
+			bonobo::renderBasis(basis_thickness_scale, basis_length_scale, mCamera.GetWorldToClipMatrix());
+		}
+
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
 
 		//
@@ -600,6 +613,10 @@ edan35::Assignment2::run()
 			ImGui::SliderInt("Number of lights", &lights_nb, 1, static_cast<int>(constant::lights_nb));
 			ImGui::Checkbox("Show textures", &show_textures);
 			ImGui::Checkbox("Show light cones wireframe", &show_cone_wireframe);
+			ImGui::Separator();
+			ImGui::Checkbox("Show basis", &show_basis);
+			ImGui::SliderFloat("Basis thickness scale", &basis_thickness_scale, 0.0f, 100.0f);
+			ImGui::SliderFloat("Basis length scale", &basis_length_scale, 0.0f, 100.0f);
 		}
 		ImGui::End();
 

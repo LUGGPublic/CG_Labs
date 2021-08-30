@@ -27,6 +27,13 @@ edaf80::Assignment4::Assignment4(WindowManager& windowManager) :
 	if (window == nullptr) {
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
+
+	bonobo::init();
+}
+
+edaf80::Assignment4::~Assignment4()
+{
+	bonobo::deinit();
 }
 
 void
@@ -73,6 +80,9 @@ edaf80::Assignment4::run()
 	bool show_logs = true;
 	bool show_gui = true;
 	bool shader_reload_failed = false;
+	bool show_basis = false;
+	float basis_thickness_scale = 1.0f;
+	float basis_length_scale = 1.0f;
 
 	changeCullMode(cull_mode);
 
@@ -150,9 +160,15 @@ edaf80::Assignment4::run()
 				changeCullMode(cull_mode);
 			}
 			bonobo::uiSelectPolygonMode("Polygon mode", polygon_mode);
+			ImGui::Separator();
+			ImGui::Checkbox("Show basis", &show_basis);
+			ImGui::SliderFloat("Basis thickness scale", &basis_thickness_scale, 0.0f, 100.0f);
+			ImGui::SliderFloat("Basis length scale", &basis_length_scale, 0.0f, 100.0f);
 		}
 		ImGui::End();
 
+		if (show_basis)
+			bonobo::renderBasis(basis_thickness_scale, basis_length_scale, mCamera.GetWorldToClipMatrix());
 		if (show_logs)
 			Log::View::Render();
 		mWindowManager.RenderImGuiFrame(show_gui);

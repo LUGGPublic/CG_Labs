@@ -42,11 +42,14 @@ public:
 	//!             clip space
 	//! @param [in] parent_transform Matrix transforming from the parent’s
 	//!             local space to world space
+	//! @param [in] show_basis Show a 3D basis transformed by the world matrix
+	//!             of this celestial body
 	//! @return Matrix transforming from this celestial body’s local space
 	//!         to world space
 	glm::mat4 render(std::chrono::microseconds elapsed_time,
 	                 glm::mat4 const& view_projection,
-	                 glm::mat4 const& parent_transform = glm::mat4(1.0f));
+	                 glm::mat4 const& parent_transform = glm::mat4(1.0f),
+	                 bool show_basis = false);
 
 	//! \brief Mark another celestial body as being “attached” to the current one.
 	void add_child(CelestialBody* child);

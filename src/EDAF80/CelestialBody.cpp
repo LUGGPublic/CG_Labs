@@ -3,6 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/trigonometric.hpp>
 
+#include "core/helpers.hpp"
 #include "core/Log.h"
 
 CelestialBody::CelestialBody(bonobo::mesh_data const& shape,
@@ -16,7 +17,8 @@ CelestialBody::CelestialBody(bonobo::mesh_data const& shape,
 
 glm::mat4 CelestialBody::render(std::chrono::microseconds elapsed_time,
                                 glm::mat4 const& view_projection,
-                                glm::mat4 const& parent_transform)
+                                glm::mat4 const& parent_transform,
+                                bool show_basis)
 {
 	// Convert the duration from microseconds to seconds.
 	auto const elapsed_time_s = std::chrono::duration<float>(elapsed_time).count();
@@ -27,6 +29,11 @@ glm::mat4 CelestialBody::render(std::chrono::microseconds elapsed_time,
 	_body.spin.rotation_angle = -glm::half_pi<float>() / 2.0f;
 
 	glm::mat4 world = parent_transform;
+
+	if (show_basis)
+	{
+		bonobo::renderBasis(1.0f, 2.0f, view_projection, world);
+	}
 
 	// Note: The second argument of `node::render()` is supposed to be the
 	// parent transform of the node, not the whole world matrix, as the

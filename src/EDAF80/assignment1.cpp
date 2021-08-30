@@ -48,6 +48,8 @@ int main()
 		return EXIT_FAILURE;
 	}
 
+	bonobo::init();
+
 	//
 	// Load the sphere geometry
 	//
@@ -181,6 +183,7 @@ int main()
 	bool pause_animation = false;
 	bool show_logs = true;
 	bool show_gui = true;
+	bool show_basis = false;
 	float time_scale = 1.0f;
 
 	while (!glfwWindowShouldClose(window)) {
@@ -246,8 +249,8 @@ int main()
 		// TODO: Replace this explicit rendering of the Earth and Moon
 		// with a traversal of the scene graph and rendering of all its
 		// nodes.
-		earth.render(animation_delta_time_us, camera.GetWorldToClipMatrix(), glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
-		//moon.render(animation_delta_time_us, camera.GetWorldToClipMatrix());
+		earth.render(animation_delta_time_us, camera.GetWorldToClipMatrix(), glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)), show_basis);
+		//moon.render(animation_delta_time_us, camera.GetWorldToClipMatrix(), glm::mat4(1.0f), show_basis);
 
 
 		//
@@ -258,6 +261,8 @@ int main()
 		{
 			ImGui::Checkbox("Pause the animation", &pause_animation);
 			ImGui::SliderFloat("Time scale", &time_scale, 1e-1f, 10.0f);
+			ImGui::Separator();
+			ImGui::Checkbox("Show basis", &show_basis);
 		}
 		ImGui::End();
 
@@ -287,6 +292,8 @@ int main()
 	glDeleteTextures(1, &venus_texture);
 	glDeleteTextures(1, &mars_texture);
 	glDeleteTextures(1, &sun_texture);
+
+	bonobo::deinit();
 
 	return EXIT_SUCCESS;
 }

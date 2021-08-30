@@ -16,6 +16,25 @@
 #include <cassert>
 #include <cstdint>
 
+namespace
+{
+	struct {
+		GLuint shader;
+		GLuint vao;
+		GLuint vbo;
+		GLuint ibo;
+		GLsizei index_count;
+		struct {
+			GLuint world;
+			GLuint view_proj;
+			GLuint thickness_scale;
+			GLuint length_scale;
+		} shader_locations;
+	} basis;
+
+	void setupBasisData();
+}
+
 namespace local
 {
 	static GLuint fullscreen_shader;
@@ -35,6 +54,8 @@ namespace local
 void
 bonobo::init()
 {
+	setupBasisData();
+
 	glGenVertexArrays(1, &local::display_vao);
 	assert(local::display_vao != 0u);
 	local::fullscreen_shader = bonobo::createProgram("EDAF80/fullscreen.vert", "EDAF80/fullscreen.frag");
@@ -45,6 +66,12 @@ bonobo::init()
 void
 bonobo::deinit()
 {
+	glDeleteProgram(basis.shader);
+	glDeleteBuffers(1, &basis.ibo);
+	glDeleteBuffers(1, &basis.vbo);
+	glDeleteVertexArrays(1, &basis.vao);
+
+	glDeleteProgram(local::fullscreen_shader);
 	glDeleteVertexArrays(1, &local::display_vao);
 }
 
@@ -504,6 +531,20 @@ bonobo::drawFullscreen()
 	glBindVertexArray(0u);
 }
 
+void
+bonobo::renderBasis(float thickness_scale, float length_scale, glm::mat4 const& view_projection, glm::mat4 const& world)
+{
+	glUseProgram(basis.shader);
+	glBindVertexArray(basis.vao);
+	glUniformMatrix4fv(basis.shader_locations.world, 1, GL_FALSE, glm::value_ptr(world));
+	glUniformMatrix4fv(basis.shader_locations.view_proj, 1, GL_FALSE, glm::value_ptr(view_projection));
+	glUniform1f(basis.shader_locations.thickness_scale, thickness_scale);
+	glUniform1f(basis.shader_locations.length_scale, length_scale);
+	glDrawElementsInstanced(GL_TRIANGLES, basis.index_count, GL_UNSIGNED_BYTE, nullptr, 3);
+	glBindVertexArray(0u);
+	glUseProgram(0u);
+}
+
 bool
 bonobo::uiSelectCullMode(std::string const& label, enum cull_mode_t& cull_mode) noexcept
 {
@@ -557,5 +598,100 @@ bonobo::changePolygonMode(enum polygon_mode_t const polygon_mode) noexcept
 		case bonobo::polygon_mode_t::point:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 			break;
+	}
+}
+
+namespace
+{
+	void setupBasisData()
+	{
+		glGenVertexArrays(1, &basis.vao);
+		assert(basis.vao != 0);
+		glBindVertexArray(basis.vao);
+
+		glGenBuffers(1, &basis.vbo);
+		assert(basis.vbo != 0);
+		auto const halfThickness = 0.1f;
+		std::array<glm::vec3, 13> const vertices = {
+			// Body of the arrow
+			glm::vec3(0.0f, -halfThickness, -halfThickness),
+			glm::vec3(0.0f, -halfThickness,  halfThickness),
+			glm::vec3(0.0f,  halfThickness,  halfThickness),
+			glm::vec3(0.0f,  halfThickness, -halfThickness),
+			glm::vec3(1.0f, -halfThickness, -halfThickness),
+			glm::vec3(1.0f, -halfThickness,  halfThickness),
+			glm::vec3(1.0f,  halfThickness,  halfThickness),
+			glm::vec3(1.0f,  halfThickness, -halfThickness),
+			// Tip of the arrow
+			glm::vec3(1.0f, -2.0f*halfThickness, -2.0f*halfThickness),
+			glm::vec3(1.0f, -2.0f*halfThickness,  2.0f*halfThickness),
+			glm::vec3(1.0f,  2.0f*halfThickness,  2.0f*halfThickness),
+			glm::vec3(1.0f,  2.0f*halfThickness, -2.0f*halfThickness),
+			glm::vec3(1.0f+4.0f*halfThickness,  0.0f, 0.0f),
+		};
+		glBindBuffer(GL_ARRAY_BUFFER, basis.vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0u);
+		glVertexAttribPointer(0u, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
+
+		glGenBuffers(1, &basis.ibo);
+		assert(basis.ibo != 0);
+		std::array<glm::u8vec3, 16> const indices = {
+			// Body: Left
+			glm::u8vec3(0u, 1u, 2u),
+			glm::u8vec3(0u, 2u, 3u),
+			// Body: Back
+			glm::u8vec3(4u, 0u, 3u),
+			glm::u8vec3(4u, 3u, 7u),
+			// Body: Bottom
+			glm::u8vec3(0u, 4u, 5u),
+			glm::u8vec3(0u, 5u, 1u),
+			// Body: Front
+			glm::u8vec3(1u, 5u, 6u),
+			glm::u8vec3(1u, 6u, 2u),
+			// Body: Top
+			glm::u8vec3(2u, 6u, 7u),
+			glm::u8vec3(2u, 7u, 3u),
+			// Tip: Left
+			glm::u8vec3(8u, 9u, 10u),
+			glm::u8vec3(8u, 10u, 11u),
+			// Tip: Back
+			glm::u8vec3(12u, 8u, 11u),
+			// Tip: Bottom
+			glm::u8vec3(8u, 12u, 9u),
+			// Tip: Front
+			glm::u8vec3(9u, 12u, 10u),
+			// Tip: Top
+			glm::u8vec3(10u, 12u, 11u)
+		};
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, basis.ibo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
+
+		basis.index_count = indices.size() * 3;
+
+		glBindVertexArray(0u);
+		glBindBuffer(GL_ARRAY_BUFFER, 0U);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0U);
+
+		basis.shader = bonobo::createProgram("common/basis.vert", "common/basis.frag");
+		if (basis.shader == 0u)
+			LogError("Failed to load \"basis.vert\" and \"basis.frag\"");
+
+		GLint shader_location = glGetUniformLocation(basis.shader, "vertex_model_to_world");
+		assert(shader_location >= 0);
+		basis.shader_locations.world = shader_location;
+
+		shader_location = glGetUniformLocation(basis.shader, "vertex_world_to_clip");
+		assert(shader_location >= 0);
+		basis.shader_locations.view_proj = shader_location;
+
+		shader_location = glGetUniformLocation(basis.shader, "thickness_scale");
+		assert(shader_location >= 0);
+		basis.shader_locations.thickness_scale = shader_location;
+
+		shader_location = glGetUniformLocation(basis.shader, "length_scale");
+		assert(shader_location >= 0);
+		basis.shader_locations.length_scale = shader_location;
 	}
 }

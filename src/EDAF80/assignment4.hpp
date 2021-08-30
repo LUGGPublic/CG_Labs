@@ -23,7 +23,7 @@ namespace edaf80
 		//!
 		//! It will release the bonobo modules initialised by the
 		//! constructor, as well as the window.
-		~Assignment4() = default;
+		~Assignment4();
 
 		//! \brief Contains the logic of the assignment, along with the
 		//! render loop.
