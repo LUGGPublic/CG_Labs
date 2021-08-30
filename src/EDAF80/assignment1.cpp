@@ -236,18 +236,6 @@ int main()
 
 
 		//
-		// Add controls to the scene.
-		//
-		bool const opened = ImGui::Begin("Scene controls", nullptr, ImGuiWindowFlags_None);
-		if (opened)
-		{
-			ImGui::Checkbox("Pause the animation", &pause_animation);
-			ImGui::SliderFloat("Time scale", &time_scale, 1e-1f, 10.0f);
-		}
-		ImGui::End();
-
-
-		//
 		// Traverse the scene graph and render all nodes
 		//
 		struct CelestialBodyRef
@@ -260,6 +248,18 @@ int main()
 		// nodes.
 		earth.render(animation_delta_time_us, camera.GetWorldToClipMatrix(), glm::translate(glm::mat4(1.0f), glm::vec3(2.0f, 0.0f, 0.0f)));
 		//moon.render(animation_delta_time_us, camera.GetWorldToClipMatrix());
+
+
+		//
+		// Add controls to the scene.
+		//
+		bool const opened = ImGui::Begin("Scene controls", nullptr, ImGuiWindowFlags_None);
+		if (opened)
+		{
+			ImGui::Checkbox("Pause the animation", &pause_animation);
+			ImGui::SliderFloat("Time scale", &time_scale, 1e-1f, 10.0f);
+		}
+		ImGui::End();
 
 
 		//
