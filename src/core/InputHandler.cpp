@@ -62,15 +62,14 @@ void InputHandler::FeedMouseButtons(int button, int action)
 	{
 		case GLFW_PRESS:
 			DownEvent(mMouseMap, static_cast<size_t>(button));
-			mMousePositionSwitched[button] = mMousePosition;
 			break;
 		case GLFW_RELEASE:
 			UpEvent(mMouseMap, static_cast<size_t>(button));
-			mMousePositionSwitched[button] = mMousePosition;
 			break;
 		default:
 			break;
 	}
+	mMousePositionSwitched[button] = mMousePosition;
 }
 
 std::uint32_t InputHandler::GetState(std::unordered_map<size_t, IState> &map, size_t loc)
