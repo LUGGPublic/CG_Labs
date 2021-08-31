@@ -26,8 +26,8 @@ CG_Labs uses the following dependencies:
 * GLFW_ (>= 3.2.0): to create a window and an OpenGL context, as well as handle inputs;
 * GLM_ (0.9.9.5): for linear algebra operations;
 * stb_: to load image files;
-* tinyfiledialogs_: to display dialogue windows to the user, in case of errors
-  for example.
+* tinyfiledialogs_ (>= 3.1.2): to display dialogue windows to the user, in case
+  of errors for example.
 
 The project contains the needed files for GLAD and Dear ImGui, and it will
 download assimp, GLM, GLFW, stb and tinyfiledialogs if they are not found on
