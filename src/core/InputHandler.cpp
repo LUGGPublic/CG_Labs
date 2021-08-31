@@ -5,8 +5,10 @@
 
 InputHandler::InputHandler()
 {
-	mMouseCapturedByUI = false;
-	mKeyboardCapturedByUI = false;
+	for (auto& mousePosition : mMousePositionSwitched)
+	{
+		mousePosition = mMousePosition;
+	}
 }
 
 void InputHandler::Advance()

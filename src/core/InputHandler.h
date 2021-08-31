@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <unordered_map>
 
@@ -50,13 +51,13 @@ private:
 	std::unordered_map<size_t, IState> mKeycodeMap;
 	std::unordered_map<size_t, IState> mMouseMap;
 
-	glm::vec2 mMousePosition;
-	glm::vec2 mMousePositionSwitched[GLFW_MOUSE_BUTTON_LAST];
+	glm::vec2 mMousePosition{ -1.0f };
+	std::array<glm::vec2, GLFW_MOUSE_BUTTON_LAST> mMousePositionSwitched;
 
-	bool mMouseCapturedByUI;
-	bool mKeyboardCapturedByUI;
+	bool mMouseCapturedByUI{ false };
+	bool mKeyboardCapturedByUI{ false };
 
-	std::uint64_t mTick;
+	std::uint64_t mTick{ 0ULL };
 
 };
 
