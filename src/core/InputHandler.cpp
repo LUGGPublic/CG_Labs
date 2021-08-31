@@ -23,17 +23,6 @@ void InputHandler::DownEvent(std::unordered_map<size_t, IState> &map, size_t loc
 	map[loc].mDownTick = mTick;
 }
 
-void InputHandler::DownModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods)
-{
-	for (std::uint32_t i = 1u; mods != 0; i <<= 1) {
-		if ((mods & i) == 0)
-			continue;
-
-		InputHandler::DownEvent(map, static_cast<size_t>(i));
-		mods &= ~i;
-	}
-}
-
 void InputHandler::UpEvent(std::unordered_map<size_t, IState> &map, size_t loc)
 {
 	auto sc = map.find(loc);
@@ -43,32 +32,17 @@ void InputHandler::UpEvent(std::unordered_map<size_t, IState> &map, size_t loc)
 	map[loc].mUpTick = mTick;
 }
 
-void InputHandler::UpModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods)
-{
-	for (std::uint32_t i = 1u; mods != 0; i <<= 1) {
-		if ((mods & i) == 0)
-			continue;
-
-		InputHandler::UpEvent(map, static_cast<size_t>(i));
-		mods &= ~i;
-	}
-}
-
-void InputHandler::FeedKeyboard(int key, int scancode, int action, int mods)
+void InputHandler::FeedKeyboard(int key, int scancode, int action)
 {
 	switch (action)
 	{
 		case GLFW_PRESS:
 			DownEvent(mScancodeMap, static_cast<size_t>(scancode));
-			DownModEvent(mScancodeMap, static_cast<std::uint32_t>(mods));
 			DownEvent(mKeycodeMap, static_cast<size_t>(key));
-			DownModEvent(mKeycodeMap, static_cast<std::uint32_t>(mods));
 			break;
 		case GLFW_RELEASE:
 			UpEvent(mScancodeMap, static_cast<size_t>(scancode));
-			UpModEvent(mScancodeMap, static_cast<std::uint32_t>(mods));
 			UpEvent(mKeycodeMap, static_cast<size_t>(key));
-			UpModEvent(mKeycodeMap, static_cast<std::uint32_t>(mods));
 			break;
 		default:
 			break;
@@ -80,18 +54,16 @@ void InputHandler::FeedMouseMotion(glm::vec2 const& position)
   mMousePosition = position;
 }
 
-void InputHandler::FeedMouseButtons(int button, int action, int mods)
+void InputHandler::FeedMouseButtons(int button, int action)
 {
 	switch (action)
 	{
 		case GLFW_PRESS:
 			DownEvent(mMouseMap, static_cast<size_t>(button));
-			DownModEvent(mMouseMap, static_cast<std::uint32_t>(mods));
 			mMousePositionSwitched[button] = mMousePosition;
 			break;
 		case GLFW_RELEASE:
 			UpEvent(mMouseMap, static_cast<size_t>(button));
-			UpModEvent(mMouseMap, static_cast<std::uint32_t>(mods));
 			mMousePositionSwitched[button] = mMousePosition;
 			break;
 		default:

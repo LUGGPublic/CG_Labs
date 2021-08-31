@@ -61,7 +61,7 @@ void FPSCamera<T, P>::Update(std::chrono::microseconds deltaTime, InputHandler &
 		mWorld.RotateY(mRotation.x);
 	}
 
-	T movementModifier = ((ih.GetKeycodeState(GLFW_MOD_SHIFT) & PRESSED)) ? 0.25f : ((ih.GetKeycodeState(GLFW_MOD_CONTROL) & PRESSED)) ? 4.0f : 1.0f;
+	T movementModifier = ((ih.GetKeycodeState(GLFW_KEY_LEFT_SHIFT) & PRESSED)) ? 0.25f : ((ih.GetKeycodeState(GLFW_KEY_LEFT_CONTROL) & PRESSED)) ? 4.0f : 1.0f;
 	auto const deltaTime_s = std::chrono::duration<T>(deltaTime);
 	T movement = movementModifier * deltaTime_s.count() * mMovementSpeed;
 

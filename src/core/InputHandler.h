@@ -29,8 +29,8 @@ public:
 	InputHandler();
 
 public:
-	void FeedKeyboard(int key, int scancode, int action, int mods);
-	void FeedMouseButtons(int button, int action, int mods);
+	void FeedKeyboard(int key, int scancode, int action);
+	void FeedMouseButtons(int button, int action);
 	void FeedMouseMotion(glm::vec2 const& position);
 	void Advance();
 	std::uint32_t GetScancodeState(int scancode);
@@ -44,9 +44,7 @@ public:
 
 private:
 	void DownEvent(std::unordered_map<size_t, IState> &map, size_t loc);
-	void DownModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods);
 	void UpEvent(std::unordered_map<size_t, IState> &map, size_t loc);
-	void UpModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods);
 
 	std::uint32_t GetState(std::unordered_map<size_t, IState> &map, size_t loc);
 

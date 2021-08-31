@@ -25,7 +25,7 @@ namespace
 	void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
 		WindowManager::WindowDatum* const instance = static_cast<WindowManager::WindowDatum*>(glfwGetWindowUserPointer(window));
-		instance->input_handler.FeedKeyboard(key, scancode, action, mods);
+		instance->input_handler.FeedKeyboard(key, scancode, action);
 
 #ifdef _WIN32
 		bool should_close = (key == GLFW_KEY_F4) && (mods == GLFW_MOD_ALT);
@@ -46,7 +46,7 @@ namespace
 	void MouseCallback(GLFWwindow* window, int button, int action, int mods)
 	{
 		WindowManager::WindowDatum* const instance = static_cast<WindowManager::WindowDatum*>(glfwGetWindowUserPointer(window));
-		instance->input_handler.FeedMouseButtons(button, action, mods);
+		instance->input_handler.FeedMouseButtons(button, action);
 	}
 
 	void CursorCallback(GLFWwindow* window, double x, double y)
