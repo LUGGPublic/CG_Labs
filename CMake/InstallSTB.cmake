@@ -1,7 +1,7 @@
 FetchContent_Declare (
 	stb
 	GIT_REPOSITORY [[https://github.com/nothings/stb]]
-	GIT_TAG [[b42009b3b9d4ca35bc703f5310eedc74f584be58]]
+	GIT_TAG [[c0c982601f40183e74d84a61237e968dca08380e]]
 )
 
 FetchContent_GetProperties (stb)
