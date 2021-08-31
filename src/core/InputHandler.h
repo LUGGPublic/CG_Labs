@@ -19,9 +19,9 @@ class InputHandler
 {
 public:
 	struct IState {
-		std::uint64_t mDownTick{std::numeric_limits<std::uint64_t>::max()};
-		std::uint64_t mUpTick{std::numeric_limits<std::uint64_t>::max()};
-		bool mIsDown{false};
+		std::uint64_t mDownTick{ std::numeric_limits<std::uint64_t>::max() };
+		std::uint64_t mUpTick{ std::numeric_limits<std::uint64_t>::max() };
+		bool mIsDown{ false };
 	};
 
 public:
@@ -42,14 +42,15 @@ public:
 	void SetUICapture(bool mouseCapture, bool keyboardCapture);
 
 private:
-	void DownEvent(std::unordered_map<size_t, IState> &map, size_t loc);
-	void UpEvent(std::unordered_map<size_t, IState> &map, size_t loc);
+	using InputStateMap = std::unordered_map<size_t, IState>;
 
-	std::uint32_t GetState(std::unordered_map<size_t, IState> &map, size_t loc);
+	void DownEvent(InputStateMap& map, size_t loc);
+	void UpEvent(InputStateMap& map, size_t loc);
+	std::uint32_t GetState(InputStateMap const& map, size_t loc);
 
-	std::unordered_map<size_t, IState> mScancodeMap;
-	std::unordered_map<size_t, IState> mKeycodeMap;
-	std::unordered_map<size_t, IState> mMouseMap;
+	InputStateMap mScancodeMap;
+	InputStateMap mKeycodeMap;
+	InputStateMap mMouseMap;
 
 	glm::vec2 mMousePosition{ -1.0f };
 	std::array<glm::vec2, GLFW_MOUSE_BUTTON_LAST> mMousePositionSwitched;

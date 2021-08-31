@@ -1,5 +1,4 @@
 #include "InputHandler.h"
-#include "Log.h"
 
 /*----------------------------------------------------------------------------*/
 
@@ -16,7 +15,7 @@ void InputHandler::Advance()
 	mTick++;
 }
 
-void InputHandler::DownEvent(std::unordered_map<size_t, IState> &map, size_t loc)
+void InputHandler::DownEvent(InputStateMap& map, size_t loc)
 {
 	// If the key already exists, insert does not modify the associated value
 	// and just returns an iterator to it.
@@ -26,7 +25,7 @@ void InputHandler::DownEvent(std::unordered_map<size_t, IState> &map, size_t loc
 	state.mDownTick = mTick;
 }
 
-void InputHandler::UpEvent(std::unordered_map<size_t, IState> &map, size_t loc)
+void InputHandler::UpEvent(InputStateMap& map, size_t loc)
 {
 	// If the key already exists, insert does not modify the associated value
 	// and just returns an iterator to it.
@@ -55,7 +54,7 @@ void InputHandler::FeedKeyboard(int key, int scancode, int action)
 
 void InputHandler::FeedMouseMotion(glm::vec2 const& position)
 {
-  mMousePosition = position;
+	mMousePosition = position;
 }
 
 void InputHandler::FeedMouseButtons(int button, int action)
@@ -74,7 +73,7 @@ void InputHandler::FeedMouseButtons(int button, int action)
 	mMousePositionSwitched[button] = mMousePosition;
 }
 
-std::uint32_t InputHandler::GetState(std::unordered_map<size_t, IState> &map, size_t loc)
+std::uint32_t InputHandler::GetState(InputStateMap const& map, size_t loc)
 {
 	auto const sc = map.find(loc);
 	if (sc == map.end())
