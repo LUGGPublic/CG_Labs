@@ -14,8 +14,6 @@
 #define JUST_PRESSED				(1 << 2)
 #define JUST_RELEASED				(1 << 3)
 
-#define MAX_MOUSE_BUTTONS			8
-
 class InputHandler
 {
 public:
@@ -53,7 +51,7 @@ private:
 	std::unordered_map<size_t, IState> mMouseMap;
 
 	glm::vec2 mMousePosition;
-	glm::vec2 mMousePositionSwitched[MAX_MOUSE_BUTTONS];
+	glm::vec2 mMousePositionSwitched[GLFW_MOUSE_BUTTON_LAST];
 
 	bool mMouseCapturedByUI;
 	bool mKeyboardCapturedByUI;
