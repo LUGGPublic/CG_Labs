@@ -18,20 +18,22 @@ void InputHandler::Advance()
 
 void InputHandler::DownEvent(std::unordered_map<size_t, IState> &map, size_t loc)
 {
-	auto sc = map.find(loc);
-	if (sc == map.end())
-		map[static_cast<size_t>(loc)] = IState();
-	map[loc].mIsDown = true;
-	map[loc].mDownTick = mTick;
+	// If the key already exists, insert does not modify the associated value
+	// and just returns an iterator to it.
+	auto insertionResult = map.insert({ loc, IState() });
+	auto& state = insertionResult.first->second;
+	state.mIsDown = true;
+	state.mDownTick = mTick;
 }
 
 void InputHandler::UpEvent(std::unordered_map<size_t, IState> &map, size_t loc)
 {
-	auto sc = map.find(loc);
-	if (sc == map.end())
-		map[static_cast<size_t>(loc)] = IState();
-	map[loc].mIsDown = false;
-	map[loc].mUpTick = mTick;
+	// If the key already exists, insert does not modify the associated value
+	// and just returns an iterator to it.
+	auto insertionResult = map.insert({ loc, IState() });
+	auto& state = insertionResult.first->second;
+	state.mIsDown = false;
+	state.mUpTick = mTick;
 }
 
 void InputHandler::FeedKeyboard(int key, int scancode, int action)
@@ -74,12 +76,15 @@ void InputHandler::FeedMouseButtons(int button, int action)
 
 std::uint32_t InputHandler::GetState(std::unordered_map<size_t, IState> &map, size_t loc)
 {
-	auto sc = map.find(loc);
+	auto const sc = map.find(loc);
 	if (sc == map.end())
 		return RELEASED;
-	std::uint32_t s = map[static_cast<std::uint32_t>(loc)].mIsDown ? PRESSED : RELEASED;
-	s |= mTick-1 == map[loc].mDownTick ? JUST_PRESSED : 0;
-	s |= mTick-1 == map[loc].mUpTick ? JUST_RELEASED : 0;
+
+	auto const& state = sc->second;
+	std::uint32_t s = state.mIsDown ? PRESSED : RELEASED;
+	s |= mTick-1 == state.mDownTick ? JUST_PRESSED : 0;
+	s |= mTick-1 == state.mUpTick ? JUST_RELEASED : 0;
+
 	return s;
 }
 
