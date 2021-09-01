@@ -4,9 +4,9 @@ uniform sampler2D depth_texture;
 uniform sampler2D normal_texture;
 uniform sampler2DShadow shadow_texture;
 
-uniform vec2 inv_res;
+uniform vec2 inverse_screen_resolution;
 
-uniform mat4 view_projection_inverse;
+uniform mat4 vertex_clip_to_world;
 uniform vec3 camera_position;
 uniform mat4 shadow_view_projection;
 

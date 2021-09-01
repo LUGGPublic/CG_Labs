@@ -90,6 +90,58 @@ namespace
 	using ElapsedTimeQueries = std::array<GLuint, toU(ElapsedTimeQuery::Count)>;
 	ElapsedTimeQueries createElapsedTimeQueries();
 
+	struct GeometryTextureData
+	{
+		GLuint diffuse_texture_id{ 0u };
+		GLuint specular_texture_id{ 0u };
+		GLuint normals_texture_id{ 0u };
+		GLuint opacity_texture_id{ 0u };
+	};
+
+	struct GBufferShaderLocations
+	{
+		GLuint vertex_model_to_world{ 0u };
+		GLuint normal_model_to_world{ 0u };
+		GLuint vertex_world_to_clip{ 0u };
+		GLuint diffuse_texture{ 0u };
+		GLuint specular_texture{ 0u };
+		GLuint normals_texture{ 0u };
+		GLuint opacity_texture{ 0u };
+		GLuint has_diffuse_texture{ 0u };
+		GLuint has_specular_texture{ 0u };
+		GLuint has_normals_texture{ 0u };
+		GLuint has_opacity_texture{ 0u };
+	};
+	void fillGBufferShaderLocations(GLuint gbuffer_shader, GBufferShaderLocations& locations);
+
+	struct FillShadowmapShaderLocations
+	{
+		GLuint vertex_model_to_world{ 0u };
+		GLuint vertex_world_to_clip{ 0u };
+		GLuint opacity_texture{ 0u };
+		GLuint has_opacity_texture{ 0u };
+	};
+	void fillShadowmapShaderLocations(GLuint shadowmap_shader, FillShadowmapShaderLocations& locations);
+
+	struct AccumulateLightsShaderLocations
+	{
+		GLuint vertex_model_to_world{ 0u };
+		GLuint vertex_world_to_clip{ 0u };
+		GLuint vertex_clip_to_world{ 0u };
+		GLuint depth_texture{ 0u };
+		GLuint normal_texture{ 0u };
+		GLuint shadow_texture{ 0u };
+		GLuint camera_position{ 0u };
+		GLuint shadow_view_projection{ 0u };
+		GLuint inverse_screen_resolution{ 0u };
+		GLuint light_color{ 0u };
+		GLuint light_position{ 0u };
+		GLuint light_direction{ 0u };
+		GLuint light_intensity{ 0u };
+		GLuint light_angle_falloff{ 0u };
+	};
+	void fillAccumulateLightsShaderLocations(GLuint accumulate_lights_shader, AccumulateLightsShaderLocations& locations);
+
 	bonobo::mesh_data loadCone();
 } // namespace
 
@@ -123,12 +175,32 @@ edan35::Assignment2::run()
 		LogError("Failed to load the Sponza model");
 		return;
 	}
-	std::vector<Node> sponza_elements;
-	sponza_elements.reserve(sponza_geometry.size());
-	for (auto const& shape : sponza_geometry) {
-		Node node;
-		node.set_geometry(shape);
-		sponza_elements.push_back(node);
+	std::vector<GeometryTextureData> sponza_geometry_texture_data;
+	sponza_geometry_texture_data.reserve(sponza_geometry.size());
+	for (auto const& geometry : sponza_geometry) {
+		auto const diffuse_texture = geometry.bindings.find("diffuse_texture");
+		auto const specular_texture = geometry.bindings.find("specular_texture");
+		auto const normals_texture = geometry.bindings.find("normals_texture");
+		auto const opacity_texture = geometry.bindings.find("opacity_texture");
+
+		GeometryTextureData data;
+		if (diffuse_texture != geometry.bindings.end())
+		{
+			data.diffuse_texture_id = diffuse_texture->second;
+		}
+		if (specular_texture != geometry.bindings.end())
+		{
+			data.specular_texture_id = specular_texture->second;
+		}
+		if (normals_texture != geometry.bindings.end())
+		{
+			data.normals_texture_id = normals_texture->second;
+		}
+		if (opacity_texture != geometry.bindings.end())
+		{
+			data.opacity_texture_id = opacity_texture->second;
+		}
+		sponza_geometry_texture_data.emplace_back(std::move(data));
 	}
 
 	auto const cone_geometry = loadCone();
@@ -165,6 +237,8 @@ edan35::Assignment2::run()
 		LogError("Failed to load G-buffer filling shader");
 		return;
 	}
+	GBufferShaderLocations fill_gbuffer_shader_locations;
+	fillGBufferShaderLocations(fill_gbuffer_shader, fill_gbuffer_shader_locations);
 
 	GLuint fill_shadowmap_shader = 0u;
 	program_manager.CreateAndRegisterProgram("Fill shadow map",
@@ -175,6 +249,8 @@ edan35::Assignment2::run()
 		LogError("Failed to load shadowmap filling shader");
 		return;
 	}
+	FillShadowmapShaderLocations fill_shadowmap_shader_locations;
+	fillShadowmapShaderLocations(fill_shadowmap_shader, fill_shadowmap_shader_locations);
 
 	GLuint accumulate_lights_shader = 0u;
 	program_manager.CreateAndRegisterProgram("Accumulate light",
@@ -185,6 +261,8 @@ edan35::Assignment2::run()
 		LogError("Failed to load lights accumulating shader");
 		return;
 	}
+	AccumulateLightsShaderLocations accumulate_light_shader_locations;
+	fillAccumulateLightsShaderLocations(accumulate_lights_shader, accumulate_light_shader_locations);
 
 	GLuint resolve_deferred_shader = 0u;
 	program_manager.CreateAndRegisterProgram("Resolve deferred",
@@ -219,6 +297,8 @@ edan35::Assignment2::run()
 	FBOs const fbos = createFramebufferObjects(textures);
 	Samplers const samplers = createSamplers();
 	ElapsedTimeQueries const elapsed_time_queries = createElapsedTimeQueries();
+
+	const GLuint debug_texture_id = bonobo::getDebugTextureID();
 
 	auto const bind_texture_with_sampler = [](GLenum target, unsigned int slot, GLuint program, std::string const& name, GLuint texture, GLuint sampler){
 		glActiveTexture(GL_TEXTURE0 + slot);
@@ -293,14 +373,23 @@ edan35::Assignment2::run()
 		glfwPollEvents();
 		inputHandler.Advance();
 		mCamera.Update(deltaTimeUs, inputHandler);
+		auto const view_projection = mCamera.GetWorldToClipMatrix();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
 			shader_reload_failed = !program_manager.ReloadAllPrograms();
 			if (shader_reload_failed)
+			{
 				tinyfd_notifyPopup("Shader Program Reload Error",
 				                   "An error occurred while reloading shader programs; see the logs for details.\n"
 				                   "Rendering is suspended until the issue is solved. Once fixed, just reload the shaders again.",
 				                   "error");
+			}
+			else
+			{
+				fillGBufferShaderLocations(fill_gbuffer_shader, fill_gbuffer_shader_locations);
+				fillShadowmapShaderLocations(fill_shadowmap_shader, fill_shadowmap_shader_locations);
+				fillAccumulateLightsShaderLocations(accumulate_lights_shader, accumulate_light_shader_locations);
+			}
 		}
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
@@ -334,8 +423,60 @@ edan35::Assignment2::run()
 			glClear(GL_DEPTH_BUFFER_BIT);
 			// XXX: Is any other clearing needed?
 
-			for (auto const& element : sponza_elements)
-				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform().GetMatrix(), fill_gbuffer_shader, set_uniforms);
+			glUseProgram(fill_gbuffer_shader);
+			glUniformMatrix4fv(fill_gbuffer_shader_locations.vertex_world_to_clip, 1, GL_FALSE, glm::value_ptr(view_projection));
+			glUniform1i(fill_gbuffer_shader_locations.diffuse_texture, 0);
+			glUniform1i(fill_gbuffer_shader_locations.specular_texture, 1);
+			glUniform1i(fill_gbuffer_shader_locations.normals_texture, 2);
+			glUniform1i(fill_gbuffer_shader_locations.opacity_texture, 3);
+			for (std::size_t i = 0; i < sponza_geometry.size(); ++i)
+			{
+				auto const& geometry = sponza_geometry[i];
+				auto const& texture_data = sponza_geometry_texture_data[i];
+
+				utils::opengl::debug::beginDebugGroup(geometry.name);
+
+				auto const vertex_model_to_world = glm::mat4(1.0f);
+				auto const normal_model_to_world = glm::mat4(1.0f);
+
+				glUniformMatrix4fv(fill_gbuffer_shader_locations.vertex_model_to_world, 1, GL_FALSE, glm::value_ptr(vertex_model_to_world));
+				glUniformMatrix4fv(fill_gbuffer_shader_locations.normal_model_to_world, 1, GL_FALSE, glm::value_ptr(normal_model_to_world));
+
+				auto const default_sampler = samplers[toU(Sampler::Nearest)];
+				auto const mipmap_sampler = samplers[toU(Sampler::Mipmaps)];
+
+				glUniform1i(fill_gbuffer_shader_locations.has_diffuse_texture, texture_data.diffuse_texture_id != 0u ? 1 : 0);
+				glBindSampler(0u, texture_data.diffuse_texture_id != 0u ? mipmap_sampler : default_sampler);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, texture_data.diffuse_texture_id != 0u ? texture_data.diffuse_texture_id : debug_texture_id);
+
+				glUniform1i(fill_gbuffer_shader_locations.has_specular_texture, texture_data.specular_texture_id != 0u ? 1 : 0);
+				glBindSampler(1u, texture_data.specular_texture_id != 0u ? mipmap_sampler : default_sampler);
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, texture_data.specular_texture_id != 0u ? texture_data.specular_texture_id : debug_texture_id);
+
+				glUniform1i(fill_gbuffer_shader_locations.has_normals_texture, texture_data.normals_texture_id != 0u ? 1 : 0);
+				glBindSampler(2u, texture_data.normals_texture_id != 0u ? mipmap_sampler : default_sampler);
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, texture_data.normals_texture_id != 0u ? texture_data.normals_texture_id : debug_texture_id);
+
+				glUniform1i(fill_gbuffer_shader_locations.has_opacity_texture, texture_data.opacity_texture_id != 0u ? 1 : 0);
+				glBindSampler(3u, texture_data.opacity_texture_id != 0u ? mipmap_sampler : default_sampler);
+				glActiveTexture(GL_TEXTURE3);
+				glBindTexture(GL_TEXTURE_2D, texture_data.opacity_texture_id != 0u ? texture_data.opacity_texture_id : debug_texture_id);
+
+				glBindVertexArray(geometry.vao);
+				if (geometry.ibo != 0u)
+					glDrawElements(geometry.drawing_mode, geometry.indices_nb, GL_UNSIGNED_INT, reinterpret_cast<GLvoid const*>(0x0));
+				else
+					glDrawArrays(geometry.drawing_mode, 0, geometry.vertices_nb);
+
+
+				utils::opengl::debug::endDebugGroup();
+			}
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glBindVertexArray(0u);
+			glUseProgram(0u);
 
 			glEndQuery(GL_TIME_ELAPSED);
 			utils::opengl::debug::endDebugGroup();
@@ -364,8 +505,36 @@ edan35::Assignment2::run()
 				glViewport(0, 0, constant::shadowmap_res_x, constant::shadowmap_res_y);
 				// XXX: Is any clearing needed?
 
-				for (auto const& element : sponza_elements)
-					element.render(light_world_to_clip_matrix, element.get_transform().GetMatrix(), fill_shadowmap_shader, set_uniforms);
+				glUseProgram(fill_shadowmap_shader);
+				glUniformMatrix4fv(fill_shadowmap_shader_locations.vertex_world_to_clip, 1, GL_FALSE, glm::value_ptr(light_world_to_clip_matrix));
+				glUniform1i(fill_shadowmap_shader_locations.opacity_texture, 0);
+				for (std::size_t i = 0; i < sponza_geometry.size(); ++i)
+				{
+					auto const& geometry = sponza_geometry[i];
+					auto const& texture_data = sponza_geometry_texture_data[i];
+
+					utils::opengl::debug::beginDebugGroup(geometry.name);
+
+					auto const vertex_model_to_world = glm::mat4(1.0f);
+					glUniformMatrix4fv(fill_shadowmap_shader_locations.vertex_model_to_world, 1, GL_FALSE, glm::value_ptr(vertex_model_to_world));
+
+					glUniform1i(fill_shadowmap_shader_locations.has_opacity_texture, texture_data.opacity_texture_id != 0u ? 1 : 0);
+					glBindSampler(0u, texture_data.opacity_texture_id != 0u ? samplers[toU(Sampler::Mipmaps)] : samplers[toU(Sampler::Nearest)]);
+					glActiveTexture(GL_TEXTURE0);
+					glBindTexture(GL_TEXTURE_2D, texture_data.opacity_texture_id != 0u ? texture_data.opacity_texture_id : debug_texture_id);
+
+					glBindVertexArray(geometry.vao);
+					if (geometry.ibo != 0u)
+						glDrawElements(geometry.drawing_mode, geometry.indices_nb, GL_UNSIGNED_INT, reinterpret_cast<GLvoid const*>(0x0));
+					else
+						glDrawArrays(geometry.drawing_mode, 0, geometry.vertices_nb);
+
+
+					utils::opengl::debug::endDebugGroup();
+				}
+				glBindTexture(GL_TEXTURE_2D, 0);
+				glBindVertexArray(0u);
+				glUseProgram(0u);
 
 				glEndQuery(GL_TIME_ELAPSED);
 				utils::opengl::debug::endDebugGroup();
@@ -387,33 +556,42 @@ edan35::Assignment2::run()
 				glViewport(0, 0, framebuffer_width, framebuffer_height);
 				// XXX: Is any clearing needed?
 
-				auto const spotlight_set_uniforms = [framebuffer_width,framebuffer_height,this,&light_world_to_clip_matrix,&lightColors,&lightTransform,&i](GLuint program){
-					glUniform2f(glGetUniformLocation(program, "inv_res"),
-					            1.0f / static_cast<float>(framebuffer_width),
-					            1.0f / static_cast<float>(framebuffer_height));
-					glUniformMatrix4fv(glGetUniformLocation(program, "view_projection_inverse"), 1, GL_FALSE,
-					                   glm::value_ptr(mCamera.GetClipToWorldMatrix()));
-					glUniform3fv(glGetUniformLocation(program, "camera_position"), 1,
-					                   glm::value_ptr(mCamera.mWorld.GetTranslation()));
-					glUniformMatrix4fv(glGetUniformLocation(program, "shadow_view_projection"), 1, GL_FALSE,
-					                   glm::value_ptr(light_world_to_clip_matrix));
-					glUniform3fv(glGetUniformLocation(program, "light_color"), 1, glm::value_ptr(lightColors[i]));
-					glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(lightTransform.GetTranslation()));
-					glUniform3fv(glGetUniformLocation(program, "light_direction"), 1, glm::value_ptr(lightTransform.GetFront()));
-					glUniform1f(glGetUniformLocation(program, "light_intensity"), constant::light_intensity);
-					glUniform1f(glGetUniformLocation(program, "light_angle_falloff"), constant::light_angle_falloff);
-					glUniform2f(glGetUniformLocation(program, "shadowmap_texel_size"),
-					            1.0f / static_cast<float>(constant::shadowmap_res_x),
-					            1.0f / static_cast<float>(constant::shadowmap_res_y));
-				};
+				glUniformMatrix4fv(accumulate_light_shader_locations.vertex_model_to_world, 1, GL_FALSE, glm::value_ptr(light_world_matrix));
+				glUniformMatrix4fv(accumulate_light_shader_locations.vertex_world_to_clip, 1, GL_FALSE, glm::value_ptr(view_projection));
+				glUniformMatrix4fv(accumulate_light_shader_locations.vertex_clip_to_world, 1, GL_FALSE, glm::value_ptr(mCamera.GetClipToWorldMatrix()));
+				glUniform3fv(accumulate_light_shader_locations.camera_position, 1,
+				                   glm::value_ptr(mCamera.mWorld.GetTranslation()));
+				glUniformMatrix4fv(accumulate_light_shader_locations.shadow_view_projection, 1, GL_FALSE,
+				                   glm::value_ptr(light_world_to_clip_matrix));
+				glUniform2f(accumulate_light_shader_locations.inverse_screen_resolution,
+				            1.0f / static_cast<float>(framebuffer_width),
+				            1.0f / static_cast<float>(framebuffer_height));
+				glUniform3fv(accumulate_light_shader_locations.light_color, 1, glm::value_ptr(lightColors[i]));
+				glUniform3fv(accumulate_light_shader_locations.light_position, 1, glm::value_ptr(lightTransform.GetTranslation()));
+				glUniform3fv(accumulate_light_shader_locations.light_direction, 1, glm::value_ptr(lightTransform.GetFront()));
+				glUniform1f(accumulate_light_shader_locations.light_intensity, constant::light_intensity);
+				glUniform1f(accumulate_light_shader_locations.light_angle_falloff, constant::light_angle_falloff);
 
-				bind_texture_with_sampler(GL_TEXTURE_2D, 0, accumulate_lights_shader, "depth_texture", textures[toU(Texture::DepthBuffer)], samplers[toU(Sampler::Nearest)]);
-				bind_texture_with_sampler(GL_TEXTURE_2D, 1, accumulate_lights_shader, "normal_texture", textures[toU(Texture::GBufferWorldSpaceNormal)], samplers[toU(Sampler::Nearest)]);
-				bind_texture_with_sampler(GL_TEXTURE_2D, 2, accumulate_lights_shader, "shadow_texture", textures[toU(Texture::ShadowMap)], samplers[toU(Sampler::Shadow)]);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::DepthBuffer)]);
+				glUniform1i(accumulate_light_shader_locations.depth_texture, 0);
+				glBindSampler(0, samplers[toU(Sampler::Nearest)]);
 
-				cone.render(mCamera.GetWorldToClipMatrix(), light_world_matrix,
-				            accumulate_lights_shader, spotlight_set_uniforms);
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::GBufferWorldSpaceNormal)]);
+				glUniform1i(accumulate_light_shader_locations.normal_texture, 1);
+				glBindSampler(1, samplers[toU(Sampler::Nearest)]);
 
+				glActiveTexture(GL_TEXTURE2);
+				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::ShadowMap)]);
+				glUniform1i(accumulate_light_shader_locations.shadow_texture, 2);
+				glBindSampler(2, samplers[toU(Sampler::Shadow)]);
+
+				glBindVertexArray(cone_geometry.vao);
+				glDrawArrays(cone_geometry.drawing_mode, 0, cone_geometry.vertices_nb);
+
+				glBindVertexArray(0u);
+				glUseProgram(0u);
 				glBindSampler(2u, 0u);
 				glBindSampler(1u, 0u);
 				glBindSampler(0u, 0u);
@@ -473,7 +651,7 @@ edan35::Assignment2::run()
 			glDisable(GL_CULL_FACE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			for (size_t i = 0; i < lights_nb; ++i) {
-				cone.render(mCamera.GetWorldToClipMatrix(),
+				cone.render(view_projection,
 				            lightTransforms[i].GetMatrix() * lightOffsetTransform.GetMatrix() * coneScaleTransform.GetMatrix(),
 				            render_light_cones_shader, set_uniforms);
 			}
@@ -698,29 +876,21 @@ Samplers createSamplers()
 	// For sampling 2-D textures without interpolation.
 	glSamplerParameteri(samplers[toU(Sampler::Nearest)], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glSamplerParameteri(samplers[toU(Sampler::Nearest)], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glSamplerParameteri(samplers[toU(Sampler::Nearest)], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(samplers[toU(Sampler::Nearest)], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Nearest)], "Nearest");
 
 	// For sampling 2-D textures without mipmaps.
 	glSamplerParameteri(samplers[toU(Sampler::Linear)], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glSamplerParameteri(samplers[toU(Sampler::Linear)], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(samplers[toU(Sampler::Linear)], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(samplers[toU(Sampler::Linear)], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Linear)], "Linear");
 
 	// For sampling 2-D textures with mipmaps.
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Mipmaps)], "Mimaps");
 
 	// For sampling 2-D shadow maps
 	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_COMPARE_FUNC, GL_LESS);
 	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Shadow)], "Shadow");
@@ -833,6 +1003,48 @@ ElapsedTimeQueries createElapsedTimeQueries()
 	}
 
 	return queries;
+}
+
+void fillGBufferShaderLocations(GLuint gbuffer_shader, GBufferShaderLocations& locations)
+{
+	locations.vertex_model_to_world = glGetUniformLocation(gbuffer_shader, "vertex_model_to_world");
+	locations.normal_model_to_world = glGetUniformLocation(gbuffer_shader, "normal_model_to_world");
+	locations.vertex_world_to_clip = glGetUniformLocation(gbuffer_shader, "vertex_world_to_clip");
+	locations.diffuse_texture = glGetUniformLocation(gbuffer_shader, "diffuse_texture");
+	locations.specular_texture = glGetUniformLocation(gbuffer_shader, "specular_texture");
+	locations.normals_texture = glGetUniformLocation(gbuffer_shader, "normals_texture");
+	locations.opacity_texture = glGetUniformLocation(gbuffer_shader, "opacity_texture");
+	locations.has_diffuse_texture = glGetUniformLocation(gbuffer_shader, "has_diffuse_texture");
+	locations.has_specular_texture = glGetUniformLocation(gbuffer_shader, "has_specular_texture");
+	locations.has_normals_texture = glGetUniformLocation(gbuffer_shader, "has_normals_texture");
+	locations.has_opacity_texture = glGetUniformLocation(gbuffer_shader, "has_opacity_texture");
+
+}
+
+void fillShadowmapShaderLocations(GLuint shadowmap_shader, FillShadowmapShaderLocations& locations)
+{
+	locations.vertex_model_to_world = glGetUniformLocation(shadowmap_shader, "vertex_model_to_world");
+	locations.vertex_world_to_clip = glGetUniformLocation(shadowmap_shader, "vertex_world_to_clip");
+	locations.opacity_texture = glGetUniformLocation(shadowmap_shader, "opacity_texture");
+	locations.has_opacity_texture = glGetUniformLocation(shadowmap_shader, "has_opacity_texture");
+}
+
+void fillAccumulateLightsShaderLocations(GLuint accumulate_lights_shader, AccumulateLightsShaderLocations& locations)
+{
+	locations.vertex_model_to_world = glGetUniformLocation(accumulate_lights_shader, "vertex_model_to_world");
+	locations.vertex_world_to_clip = glGetUniformLocation(accumulate_lights_shader, "vertex_world_to_clip");
+	locations.vertex_clip_to_world = glGetUniformLocation(accumulate_lights_shader, "vertex_clip_to_world");
+	locations.depth_texture = glGetUniformLocation(accumulate_lights_shader, "depth_texture");
+	locations.normal_texture = glGetUniformLocation(accumulate_lights_shader, "normal_texture");
+	locations.shadow_texture = glGetUniformLocation(accumulate_lights_shader, "shadow_texture");
+	locations.camera_position = glGetUniformLocation(accumulate_lights_shader, "camera_position");
+	locations.shadow_view_projection = glGetUniformLocation(accumulate_lights_shader, "shadow_view_projection");
+	locations.inverse_screen_resolution = glGetUniformLocation(accumulate_lights_shader, "inverse_screen_resolution");
+	locations.light_color = glGetUniformLocation(accumulate_lights_shader, "light_color");
+	locations.light_position = glGetUniformLocation(accumulate_lights_shader, "light_position");
+	locations.light_direction = glGetUniformLocation(accumulate_lights_shader, "light_direction");
+	locations.light_intensity = glGetUniformLocation(accumulate_lights_shader, "light_intensity");
+	locations.light_angle_falloff = glGetUniformLocation(accumulate_lights_shader, "light_angle_falloff");
 }
 
 bonobo::mesh_data
