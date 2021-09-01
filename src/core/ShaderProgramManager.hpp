@@ -35,7 +35,7 @@ public:
 	SelectedProgram SelectProgram(std::string const& label, std::int32_t& program_index);
 
 private:
-	void ProcessProgram(ProgramData const& program_data, GLuint& program);
+	void ProcessProgram(std::size_t program_index);
 	using ProgramEntry = std::pair<GLuint&, ProgramData>;
 	std::vector<ProgramEntry> program_entries;
 	std::vector<char const*> program_names;

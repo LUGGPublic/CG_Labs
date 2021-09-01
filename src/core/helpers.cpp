@@ -16,6 +16,25 @@
 #include <cassert>
 #include <cstdint>
 
+namespace
+{
+	struct {
+		GLuint shader;
+		GLuint vao;
+		GLuint vbo;
+		GLuint ibo;
+		GLsizei index_count;
+		struct {
+			GLuint world;
+			GLuint view_proj;
+			GLuint thickness_scale;
+			GLuint length_scale;
+		} shader_locations;
+	} basis;
+
+	void setupBasisData();
+}
+
 namespace local
 {
 	static GLuint fullscreen_shader;
@@ -35,9 +54,11 @@ namespace local
 void
 bonobo::init()
 {
+	setupBasisData();
+
 	glGenVertexArrays(1, &local::display_vao);
 	assert(local::display_vao != 0u);
-	local::fullscreen_shader = bonobo::createProgram("fullscreen.vert", "fullscreen.frag");
+	local::fullscreen_shader = bonobo::createProgram("common/fullscreen.vert", "common/fullscreen.frag");
 	if (local::fullscreen_shader == 0u)
 		LogError("Failed to load \"fullscreen.vert\" and \"fullscreen.frag\"");
 }
@@ -45,6 +66,12 @@ bonobo::init()
 void
 bonobo::deinit()
 {
+	glDeleteProgram(basis.shader);
+	glDeleteBuffers(1, &basis.ibo);
+	glDeleteBuffers(1, &basis.vbo);
+	glDeleteVertexArrays(1, &basis.vao);
+
+	glDeleteProgram(local::fullscreen_shader);
 	glDeleteVertexArrays(1, &local::display_vao);
 }
 
@@ -73,12 +100,12 @@ getTextureData(std::string const& filename, std::uint32_t& width, std::uint32_t&
 std::vector<bonobo::mesh_data>
 bonobo::loadObjects(std::string const& filename)
 {
+	auto const scene_start_time = std::chrono::high_resolution_clock::now();
+
 	std::vector<bonobo::mesh_data> objects;
-	std::vector<texture_bindings> materials_bindings;
 
 	auto const end_of_basedir = filename.rfind("/");
 	auto const parent_folder = (end_of_basedir != std::string::npos ? filename.substr(0, end_of_basedir) : ".") + "/";
-	LogInfo("Loading \"%s\"", filename.c_str());
 	Assimp::Importer importer;
 	auto const assimp_scene = importer.ReadFile(filename, aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_CalcTangentSpace);
 	if (assimp_scene == nullptr || assimp_scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || assimp_scene->mRootNode == nullptr) {
@@ -91,21 +118,49 @@ bonobo::loadObjects(std::string const& filename)
 		return objects;
 	}
 
-	LogInfo("\t* materials");
-	materials_bindings.reserve(assimp_scene->mNumMaterials);
+	LogInfo("┭ Loading \"%s\"…", filename.c_str());
+
+	std::vector<bool> are_materials_used(assimp_scene->mNumMaterials, false);
+	for (size_t j = 0; j < assimp_scene->mNumMeshes; ++j) {
+		auto const assimp_object_mesh = assimp_scene->mMeshes[j];
+		auto const material_id = assimp_object_mesh->mMaterialIndex;
+		if (material_id >= assimp_scene->mNumMaterials)
+			LogError("Mesh \"%s\" has a material index of %u, but only %u materials are present.", assimp_object_mesh->mName.C_Str(), material_id, assimp_scene->mNumMaterials);
+		else
+			are_materials_used[material_id] = true;
+	}
+
+	auto const materials_start_time = std::chrono::high_resolution_clock::now();
+	std::vector<texture_bindings> materials_bindings(assimp_scene->mNumMaterials);
+	uint32_t texture_count = 0u;
 	for (size_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
-		texture_bindings bindings;
+		if (!are_materials_used[i])
+			continue;
+
+		auto const material_start_time = std::chrono::high_resolution_clock::now();
+		texture_bindings& bindings = materials_bindings[i];
 		auto const material = assimp_scene->mMaterials[i];
 
-		auto const process_texture = [&bindings,&material,i,&parent_folder](aiTextureType type, std::string const& type_as_str, std::string const& name){
+		auto const process_texture = [&bindings,&material,i,&parent_folder,&texture_count](aiTextureType type, std::string const& type_as_str, std::string const& name){
 			if (material->GetTextureCount(type)) {
+				auto const texture_start_time = std::chrono::high_resolution_clock::now();
+
 				if (material->GetTextureCount(type) > 1)
-					LogWarning("Material %d has more than one %s texture: discarding all but the first one.", i, type_as_str.c_str());
+					LogWarning("Material \"%s\" has more than one %s texture: discarding all but the first one.", material->GetName().C_Str(), type_as_str.c_str());
 				aiString path;
 				material->GetTexture(type, 0, &path);
 				auto const id = bonobo::loadTexture2D(parent_folder + std::string(path.C_Str()), type_as_str != "opacity");
-				if (id != 0u)
-					bindings.emplace(name, id);
+				if (id == 0u) {
+					LogWarning("Failed to load the %s texture for material \"%s\".", type_as_str.c_str(), material->GetName().C_Str());
+					return;
+				}
+				bindings.emplace(name, id);
+				++texture_count;
+
+				auto const texture_end_time = std::chrono::high_resolution_clock::now();
+				LogTrivia("│ %s Texture \"%s\" loaded in %.3f ms",
+				          bindings.size() == 1 ? "┌" : "├", path.C_Str(),
+				          std::chrono::duration<float, std::milli>(texture_end_time - texture_start_time).count());
 			}
 		};
 
@@ -114,30 +169,36 @@ bonobo::loadObjects(std::string const& filename)
 		process_texture(aiTextureType_NORMALS,  "normals",  "normals_texture");
 		process_texture(aiTextureType_OPACITY,  "opacity",  "opacity_texture");
 
-		materials_bindings.push_back(bindings);
+		auto const material_end_time = std::chrono::high_resolution_clock::now();
+		LogTrivia("│ %s Material \"%s\" loaded in %.3f ms",
+		          bindings.empty() ? "╺" : "┕", material->GetName().C_Str(),
+		          std::chrono::duration<float, std::milli>(material_end_time - material_start_time).count());
 	}
+	auto const materials_end_time = std::chrono::high_resolution_clock::now();
 
-	LogInfo("\t* meshes");
+	auto const meshes_start_time = std::chrono::high_resolution_clock::now();
 	objects.reserve(assimp_scene->mNumMeshes);
 	for (size_t j = 0; j < assimp_scene->mNumMeshes; ++j) {
+		auto const mesh_start_time = std::chrono::high_resolution_clock::now();
+
 		auto const assimp_object_mesh = assimp_scene->mMeshes[j];
 
 		if (!assimp_object_mesh->HasFaces()) {
-			LogError("Unsupported object \"%s\": has no faces", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported mesh \"%s\": has no faces", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 		if ((assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_POINT))    != 0u
 		 && (assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_LINE))     != 0u
 		 && (assimp_object_mesh->mPrimitiveTypes & ~static_cast<uint32_t>(aiPrimitiveType_TRIANGLE)) != 0u) {
-			LogError("Unsupported object \"%s\": uses multiple primitive types", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported mesh \"%s\": uses multiple primitive types", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 		if ((assimp_object_mesh->mPrimitiveTypes & static_cast<uint32_t>(aiPrimitiveType_POLYGON)) == static_cast<uint32_t>(aiPrimitiveType_POLYGON)) {
-			LogError("Unsupported object \"%s\": uses polygons", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported mesh \"%s\": uses polygons", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 		if (!assimp_object_mesh->HasPositions()) {
-			LogError("Unsupported object \"%s\": has no positions", assimp_object_mesh->mName.C_Str());
+			LogError("Unsupported mesh \"%s\": has no positions", assimp_object_mesh->mName.C_Str());
 			continue;
 		}
 
@@ -228,17 +289,36 @@ bonobo::loadObjects(std::string const& filename)
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 
 		auto const material_id = assimp_object_mesh->mMaterialIndex;
-		if (material_id >= materials_bindings.size())
-			LogError("Object \"%s\" has a material index of %u, but only %u materials were retrieved.", assimp_object_mesh->mName.C_Str(), material_id, materials_bindings.size());
-		else
+		if (material_id < materials_bindings.size())
 			object.bindings = materials_bindings[material_id];
 
 		objects.push_back(object);
 
-//		LogInfo("Loaded object \"%s\" with normals:%d, tangents&bitangents:%d, texcoords:%d",
-//		        assimp_object_mesh->mName.C_Str(), assimp_object_mesh->HasNormals(),
-//		        assimp_object_mesh->HasTangentsAndBitangents(), assimp_object_mesh->HasTextureCoords(0));
+		auto const mesh_end_time = std::chrono::high_resolution_clock::now();
+
+		std::string attributes = assimp_object_mesh->HasNormals() ? "normals" : "";
+		if (!attributes.empty())
+		  attributes += " | ";
+		if (assimp_object_mesh->HasTangentsAndBitangents())
+		  attributes += "tangents&bitangents";
+		if (!attributes.empty())
+		  attributes += " | ";
+		if (assimp_object_mesh->HasTextureCoords(0))
+		  attributes += "texture coordinates";
+		LogTrivia("│ %s Mesh \"%s\" loaded with attributes [%s] in %.3f ms",
+		          j == 0 ? "┌" : (j == assimp_scene->mNumMeshes - 1 ? "└" : "├"),
+		          assimp_object_mesh->mName.C_Str(), attributes.c_str(),
+		          std::chrono::duration<float, std::milli>(mesh_end_time - mesh_start_time).count());
 	}
+	auto const meshes_end_time = std::chrono::high_resolution_clock::now();
+
+	auto const scene_end_time = std::chrono::high_resolution_clock::now();
+	LogInfo("┕ Scene loaded in %.3f s: %u textures loaded in %.3f s and %zu meshes in %.3f s",
+	        std::chrono::duration<float>(scene_end_time - scene_start_time).count(),
+	        texture_count,
+	        std::chrono::duration<float>(materials_end_time - materials_start_time).count(),
+	        objects.size(),
+	        std::chrono::duration<float>(meshes_end_time - meshes_start_time).count());
 
 	return objects;
 }
@@ -365,12 +445,12 @@ bonobo::loadTextureCubeMap(std::string const& posx, std::string const& negx,
 GLuint
 bonobo::createProgram(std::string const& vert_shader_source_path, std::string const& frag_shader_source_path)
 {
-	auto const vertex_shader_source = utils::slurp_file(config::shaders_path("EDAF80/" + vert_shader_source_path));
+	auto const vertex_shader_source = utils::slurp_file(config::shaders_path(vert_shader_source_path));
 	GLuint vertex_shader = utils::opengl::shader::generate_shader(GL_VERTEX_SHADER, vertex_shader_source);
 	if (vertex_shader == 0u)
 		return 0u;
 
-	auto const fragment_shader_source = utils::slurp_file(config::shaders_path("EDAF80/" + frag_shader_source_path));
+	auto const fragment_shader_source = utils::slurp_file(config::shaders_path(frag_shader_source_path));
 	GLuint fragment_shader = utils::opengl::shader::generate_shader(GL_FRAGMENT_SHADER, fragment_shader_source);
 	if (fragment_shader == 0u)
 		return 0u;
@@ -451,6 +531,20 @@ bonobo::drawFullscreen()
 	glBindVertexArray(0u);
 }
 
+void
+bonobo::renderBasis(float thickness_scale, float length_scale, glm::mat4 const& view_projection, glm::mat4 const& world)
+{
+	glUseProgram(basis.shader);
+	glBindVertexArray(basis.vao);
+	glUniformMatrix4fv(basis.shader_locations.world, 1, GL_FALSE, glm::value_ptr(world));
+	glUniformMatrix4fv(basis.shader_locations.view_proj, 1, GL_FALSE, glm::value_ptr(view_projection));
+	glUniform1f(basis.shader_locations.thickness_scale, thickness_scale);
+	glUniform1f(basis.shader_locations.length_scale, length_scale);
+	glDrawElementsInstanced(GL_TRIANGLES, basis.index_count, GL_UNSIGNED_BYTE, nullptr, 3);
+	glBindVertexArray(0u);
+	glUseProgram(0u);
+}
+
 bool
 bonobo::uiSelectCullMode(std::string const& label, enum cull_mode_t& cull_mode) noexcept
 {
@@ -504,5 +598,100 @@ bonobo::changePolygonMode(enum polygon_mode_t const polygon_mode) noexcept
 		case bonobo::polygon_mode_t::point:
 			glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 			break;
+	}
+}
+
+namespace
+{
+	void setupBasisData()
+	{
+		glGenVertexArrays(1, &basis.vao);
+		assert(basis.vao != 0);
+		glBindVertexArray(basis.vao);
+
+		glGenBuffers(1, &basis.vbo);
+		assert(basis.vbo != 0);
+		auto const halfThickness = 0.1f;
+		std::array<glm::vec3, 13> const vertices = {
+			// Body of the arrow
+			glm::vec3(0.0f, -halfThickness, -halfThickness),
+			glm::vec3(0.0f, -halfThickness,  halfThickness),
+			glm::vec3(0.0f,  halfThickness,  halfThickness),
+			glm::vec3(0.0f,  halfThickness, -halfThickness),
+			glm::vec3(1.0f, -halfThickness, -halfThickness),
+			glm::vec3(1.0f, -halfThickness,  halfThickness),
+			glm::vec3(1.0f,  halfThickness,  halfThickness),
+			glm::vec3(1.0f,  halfThickness, -halfThickness),
+			// Tip of the arrow
+			glm::vec3(1.0f, -2.0f*halfThickness, -2.0f*halfThickness),
+			glm::vec3(1.0f, -2.0f*halfThickness,  2.0f*halfThickness),
+			glm::vec3(1.0f,  2.0f*halfThickness,  2.0f*halfThickness),
+			glm::vec3(1.0f,  2.0f*halfThickness, -2.0f*halfThickness),
+			glm::vec3(1.0f+4.0f*halfThickness,  0.0f, 0.0f),
+		};
+		glBindBuffer(GL_ARRAY_BUFFER, basis.vbo);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices.data(), GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(0u);
+		glVertexAttribPointer(0u, 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
+
+		glGenBuffers(1, &basis.ibo);
+		assert(basis.ibo != 0);
+		std::array<glm::u8vec3, 16> const indices = {
+			// Body: Left
+			glm::u8vec3(0u, 1u, 2u),
+			glm::u8vec3(0u, 2u, 3u),
+			// Body: Back
+			glm::u8vec3(4u, 0u, 3u),
+			glm::u8vec3(4u, 3u, 7u),
+			// Body: Bottom
+			glm::u8vec3(0u, 4u, 5u),
+			glm::u8vec3(0u, 5u, 1u),
+			// Body: Front
+			glm::u8vec3(1u, 5u, 6u),
+			glm::u8vec3(1u, 6u, 2u),
+			// Body: Top
+			glm::u8vec3(2u, 6u, 7u),
+			glm::u8vec3(2u, 7u, 3u),
+			// Tip: Left
+			glm::u8vec3(8u, 9u, 10u),
+			glm::u8vec3(8u, 10u, 11u),
+			// Tip: Back
+			glm::u8vec3(12u, 8u, 11u),
+			// Tip: Bottom
+			glm::u8vec3(8u, 12u, 9u),
+			// Tip: Front
+			glm::u8vec3(9u, 12u, 10u),
+			// Tip: Top
+			glm::u8vec3(10u, 12u, 11u)
+		};
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, basis.ibo);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
+
+		basis.index_count = indices.size() * 3;
+
+		glBindVertexArray(0u);
+		glBindBuffer(GL_ARRAY_BUFFER, 0U);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0U);
+
+		basis.shader = bonobo::createProgram("common/basis.vert", "common/basis.frag");
+		if (basis.shader == 0u)
+			LogError("Failed to load \"basis.vert\" and \"basis.frag\"");
+
+		GLint shader_location = glGetUniformLocation(basis.shader, "vertex_model_to_world");
+		assert(shader_location >= 0);
+		basis.shader_locations.world = shader_location;
+
+		shader_location = glGetUniformLocation(basis.shader, "vertex_world_to_clip");
+		assert(shader_location >= 0);
+		basis.shader_locations.view_proj = shader_location;
+
+		shader_location = glGetUniformLocation(basis.shader, "thickness_scale");
+		assert(shader_location >= 0);
+		basis.shader_locations.thickness_scale = shader_location;
+
+		shader_location = glGetUniformLocation(basis.shader, "length_scale");
+		assert(shader_location >= 0);
+		basis.shader_locations.length_scale = shader_location;
 	}
 }

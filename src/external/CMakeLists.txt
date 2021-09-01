@@ -8,6 +8,7 @@ target_sources(
 		[[Dear ImGui/imgui_internal.h]]
 		[[Dear ImGui/imgui_impl_glfw.h]]
 		[[Dear ImGui/imgui_impl_opengl3.h]]
+		[[Dear ImGui/imgui_impl_opengl3_loader.h]]
 		[[Dear ImGui/imstb_rectpack.h]]
 		[[Dear ImGui/imstb_textedit.h]]
 		[[Dear ImGui/imstb_truetype.h]]
@@ -17,6 +18,7 @@ target_sources(
 		[[Dear ImGui/imgui.cpp]]
 		[[Dear ImGui/imgui_demo.cpp]]
 		[[Dear ImGui/imgui_draw.cpp]]
+		[[Dear ImGui/imgui_tables.cpp]]
 		[[Dear ImGui/imgui_widgets.cpp]]
 		[[Dear ImGui/imgui_impl_glfw.cpp]]
 		[[Dear ImGui/imgui_impl_opengl3.cpp]]
@@ -35,7 +37,7 @@ target_link_libraries (
 	external_libs
 	PRIVATE
 		glfw
-		$<$<NOT:$<BOOL:WIN32>>:dl>
+		$<$<NOT:$<BOOL:${WIN32}>>:dl>
 )
 
 install (TARGETS external_libs DESTINATION lib)

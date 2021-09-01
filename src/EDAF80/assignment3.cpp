@@ -30,6 +30,13 @@ edaf80::Assignment3::Assignment3(WindowManager& windowManager) :
 	if (window == nullptr) {
 		throw std::runtime_error("Failed to get a window: aborting!");
 	}
+
+	bonobo::init();
+}
+
+edaf80::Assignment3::~Assignment3()
+{
+	bonobo::deinit();
 }
 
 void
@@ -44,8 +51,8 @@ edaf80::Assignment3::run()
 	ShaderProgramManager program_manager;
 	GLuint fallback_shader = 0u;
 	program_manager.CreateAndRegisterProgram("Fallback",
-	                                         { { ShaderType::vertex, "EDAF80/fallback.vert" },
-	                                           { ShaderType::fragment, "EDAF80/fallback.frag" } },
+	                                         { { ShaderType::vertex, "common/fallback.vert" },
+	                                           { ShaderType::fragment, "common/fallback.frag" } },
 	                                         fallback_shader);
 	if (fallback_shader == 0u) {
 		LogError("Failed to load fallback shader");
@@ -135,6 +142,9 @@ edaf80::Assignment3::run()
 	bool show_logs = true;
 	bool show_gui = true;
 	bool shader_reload_failed = false;
+	bool show_basis = false;
+	float basis_thickness_scale = 1.0f;
+	float basis_length_scale = 1.0f;
 
 	changeCullMode(cull_mode);
 
@@ -210,8 +220,15 @@ edaf80::Assignment3::run()
 			ImGui::ColorEdit3("Specular", glm::value_ptr(specular));
 			ImGui::SliderFloat("Shininess", &shininess, 1.0f, 1000.0f);
 			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -20.0f, 20.0f);
+			ImGui::Separator();
+			ImGui::Checkbox("Show basis", &show_basis);
+			ImGui::SliderFloat("Basis thickness scale", &basis_thickness_scale, 0.0f, 100.0f);
+			ImGui::SliderFloat("Basis length scale", &basis_length_scale, 0.0f, 100.0f);
 		}
 		ImGui::End();
+
+		if (show_basis)
+			bonobo::renderBasis(basis_thickness_scale, basis_length_scale, mCamera.GetWorldToClipMatrix());
 
 		opened = ImGui::Begin("Render Time", nullptr, ImGuiWindowFlags_None);
 		if (opened)
@@ -220,8 +237,7 @@ edaf80::Assignment3::run()
 
 		if (show_logs)
 			Log::View::Render();
-		if (show_gui)
-			mWindowManager.RenderImGuiFrame();
+		mWindowManager.RenderImGuiFrame(show_gui);
 
 		glfwSwapBuffers(window);
 	}

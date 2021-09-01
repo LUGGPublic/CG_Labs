@@ -1,12 +1,13 @@
 #include "InputHandler.h"
-#include "Log.h"
 
 /*----------------------------------------------------------------------------*/
 
 InputHandler::InputHandler()
 {
-	mMouseCapturedByUI = false;
-	mKeyboardCapturedByUI = false;
+	for (auto& mousePosition : mMousePositionSwitched)
+	{
+		mousePosition = mMousePosition;
+	}
 }
 
 void InputHandler::Advance()
@@ -14,61 +15,37 @@ void InputHandler::Advance()
 	mTick++;
 }
 
-void InputHandler::DownEvent(std::unordered_map<size_t, IState> &map, size_t loc)
+void InputHandler::DownEvent(InputStateMap& map, size_t loc)
 {
-	auto sc = map.find(loc);
-	if (sc == map.end())
-		map[static_cast<size_t>(loc)] = IState();
-	map[loc].mIsDown = true;
-	map[loc].mDownTick = mTick;
+	// If the key already exists, insert does not modify the associated value
+	// and just returns an iterator to it.
+	auto insertionResult = map.insert({ loc, IState() });
+	auto& state = insertionResult.first->second;
+	state.mIsDown = true;
+	state.mDownTick = mTick;
 }
 
-void InputHandler::DownModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods)
+void InputHandler::UpEvent(InputStateMap& map, size_t loc)
 {
-	for (std::uint32_t i = 1u; mods != 0; i <<= 1) {
-		if ((mods & i) == 0)
-			continue;
-
-		InputHandler::DownEvent(map, static_cast<size_t>(i));
-		mods &= ~i;
-	}
+	// If the key already exists, insert does not modify the associated value
+	// and just returns an iterator to it.
+	auto insertionResult = map.insert({ loc, IState() });
+	auto& state = insertionResult.first->second;
+	state.mIsDown = false;
+	state.mUpTick = mTick;
 }
 
-void InputHandler::UpEvent(std::unordered_map<size_t, IState> &map, size_t loc)
-{
-	auto sc = map.find(loc);
-	if (sc == map.end())
-		map[static_cast<size_t>(loc)] = IState();
-	map[loc].mIsDown = false;
-	map[loc].mUpTick = mTick;
-}
-
-void InputHandler::UpModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods)
-{
-	for (std::uint32_t i = 1u; mods != 0; i <<= 1) {
-		if ((mods & i) == 0)
-			continue;
-
-		InputHandler::UpEvent(map, static_cast<size_t>(i));
-		mods &= ~i;
-	}
-}
-
-void InputHandler::FeedKeyboard(int key, int scancode, int action, int mods)
+void InputHandler::FeedKeyboard(int key, int scancode, int action)
 {
 	switch (action)
 	{
 		case GLFW_PRESS:
 			DownEvent(mScancodeMap, static_cast<size_t>(scancode));
-			DownModEvent(mScancodeMap, static_cast<std::uint32_t>(mods));
 			DownEvent(mKeycodeMap, static_cast<size_t>(key));
-			DownModEvent(mKeycodeMap, static_cast<std::uint32_t>(mods));
 			break;
 		case GLFW_RELEASE:
 			UpEvent(mScancodeMap, static_cast<size_t>(scancode));
-			UpModEvent(mScancodeMap, static_cast<std::uint32_t>(mods));
 			UpEvent(mKeycodeMap, static_cast<size_t>(key));
-			UpModEvent(mKeycodeMap, static_cast<std::uint32_t>(mods));
 			break;
 		default:
 			break;
@@ -77,36 +54,36 @@ void InputHandler::FeedKeyboard(int key, int scancode, int action, int mods)
 
 void InputHandler::FeedMouseMotion(glm::vec2 const& position)
 {
-  mMousePosition = position;
+	mMousePosition = position;
 }
 
-void InputHandler::FeedMouseButtons(int button, int action, int mods)
+void InputHandler::FeedMouseButtons(int button, int action)
 {
 	switch (action)
 	{
 		case GLFW_PRESS:
 			DownEvent(mMouseMap, static_cast<size_t>(button));
-			DownModEvent(mMouseMap, static_cast<std::uint32_t>(mods));
-			mMousePositionSwitched[button] = mMousePosition;
 			break;
 		case GLFW_RELEASE:
 			UpEvent(mMouseMap, static_cast<size_t>(button));
-			UpModEvent(mMouseMap, static_cast<std::uint32_t>(mods));
-			mMousePositionSwitched[button] = mMousePosition;
 			break;
 		default:
 			break;
 	}
+	mMousePositionSwitched[button] = mMousePosition;
 }
 
-std::uint32_t InputHandler::GetState(std::unordered_map<size_t, IState> &map, size_t loc)
+std::uint32_t InputHandler::GetState(InputStateMap const& map, size_t loc)
 {
-	auto sc = map.find(loc);
+	auto const sc = map.find(loc);
 	if (sc == map.end())
 		return RELEASED;
-	std::uint32_t s = map[static_cast<std::uint32_t>(loc)].mIsDown ? PRESSED : RELEASED;
-	s |= mTick-1 == map[loc].mDownTick ? JUST_PRESSED : 0;
-	s |= mTick-1 == map[loc].mUpTick ? JUST_RELEASED : 0;
+
+	auto const& state = sc->second;
+	std::uint32_t s = state.mIsDown ? PRESSED : RELEASED;
+	s |= mTick-1 == state.mDownTick ? JUST_PRESSED : 0;
+	s |= mTick-1 == state.mUpTick ? JUST_RELEASED : 0;
+
 	return s;
 }
 

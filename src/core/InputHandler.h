@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
 #include <unordered_map>
 
@@ -14,23 +15,21 @@
 #define JUST_PRESSED				(1 << 2)
 #define JUST_RELEASED				(1 << 3)
 
-#define MAX_MOUSE_BUTTONS			8
-
 class InputHandler
 {
 public:
 	struct IState {
-		std::uint64_t mDownTick{std::numeric_limits<std::uint64_t>::max()};
-		std::uint64_t mUpTick{std::numeric_limits<std::uint64_t>::max()};
-		bool mIsDown{false};
+		std::uint64_t mDownTick{ std::numeric_limits<std::uint64_t>::max() };
+		std::uint64_t mUpTick{ std::numeric_limits<std::uint64_t>::max() };
+		bool mIsDown{ false };
 	};
 
 public:
 	InputHandler();
 
 public:
-	void FeedKeyboard(int key, int scancode, int action, int mods);
-	void FeedMouseButtons(int button, int action, int mods);
+	void FeedKeyboard(int key, int scancode, int action);
+	void FeedMouseButtons(int button, int action);
 	void FeedMouseMotion(glm::vec2 const& position);
 	void Advance();
 	std::uint32_t GetScancodeState(int scancode);
@@ -43,24 +42,23 @@ public:
 	void SetUICapture(bool mouseCapture, bool keyboardCapture);
 
 private:
-	void DownEvent(std::unordered_map<size_t, IState> &map, size_t loc);
-	void DownModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods);
-	void UpEvent(std::unordered_map<size_t, IState> &map, size_t loc);
-	void UpModEvent(std::unordered_map<size_t, IState> &map, std::uint32_t mods);
+	using InputStateMap = std::unordered_map<size_t, IState>;
 
-	std::uint32_t GetState(std::unordered_map<size_t, IState> &map, size_t loc);
+	void DownEvent(InputStateMap& map, size_t loc);
+	void UpEvent(InputStateMap& map, size_t loc);
+	std::uint32_t GetState(InputStateMap const& map, size_t loc);
 
-	std::unordered_map<size_t, IState> mScancodeMap;
-	std::unordered_map<size_t, IState> mKeycodeMap;
-	std::unordered_map<size_t, IState> mMouseMap;
+	InputStateMap mScancodeMap;
+	InputStateMap mKeycodeMap;
+	InputStateMap mMouseMap;
 
-	glm::vec2 mMousePosition;
-	glm::vec2 mMousePositionSwitched[MAX_MOUSE_BUTTONS];
+	glm::vec2 mMousePosition{ -1.0f };
+	std::array<glm::vec2, GLFW_MOUSE_BUTTON_LAST> mMousePositionSwitched;
 
-	bool mMouseCapturedByUI;
-	bool mKeyboardCapturedByUI;
+	bool mMouseCapturedByUI{ false };
+	bool mKeyboardCapturedByUI{ false };
 
-	std::uint64_t mTick;
+	std::uint64_t mTick{ 0ULL };
 
 };
 
