@@ -81,6 +81,13 @@ void SetOutputTargets(size_t flags)
 		if (logfile == nullptr) {
 			// Lazily initiate file
 			logfile = fopen("log.txt", "w");
+			if (!logfile) {
+				fileMutex.unlock();
+				perror("Failed to open \"log.txt\" for writing");
+				fprintf(stderr, "Disabling logging of messages to file.\n");
+				output_targets = output_targets & ~LOG_OUT_FILE;
+				return;
+			}
 			fprintf(logfile, "\n === Log (%s, %s) === \n\n", __DATE__, __TIME__);
 			fflush(logfile);
 		}
