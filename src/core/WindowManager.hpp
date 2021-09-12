@@ -8,6 +8,7 @@
 
 #include <mutex>
 #include <unordered_map>
+#include <memory>
 
 //! \brief A simple class for creating and interacting with windows, using the
 //!        GLFW library.
