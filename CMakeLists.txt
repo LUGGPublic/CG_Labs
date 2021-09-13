@@ -107,12 +107,12 @@ add_library (CG_Labs_options INTERFACE)
 target_compile_definitions(
 	CG_Labs_options
 	INTERFACE
-		$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:NOMINMAX>
+		$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:NOMINMAX>
 )
 target_compile_options (
 	CG_Labs_options
 	INTERFACE
-		$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/utf-8;/Zc:__cplusplus>
+		$<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8;/Zc:__cplusplus>
 )
 target_compile_features (CG_Labs_options INTERFACE cxx_std_14)
 
