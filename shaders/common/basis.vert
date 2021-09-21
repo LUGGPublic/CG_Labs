@@ -8,7 +8,7 @@ uniform float thickness_scale;
 uniform float length_scale;
 
 out VS_OUT {
-	flat uint axis_index;
+	flat int axis_index;
 } vs_out;
 
 
