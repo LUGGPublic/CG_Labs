@@ -165,6 +165,8 @@ bonobo::loadObjects(std::string const& filename)
 				bindings.emplace(name, id);
 				++texture_count;
 
+				utils::opengl::debug::nameObject(GL_TEXTURE, id, std::string(material->GetName().C_Str()) + " " + type_as_str);
+
 				auto const texture_end_time = std::chrono::high_resolution_clock::now();
 				LogTrivia("│ %s Texture \"%s\" loaded in %.3f ms",
 				          bindings.size() == 1 ? "┌" : "├", path.C_Str(),
@@ -291,6 +293,10 @@ bonobo::loadObjects(std::string const& filename)
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, object.ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<unsigned int>(object.indices_nb) * sizeof(GL_UNSIGNED_INT), reinterpret_cast<GLvoid const*>(object_indices.get()), GL_STATIC_DRAW);
 		object_indices.reset(nullptr);
+
+		utils::opengl::debug::nameObject(GL_VERTEX_ARRAY, object.vao, object.name + " VAO");
+		utils::opengl::debug::nameObject(GL_BUFFER, object.bo, object.name + " VBO");
+		utils::opengl::debug::nameObject(GL_BUFFER, object.ibo, object.name + " IBO");
 
 		glBindVertexArray(0u);
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
@@ -712,6 +718,10 @@ namespace
 		shader_location = glGetUniformLocation(basis.shader, "length_scale");
 		assert(shader_location >= 0);
 		basis.shader_locations.length_scale = shader_location;
+
+		utils::opengl::debug::nameObject(GL_VERTEX_ARRAY, basis.vao, "Basis VAO");
+		utils::opengl::debug::nameObject(GL_BUFFER, basis.vbo, "Basis VBO");
+		utils::opengl::debug::nameObject(GL_BUFFER, basis.ibo, "Basis IBO");
 	}
 
 	void createDebugTexture()
