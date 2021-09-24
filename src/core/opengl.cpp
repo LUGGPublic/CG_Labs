@@ -93,6 +93,32 @@ getStringForSeverity( GLenum severity )
 		return("");
 	}
 }
+void
+beginDebugGroup(std::string const& message, GLuint id)
+{
+	if (!isSupported())
+		return;
+
+	glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, id, static_cast<GLsizei>(message.size()), message.data());
+}
+
+void
+endDebugGroup()
+{
+	if (!isSupported())
+		return;
+
+	glPopDebugGroup();
+}
+
+void
+nameObject(GLenum type, GLuint id, std::string const& label)
+{
+	if (!isSupported())
+		return;
+
+	glObjectLabel(type, id, static_cast<GLsizei>(label.size()), label.data());
+}
 
 void
 #ifdef _WIN32

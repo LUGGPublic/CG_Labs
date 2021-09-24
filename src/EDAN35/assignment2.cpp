@@ -323,11 +323,7 @@ edan35::Assignment2::run()
 			//
 			// Pass 1: Render scene into the g-buffer
 			//
-			if (utils::opengl::debug::isSupported())
-			{
-				std::string const group_name = "Fill G-buffer";
-				glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
-			}
+			utils::opengl::debug::beginDebugGroup("Fill G-buffer");
 			glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::GbufferGeneration)]);
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::GBuffer)]);
@@ -339,10 +335,7 @@ edan35::Assignment2::run()
 				element.render(mCamera.GetWorldToClipMatrix(), element.get_transform().GetMatrix(), fill_gbuffer_shader, set_uniforms);
 
 			glEndQuery(GL_TIME_ELAPSED);
-			if (utils::opengl::debug::isSupported())
-			{
-				glPopDebugGroup();
-			}
+			utils::opengl::debug::endDebugGroup();
 
 
 
@@ -361,11 +354,7 @@ edan35::Assignment2::run()
 				//
 				// Pass 2.1: Generate shadow map for light i
 				//
-				if (utils::opengl::debug::isSupported())
-				{
-					std::string const group_name = "Create shadow map " + std::to_string(i);
-					glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
-				}
+				utils::opengl::debug::beginDebugGroup("Create shadow map " + std::to_string(i));
 				glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::ShadowMap0Generation) + i]);
 
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::ShadowMap)]);
@@ -376,10 +365,7 @@ edan35::Assignment2::run()
 					element.render(light_world_to_clip_matrix, element.get_transform().GetMatrix(), fill_shadowmap_shader, set_uniforms);
 
 				glEndQuery(GL_TIME_ELAPSED);
-				if (utils::opengl::debug::isSupported())
-				{
-					glPopDebugGroup();
-				}
+				utils::opengl::debug::endDebugGroup();
 
 
 				glCullFace(GL_FRONT);
@@ -390,11 +376,7 @@ edan35::Assignment2::run()
 				glBlendFuncSeparate(GL_ONE, GL_ONE, GL_ONE, GL_ONE);
 				//
 				// Pass 2.2: Accumulate light i contribution
-				if (utils::opengl::debug::isSupported())
-				{
-					std::string const group_name = "Accumulate light " + std::to_string(i);
-					glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
-				}
+				utils::opengl::debug::beginDebugGroup("Accumulate light " + std::to_string(i));
 				glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::Light0Accumulation) + i]);
 
 				glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::LightAccumulation)]);
@@ -434,10 +416,7 @@ edan35::Assignment2::run()
 				glBindSampler(0u, 0u);
 
 				glEndQuery(GL_TIME_ELAPSED);
-				if (utils::opengl::debug::isSupported())
-				{
-					glPopDebugGroup();
-				}
+				utils::opengl::debug::endDebugGroup();
 
 				glDepthMask(GL_TRUE);
 				glDepthFunc(GL_LESS);
@@ -449,11 +428,7 @@ edan35::Assignment2::run()
 			//
 			// Pass 3: Compute final image using both the g-buffer and  the light accumulation buffer
 			//
-			if (utils::opengl::debug::isSupported())
-			{
-				std::string const group_name = "Resolve";
-				glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
-			}
+			utils::opengl::debug::beginDebugGroup("Resolve");
 			glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::Resolve)]);
 
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
@@ -475,10 +450,7 @@ edan35::Assignment2::run()
 			glUseProgram(0u);
 
 			glEndQuery(GL_TIME_ELAPSED);
-			if (utils::opengl::debug::isSupported())
-			{
-				glPopDebugGroup();
-			}
+			utils::opengl::debug::endDebugGroup();
 		}
 
 
@@ -487,11 +459,7 @@ edan35::Assignment2::run()
 		//
 		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::ConeWireframe)]);
 		if (show_cone_wireframe) {
-			if (utils::opengl::debug::isSupported())
-			{
-				std::string const group_name = "Draw cone wireframe";
-				glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
-			}
+			utils::opengl::debug::beginDebugGroup("Draw cone wireframe");
 			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)]);
 
 			glDisable(GL_CULL_FACE);
@@ -503,19 +471,12 @@ edan35::Assignment2::run()
 			}
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			glEnable(GL_CULL_FACE);
-			if (utils::opengl::debug::isSupported())
-			{
-				glPopDebugGroup();
-			}
+			utils::opengl::debug::endDebugGroup();
 		}
 		glEndQuery(GL_TIME_ELAPSED);
 
 
-		if (utils::opengl::debug::isSupported())
-		{
-			std::string const group_name = "Draw GUI";
-			glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
-		}
+		utils::opengl::debug::beginDebugGroup("Draw GUI");
 		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::GUI)]);
 
 		//
@@ -625,19 +586,12 @@ edan35::Assignment2::run()
 		mWindowManager.RenderImGuiFrame(show_gui);
 
 		glEndQuery(GL_TIME_ELAPSED);
-		if (utils::opengl::debug::isSupported())
-		{
-			glPopDebugGroup();
-		}
+		utils::opengl::debug::endDebugGroup();
 
 		//
 		// Blit the result back to the default framebuffer.
 		//
-		if (utils::opengl::debug::isSupported())
-		{
-			std::string const group_name = "Copy to default framebuffer";
-			glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, group_name.size(), group_name.data());
-		}
+		utils::opengl::debug::beginDebugGroup("Copy to default framebuffer");
 		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::CopyToFramebuffer)]);
 
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
@@ -645,10 +599,7 @@ edan35::Assignment2::run()
 		glBlitFramebuffer(0, 0, framebuffer_width, framebuffer_height, 0, 0, framebuffer_width, framebuffer_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
 		glEndQuery(GL_TIME_ELAPSED);
-		if (utils::opengl::debug::isSupported())
-		{
-			glPopDebugGroup();
-		}
+		utils::opengl::debug::endDebugGroup();
 
 		glfwSwapBuffers(window);
 
@@ -695,54 +646,35 @@ Textures createTextures(GLsizei framebuffer_width, GLsizei framebuffer_height)
 
 	glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::DepthBuffer)]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, framebuffer_width, framebuffer_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	utils::opengl::debug::nameObject(GL_TEXTURE, textures[toU(Texture::DepthBuffer)], "Depth buffer");
 
 	glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::ShadowMap)]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, constant::shadowmap_res_x, constant::shadowmap_res_y, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+	utils::opengl::debug::nameObject(GL_TEXTURE, textures[toU(Texture::ShadowMap)], "Shadow map");
 
 	glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::GBufferDiffuse)]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framebuffer_width, framebuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	utils::opengl::debug::nameObject(GL_TEXTURE, textures[toU(Texture::GBufferDiffuse)], "GBuffer diffuse");
 
 	glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::GBufferSpecular)]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framebuffer_width, framebuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	utils::opengl::debug::nameObject(GL_TEXTURE, textures[toU(Texture::GBufferSpecular)], "GBuffer specular");
 
 	glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::GBufferWorldSpaceNormal)]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framebuffer_width, framebuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	utils::opengl::debug::nameObject(GL_TEXTURE, textures[toU(Texture::GBufferWorldSpaceNormal)], "GBuffer normals");
 
 	glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::LightDiffuseContribution)]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framebuffer_width, framebuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	utils::opengl::debug::nameObject(GL_TEXTURE, textures[toU(Texture::LightDiffuseContribution)], "Light diffuse contribution");
 
 	glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::LightSpecularContribution)]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framebuffer_width, framebuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+	utils::opengl::debug::nameObject(GL_TEXTURE, textures[toU(Texture::LightSpecularContribution)], "Light specular contribution");
 
 	glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::Result)]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framebuffer_width, framebuffer_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-
-	if (utils::opengl::debug::isSupported())
-	{
-		std::string const depth_buffer_string = "Depth buffer";
-		glObjectLabel(GL_TEXTURE, textures[toU(Texture::DepthBuffer)], depth_buffer_string.size(), depth_buffer_string.data());
-
-		std::string const shadow_map_string = "Shadow map";
-		glObjectLabel(GL_TEXTURE, textures[toU(Texture::ShadowMap)], shadow_map_string.size(), shadow_map_string.data());
-
-		std::string const gbuffer_diffuse_string = "GBuffer diffuse";
-		glObjectLabel(GL_TEXTURE, textures[toU(Texture::GBufferDiffuse)], gbuffer_diffuse_string.size(), gbuffer_diffuse_string.data());
-
-		std::string const gbuffer_specular_string = "GBuffer specular";
-		glObjectLabel(GL_TEXTURE, textures[toU(Texture::GBufferSpecular)], gbuffer_specular_string.size(), gbuffer_specular_string.data());
-
-		std::string const gbuffer_normals_string = "GBuffer normals";
-		glObjectLabel(GL_TEXTURE, textures[toU(Texture::GBufferWorldSpaceNormal)], gbuffer_normals_string.size(), gbuffer_normals_string.data());
-
-		std::string const light_diffuse_contribution_string = "Light diffuse contribution";
-		glObjectLabel(GL_TEXTURE, textures[toU(Texture::LightDiffuseContribution)], light_diffuse_contribution_string.size(), light_diffuse_contribution_string.data());
-
-		std::string const light_specular_contribution_string = "Light specular contribution";
-		glObjectLabel(GL_TEXTURE, textures[toU(Texture::LightSpecularContribution)], light_specular_contribution_string.size(), light_specular_contribution_string.data());
-
-		std::string const result_string = "Final result";
-		glObjectLabel(GL_TEXTURE, textures[toU(Texture::Result)], result_string.size(), result_string.data());
-	}
+	utils::opengl::debug::nameObject(GL_TEXTURE, textures[toU(Texture::Result)], "Final result");
 
 	glBindTexture(GL_TEXTURE_2D, 0u);
 	return textures;
@@ -758,18 +690,21 @@ Samplers createSamplers()
 	glSamplerParameteri(samplers[toU(Sampler::Nearest)], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glSamplerParameteri(samplers[toU(Sampler::Nearest)], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(samplers[toU(Sampler::Nearest)], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Nearest)], "Nearest");
 
 	// For sampling 2-D textures without mipmaps.
 	glSamplerParameteri(samplers[toU(Sampler::Linear)], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glSamplerParameteri(samplers[toU(Sampler::Linear)], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glSamplerParameteri(samplers[toU(Sampler::Linear)], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(samplers[toU(Sampler::Linear)], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Linear)], "Linear");
 
 	// For sampling 2-D textures with mipmaps.
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Mipmaps)], "Mimaps");
 
 	// For sampling 2-D shadow maps
 	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -778,21 +713,7 @@ Samplers createSamplers()
 	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
 	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_COMPARE_FUNC, GL_LESS);
-
-	if (utils::opengl::debug::isSupported())
-	{
-		std::string const nearest_string = "Nearest";
-		glObjectLabel(GL_SAMPLER, samplers[toU(Sampler::Nearest)], nearest_string.size(), nearest_string.data());
-
-		std::string const linear_string = "Linear";
-		glObjectLabel(GL_SAMPLER, samplers[toU(Sampler::Linear)], linear_string.size(), linear_string.data());
-
-		std::string const mipmaps_string = "Mimaps";
-		glObjectLabel(GL_SAMPLER, samplers[toU(Sampler::Mipmaps)], mipmaps_string.size(), mipmaps_string.data());
-
-		std::string const shadow_string = "Shadow";
-		glObjectLabel(GL_SAMPLER, samplers[toU(Sampler::Shadow)], shadow_string.size(), shadow_string.data());
-	}
+	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Shadow)], "Shadow");
 
 	return samplers;
 }
@@ -822,12 +743,14 @@ FBOs createFramebufferObjects(Textures const& textures)
 		GL_COLOR_ATTACHMENT1, // The fragment shader output at location 1 will be written to colour attachment 1 (i.e. the specular texture).
 		GL_COLOR_ATTACHMENT2  // The fragment shader output at location 2 will be written to colour attachment 2 (i.e. the normal texture).
 	};
-	glDrawBuffers(gbuffer_draws.size(), gbuffer_draws.data());
+	glDrawBuffers(static_cast<GLsizei>(gbuffer_draws.size()), gbuffer_draws.data());
 	validate_fbo("GBuffer");
+	utils::opengl::debug::nameObject(GL_FRAMEBUFFER, fbos[toU(FBO::GBuffer)], "GBuffer");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbos[toU(FBO::ShadowMap)]);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, textures[toU(Texture::ShadowMap)], 0);
 	validate_fbo("Shadow map generation");
+	utils::opengl::debug::nameObject(GL_FRAMEBUFFER, fbos[toU(FBO::ShadowMap)], "Shadow map generation");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbos[toU(FBO::LightAccumulation)]);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[toU(Texture::LightDiffuseContribution)], 0);
@@ -839,14 +762,16 @@ FBOs createFramebufferObjects(Textures const& textures)
 		GL_COLOR_ATTACHMENT0, // The fragment shader output at location 0 will be written to colour attachment 0 (i.e. the light diffuse contribution texture).
 		GL_COLOR_ATTACHMENT1  // The fragment shader output at location 1 will be written to colour attachment 1 (i.e. the light specular contribution texture).
 	};
-	glDrawBuffers(light_accumulation_draws.size(), light_accumulation_draws.data());
+	glDrawBuffers(static_cast<GLsizei>(light_accumulation_draws.size()), light_accumulation_draws.data());
 	validate_fbo("Light accumulation");
+	utils::opengl::debug::nameObject(GL_FRAMEBUFFER, fbos[toU(FBO::LightAccumulation)], "Light acccumulation");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[toU(Texture::Result)], 0);
 	glReadBuffer(GL_COLOR_ATTACHMENT0); // Colour attachment result 0 (i.e. the rendering result texture) will be blitted to the screen.
 	glDrawBuffer(GL_COLOR_ATTACHMENT0); // The fragment shader output at location 0 will be written to colour attachment 0 (i.e. the rendering result texture).
 	validate_fbo("Resolve");
+	utils::opengl::debug::nameObject(GL_FRAMEBUFFER, fbos[toU(FBO::Resolve)], "Resolve");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)]);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[toU(Texture::Result)], 0);
@@ -854,24 +779,7 @@ FBOs createFramebufferObjects(Textures const& textures)
 	glReadBuffer(GL_NONE); // Disable reading back from the colour attachments, as unnecessary in this assignment.
 	glDrawBuffer(GL_COLOR_ATTACHMENT0); // The fragment shader output at location 0 will be written to colour attachment 0 (i.e. the rendering result texture).
 	validate_fbo("Final with depth");
-
-	if (utils::opengl::debug::isSupported())
-	{
-		std::string const gbuffer_string = "GBuffer";
-		glObjectLabel(GL_FRAMEBUFFER, fbos[toU(FBO::GBuffer)], gbuffer_string.size(), gbuffer_string.data());
-
-		std::string const shadow_map_string = "Shadow map generation";
-		glObjectLabel(GL_FRAMEBUFFER, fbos[toU(FBO::ShadowMap)], shadow_map_string.size(), shadow_map_string.data());
-
-		std::string const light_accumulation_string = "Light acccumulation";
-		glObjectLabel(GL_FRAMEBUFFER, fbos[toU(FBO::LightAccumulation)], light_accumulation_string.size(), light_accumulation_string.data());
-
-		std::string const resolve_string = "Resolve";
-		glObjectLabel(GL_FRAMEBUFFER, fbos[toU(FBO::Resolve)], resolve_string.size(), resolve_string.data());
-
-		std::string const cone_wireframe_string = "Cone wireframe";
-		glObjectLabel(GL_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)], cone_wireframe_string.size(), cone_wireframe_string.data());
-	}
+	utils::opengl::debug::nameObject(GL_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)], "Cone wireframe");
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0u);
 	return fbos;
@@ -893,31 +801,25 @@ ElapsedTimeQueries createElapsedTimeQueries()
 		};
 
 		register_query(queries[toU(ElapsedTimeQuery::GbufferGeneration)]);
-		std::string const gbuffer_generation_string = "GBuffer generation";
-		glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::GbufferGeneration)], gbuffer_generation_string.size(), gbuffer_generation_string.data());
+		utils::opengl::debug::nameObject(GL_QUERY, queries[toU(ElapsedTimeQuery::GbufferGeneration)], "GBuffer generation");
 
 		for (size_t i = 0; i < constant::lights_nb; ++i)
 		{
 			register_query(queries[toU(ElapsedTimeQuery::ShadowMap0Generation) + i]);
-			std::string const shadow_map_string = "Shadow map " + std::to_string(i) + " generation";
-			glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::ShadowMap0Generation) + i], shadow_map_string.size(), shadow_map_string.data());
+			utils::opengl::debug::nameObject(GL_QUERY, queries[toU(ElapsedTimeQuery::ShadowMap0Generation) + i], "Shadow map " + std::to_string(i) + " generation");
 
 			register_query(queries[toU(ElapsedTimeQuery::Light0Accumulation) + i]);
-			std::string const light_accumulation_string = "Light" + std::to_string(i) + " accumulation";
-			glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::Light0Accumulation) + i], light_accumulation_string.size(), light_accumulation_string.data());
+			utils::opengl::debug::nameObject(GL_QUERY, queries[toU(ElapsedTimeQuery::Light0Accumulation) + i], "Light" + std::to_string(i) + " accumulation");
 		}
 
 		register_query(queries[toU(ElapsedTimeQuery::Resolve)]);
-		std::string const resolve_string = "Resolve";
-		glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::Resolve)], resolve_string.size(), resolve_string.data());
+		utils::opengl::debug::nameObject(GL_QUERY, queries[toU(ElapsedTimeQuery::Resolve)], "Resolve");
 
 		register_query(queries[toU(ElapsedTimeQuery::ConeWireframe)]);
-		std::string const cone_wireframe_string = "Cone wireframe";
-		glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::ConeWireframe)], cone_wireframe_string.size(), cone_wireframe_string.data());
+		utils::opengl::debug::nameObject(GL_QUERY, queries[toU(ElapsedTimeQuery::ConeWireframe)], "Cone wireframe");
 
 		register_query(queries[toU(ElapsedTimeQuery::GUI)]);
-		std::string const gui_string = "GUI";
-		glObjectLabel(GL_QUERY, queries[toU(ElapsedTimeQuery::GUI)], gui_string.size(), gui_string.data());
+		utils::opengl::debug::nameObject(GL_QUERY, queries[toU(ElapsedTimeQuery::GUI)], "GUI");
 	}
 
 	return queries;
@@ -1001,10 +903,13 @@ loadCone()
 	assert(cone.vao != 0u);
 	glBindVertexArray(cone.vao);
 	{
+		utils::opengl::debug::nameObject(GL_VERTEX_ARRAY, cone.vao, "Cone VAO");
+
 		glGenBuffers(1, &cone.bo);
 		assert(cone.bo != 0u);
 		glBindBuffer(GL_ARRAY_BUFFER, cone.bo);
 		glBufferData(GL_ARRAY_BUFFER, cone.vertices_nb * 3 * sizeof(float), vertexArrayData, GL_STATIC_DRAW);
+		utils::opengl::debug::nameObject(GL_BUFFER, cone.bo, "Cone VBO");
 
 		glVertexAttribPointer(static_cast<int>(bonobo::shader_bindings::vertices), 3, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid const*>(0x0));
 		glEnableVertexAttribArray(static_cast<int>(bonobo::shader_bindings::vertices));

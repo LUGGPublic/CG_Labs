@@ -107,11 +107,7 @@ void ShaderProgramManager::ProcessProgram(std::size_t const program_index)
 	}
 
 	program = utils::opengl::shader::generate_program(shaders);
-	if (utils::opengl::debug::isSupported())
-	{
-		auto const& program_name = program_names[program_index];
-		glObjectLabel(GL_PROGRAM, program, strlen(program_name), program_name);
-	}
+	utils::opengl::debug::nameObject(GL_PROGRAM, program, program_names[program_index]);
 
 	for (auto& shader : shaders)
 		glDeleteShader(shader);

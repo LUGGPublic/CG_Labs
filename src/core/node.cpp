@@ -20,10 +20,7 @@ Node::render(glm::mat4 const& view_projection, glm::mat4 const& world, GLuint pr
 	if (_vao == 0u || program == 0u)
 		return;
 
-	if (utils::opengl::debug::isSupported())
-	{
-		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, _name.size(), _name.data());
-	}
+	utils::opengl::debug::beginDebugGroup(_name);
 
 	glUseProgram(program);
 
@@ -62,10 +59,7 @@ Node::render(glm::mat4 const& view_projection, glm::mat4 const& world, GLuint pr
 
 	glUseProgram(0u);
 
-	if (utils::opengl::debug::isSupported())
-	{
-		glPopDebugGroup();
-	}
+	utils::opengl::debug::endDebugGroup();
 }
 
 void
