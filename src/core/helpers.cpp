@@ -150,7 +150,7 @@ bonobo::loadObjects(std::string const& filename)
 					LogWarning("Material \"%s\" has more than one %s texture: discarding all but the first one.", material->GetName().C_Str(), type_as_str.c_str());
 				aiString path;
 				material->GetTexture(type, 0, &path);
-				auto const id = bonobo::loadTexture2D(parent_folder + std::string(path.C_Str()), type_as_str != "opacity");
+				auto const id = bonobo::loadTexture2D(parent_folder + std::string(path.C_Str()));
 				if (id == 0u) {
 					LogWarning("Failed to load the %s texture for material \"%s\".", type_as_str.c_str(), material->GetName().C_Str());
 					return;
