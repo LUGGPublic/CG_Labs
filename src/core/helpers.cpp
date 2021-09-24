@@ -307,7 +307,7 @@ bonobo::loadObjects(std::string const& filename)
 		if (assimp_object_mesh->HasTextureCoords(0))
 		  attributes += "texture coordinates";
 		LogTrivia("│ %s Mesh \"%s\" loaded with attributes [%s] in %.3f ms",
-		          j == 0 ? "┌" : (j == assimp_scene->mNumMeshes - 1 ? "└" : "├"),
+		          (assimp_scene->mNumMeshes == 1u) ? "╶" : (j == 0 ? "┌" : (j == assimp_scene->mNumMeshes - 1 ? "└" : "├")),
 		          assimp_object_mesh->mName.C_Str(), attributes.c_str(),
 		          std::chrono::duration<float, std::milli>(mesh_end_time - mesh_start_time).count());
 	}
