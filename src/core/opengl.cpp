@@ -156,28 +156,30 @@ source_and_build_shader(GLuint id, std::string const& source)
 	glCompileShader(id);
 	GLint state = GLint(0);
 	glGetShaderiv(id, GL_COMPILE_STATUS, &state);
-	if (state == GL_FALSE)
-	{
-		GLint log_length = GLint(0);
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &log_length);
+	auto const wasCompilationSuccessful = state != GL_FALSE;
 
-		if (log_length > 0) {
-			std::unique_ptr<GLchar[]> log = std::make_unique<GLchar[]>(static_cast<size_t>(log_length));
-			glGetShaderInfoLog(id, log_length, NULL, log.get());
-			std::ostringstream oss;
-			oss << "Shader compiling error:" << std::endl
-			    << log.get();
-			auto const s_msg = oss.str();
-			auto const c_msg = s_msg.c_str();
+	GLint log_length = GLint(0);
+	glGetShaderiv(id, GL_INFO_LOG_LENGTH, &log_length);
+
+	if (log_length > 0) {
+		std::unique_ptr<GLchar[]> log = std::make_unique<GLchar[]>(static_cast<size_t>(log_length));
+		glGetShaderInfoLog(id, log_length, NULL, log.get());
+
+		std::ostringstream oss;
+		oss << "Shader compiling log:" << std::endl
+		    << log.get() << std::endl;
+		auto const s_msg = oss.str();
+		auto const c_msg = s_msg.c_str();
+
+		if (wasCompilationSuccessful)
+			LogInfo("%s", c_msg);
+		else
 			LogError("%s", c_msg);
-		} else {
-			LogError("Shader failed to compile but no log available.");
-		}
-
-		return false;
+	} else if (!wasCompilationSuccessful) {
+		LogError("Shader failed to compile but no log available.");
 	}
 
-	return true;
+	return wasCompilationSuccessful;
 }
 
 GLuint
@@ -200,23 +202,30 @@ link_program(GLuint id)
 	glLinkProgram(id);
 	GLint state = GLint(0);
 	glGetProgramiv(id, GL_LINK_STATUS, &state);
-	if (state == GL_FALSE)
-	{
-		GLint log_length = GLint(0);
-		glGetProgramiv(id, GL_INFO_LOG_LENGTH, &log_length);
+	auto const wasLinkingSuccessful = state != GL_FALSE;
+
+	GLint log_length = GLint(0);
+	glGetProgramiv(id, GL_INFO_LOG_LENGTH, &log_length);
+
+	if (log_length > 0) {
 		std::unique_ptr<GLchar[]> log = std::make_unique<GLchar[]>(static_cast<size_t>(log_length));
 		glGetProgramInfoLog(id, log_length, NULL, log.get());
+
 		std::ostringstream oss;
-		oss << "Program linking error:" << std::endl
-		    << log.get();
+		oss << "Program linking log:" << std::endl
+			<< log.get() << std::endl;
 		auto const s_msg = oss.str();
 		auto const c_msg = s_msg.c_str();
-		LogError("%s", c_msg);
 
-		return false;
+		if (wasLinkingSuccessful)
+			LogInfo("%s", c_msg);
+		else
+			LogError("%s", c_msg);
+	} else if (!wasLinkingSuccessful) {
+		LogError("Program failed to link but no log available.");
 	}
 
-	return true;
+	return wasLinkingSuccessful;
 }
 
 void
