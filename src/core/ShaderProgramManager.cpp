@@ -73,7 +73,7 @@ ShaderProgramManager::SelectedProgram ShaderProgramManager::SelectProgram(std::s
 		return selection_result;
 	}
 
-	selection_result.was_selection_changed = ImGui::Combo(label.c_str(), &program_index, program_names.data(), program_names.size());
+	selection_result.was_selection_changed = ImGui::Combo(label.c_str(), &program_index, program_names.data(), static_cast<int>(program_names.size()));
 	selection_result.program = &program_entries.at(program_index).first;
 	selection_result.name = program_names.at(program_index);
 	return selection_result;

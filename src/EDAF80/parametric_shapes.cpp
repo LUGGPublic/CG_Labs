@@ -271,7 +271,7 @@ parametric_shapes::createCircleRing(float const radius,
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0u);
 
-	data.indices_nb = index_sets.size() * 3u;
+	data.indices_nb = static_cast<GLsizei>(index_sets.size() * 3u);
 	glGenBuffers(1, &data.ibo);
 	assert(data.ibo != 0u);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.ibo);

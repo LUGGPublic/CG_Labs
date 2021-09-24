@@ -33,8 +33,8 @@ namespace bonobo
 		GLuint vao{0u};                          //!< OpenGL name of the Vertex Array Object
 		GLuint bo{0u};                           //!< OpenGL name of the Buffer Object
 		GLuint ibo{0u};                          //!< OpenGL name of the Buffer Object for indices
-		size_t vertices_nb{0u};                  //!< number of vertices stored in bo
-		size_t indices_nb{0u};                   //!< number of indices stored in ibo
+		GLsizei vertices_nb{0};                  //!< number of vertices stored in bo
+		GLsizei indices_nb{0};                   //!< number of indices stored in ibo
 		texture_bindings bindings{};             //!< texture bindings for this mesh
 		GLenum drawing_mode{GL_TRIANGLES};       //!< OpenGL drawing mode, i.e. GL_TRIANGLES, GL_LINES, etc.
 		std::string name{"un-named mesh"};       //!< Name of the mesh; used for debugging purposes.

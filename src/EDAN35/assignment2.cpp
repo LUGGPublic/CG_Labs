@@ -655,10 +655,10 @@ edan35::Assignment2::run()
 		first_frame = false;
 	}
 
-	glDeleteQueries(elapsed_time_queries.size(), elapsed_time_queries.data());
-	glDeleteSamplers(samplers.size(), samplers.data());
-	glDeleteFramebuffers(fbos.size(), fbos.data());
-	glDeleteTextures(textures.size(), textures.data());
+	glDeleteQueries(static_cast<GLsizei>(elapsed_time_queries.size()), elapsed_time_queries.data());
+	glDeleteSamplers(static_cast<GLsizei>(samplers.size()), samplers.data());
+	glDeleteFramebuffers(static_cast<GLsizei>(fbos.size()), fbos.data());
+	glDeleteTextures(static_cast<GLsizei>(textures.size()), textures.data());
 
 	glDeleteProgram(resolve_deferred_shader);
 	resolve_deferred_shader = 0u;
@@ -691,7 +691,7 @@ namespace
 Textures createTextures(GLsizei framebuffer_width, GLsizei framebuffer_height)
 {
 	Textures textures;
-	glGenTextures(textures.size(), textures.data());
+	glGenTextures(static_cast<GLsizei>(textures.size()), textures.data());
 
 	glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::DepthBuffer)]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, framebuffer_width, framebuffer_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
@@ -751,7 +751,7 @@ Textures createTextures(GLsizei framebuffer_width, GLsizei framebuffer_height)
 Samplers createSamplers()
 {
 	Samplers samplers;
-	glGenSamplers(samplers.size(), samplers.data());
+	glGenSamplers(static_cast<GLsizei>(samplers.size()), samplers.data());
 
 	// For sampling 2-D textures without interpolation.
 	glSamplerParameteri(samplers[toU(Sampler::Nearest)], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -808,7 +808,7 @@ FBOs createFramebufferObjects(Textures const& textures)
 	};
 
 	FBOs fbos;
-	glGenFramebuffers(fbos.size(), fbos.data());
+	glGenFramebuffers(static_cast<GLsizei>(fbos.size()), fbos.data());
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fbos[toU(FBO::GBuffer)]);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textures[toU(Texture::GBufferDiffuse)], 0);
@@ -880,7 +880,7 @@ FBOs createFramebufferObjects(Textures const& textures)
 ElapsedTimeQueries createElapsedTimeQueries()
 {
 	ElapsedTimeQueries queries;
-	glGenQueries(queries.size(), queries.data());
+	glGenQueries(static_cast<GLsizei>(queries.size()), queries.data());
 
 	if (utils::opengl::debug::isSupported())
 	{

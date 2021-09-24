@@ -555,7 +555,7 @@ bonobo::uiSelectCullMode(std::string const& label, enum cull_mode_t& cull_mode) 
 	auto cull_mode_index = static_cast<int>(cull_mode);
 	bool was_modified = ImGui::Combo(label.c_str(), &cull_mode_index,
 	                                 local::cull_mode_labels.data(),
-	                                 local::cull_mode_labels.size());
+	                                 static_cast<int>(local::cull_mode_labels.size()));
 	cull_mode = static_cast<cull_mode_t>(cull_mode_index);
 	return was_modified;
 }
@@ -584,7 +584,7 @@ bonobo::uiSelectPolygonMode(std::string const& label, enum polygon_mode_t& polyg
 	auto polygon_mode_index = static_cast<int>(polygon_mode);
 	bool was_modified = ImGui::Combo(label.c_str(), &polygon_mode_index,
 	                                 local::polygon_mode_labels.data(),
-	                                 local::polygon_mode_labels.size());
+	                                 static_cast<int>(local::polygon_mode_labels.size()));
 	polygon_mode = static_cast<polygon_mode_t>(polygon_mode_index);
 	return was_modified;
 }
@@ -672,7 +672,7 @@ namespace
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, basis.ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
 
-		basis.index_count = indices.size() * 3;
+		basis.index_count = static_cast<GLsizei>(indices.size() * 3);
 
 		glBindVertexArray(0u);
 		glBindBuffer(GL_ARRAY_BUFFER, 0U);
