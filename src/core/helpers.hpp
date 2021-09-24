@@ -37,7 +37,7 @@ namespace bonobo
 		size_t indices_nb{0u};                   //!< number of indices stored in ibo
 		texture_bindings bindings{};             //!< texture bindings for this mesh
 		GLenum drawing_mode{GL_TRIANGLES};       //!< OpenGL drawing mode, i.e. GL_TRIANGLES, GL_LINES, etc.
-		std::string name{};                      //!< Name of the mesh; used for debugging purposes.
+		std::string name{"un-named mesh"};       //!< Name of the mesh; used for debugging purposes.
 	};
 
 	enum class cull_mode_t : unsigned int {

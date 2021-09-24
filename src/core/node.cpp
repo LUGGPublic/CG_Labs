@@ -76,7 +76,7 @@ Node::set_geometry(bonobo::mesh_data const& shape)
 	_indices_nb = static_cast<GLsizei>(shape.indices_nb);
 	_drawing_mode = shape.drawing_mode;
 	_has_indices = shape.ibo != 0u;
-	_name = shape.name;
+	_name = std::string("Render ") + shape.name;
 
 	if (!shape.bindings.empty()) {
 		for (auto const& binding : shape.bindings)
@@ -94,6 +94,12 @@ Node::set_program(GLuint const* const program, std::function<void (GLuint)> cons
 
 	_program = program;
 	_set_uniforms = set_uniforms;
+}
+
+void
+Node::set_name(std::string const& name)
+{
+	_name = std::string("Render ") + name;
 }
 
 size_t

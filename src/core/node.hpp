@@ -76,6 +76,16 @@ public:
 	void set_program(GLuint const* const program,
 	                 std::function<void (GLuint)> const& set_uniforms = [](GLuint /*programID*/){});
 
+	//! \brief Set the name of this node.
+	//!
+	//! This name will be used when pushing debug groups to scope OpenGL
+	//! commands and help when debugging or profiling the application using
+	//! third-party applications.
+	//!
+	//! @param [in] name the name used when creating the debug group during
+	//!             rendering; it will automatically be prefixed by "Render ".
+	void set_name(std::string const& name);
+
 	//! \brief Add a texture to this node.
 	//!
 	//! @param [in] name the variable name used by the attached OpenGL
@@ -133,5 +143,5 @@ private:
 	std::vector<Node const*> _children;
 
 	// Debug data
-	std::string _name;
+	std::string _name{"Render un-named node"};
 };
