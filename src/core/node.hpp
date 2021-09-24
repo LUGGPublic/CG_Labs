@@ -68,8 +68,8 @@ public:
 	//! A node without a program will not render itself, but its children
 	//! will be rendered if they have one.
 	//!
-	//! @param [in] pointer to the program OpenGL shader program to use;
-	//!             the pointer should not be nul.
+	//! @param [in] program pointer to the program OpenGL shader program to
+	//!             use; the pointer should not be null.
 	//! @param [in] set_uniforms function that will take as argument an
 	//!             OpenGL shader program, and will setup that program's
 	//!             uniforms
