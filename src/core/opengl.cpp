@@ -3,6 +3,7 @@
 #include "various.hpp"
 
 #include <cassert>
+#include <cstring>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -102,8 +103,21 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
                      , void const* /*data*/
                      )
 {
-	if (type == GL_DEBUG_TYPE_PUSH_GROUP || type == GL_DEBUG_TYPE_POP_GROUP)
+	if (type == GL_DEBUG_TYPE_PUSH_GROUP) {
+		LogInfo("%s\n{", msg);
 		return;
+	}
+	else if (type == GL_DEBUG_TYPE_POP_GROUP) {
+		LogInfo("}");
+		return;
+	}
+
+	// "Texture state usage warning: The texture object (X) bound to texture unit Y does not have a defined base level and cannot be used for texture mapping."
+	if (source == GL_DEBUG_SOURCE_API && type == GL_DEBUG_TYPE_OTHER && id == 131204u) {
+		// Discard if this is about the “default texture”, i.e. ID 0.
+		if (std::strstr(msg, "The texture object (0)") != nullptr)
+			return;
+	}
 
 	std::ostringstream oss;
 	oss << "[id: " << id << "] of type " << getStringForType(type)
@@ -115,16 +129,7 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
 	switch (severity) {
 	case GL_DEBUG_SEVERITY_NOTIFICATION:
 	case GL_DEBUG_SEVERITY_LOW: // fallthrough
-		if (id == 131185) // Will use VIDEO memory
-			break;
-		else if (id == 131204) { // Texture cannot be used for texture mapping
-			// Discard if this is about the “default texture”, i.e. ID 0.
-			if (s_msg.find("The texture object (0)") != std::string::npos)
-				break;
-			else
-				LogInfo(c_msg);
-		} else
-			LogInfo(c_msg);
+		LogInfo(c_msg);
 		break;
 	case GL_DEBUG_SEVERITY_MEDIUM:
 		LogWarning(c_msg);

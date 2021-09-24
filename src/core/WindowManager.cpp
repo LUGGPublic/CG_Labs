@@ -167,13 +167,27 @@ GLFWwindow* WindowManager::CreateGLFWWindow(std::string const& title, WindowDatu
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 		glDebugMessageCallback(utils::opengl::debug::opengl_error_callback, nullptr);
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE);
 #endif
 #if DEBUG_LEVEL == 2
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_FALSE);
+		// Enable all messages of severity medium or higher.
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0, nullptr, GL_TRUE);
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_HIGH, 0, nullptr, GL_TRUE);
 #elif DEBUG_LEVEL == 3
-		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_TRUE);
+		// Enable all messages.
+		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+
+		// Comment out the next two calls to get scoped debug messages in the logs.
+		// Note that it can come at a significant performance cost.
+		glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_PUSH_GROUP, GL_DONT_CARE, 0, nullptr, GL_FALSE);
+		glDebugMessageControl(GL_DONT_CARE, GL_DEBUG_TYPE_POP_GROUP, GL_DONT_CARE, 0, nullptr, GL_FALSE);
+#endif
+#if DEBUG_LEVEL >= 2
+		// Disable certain messages:
+		std::array<GLuint, 1> api_other_ids = {
+			131185u, // "Buffer detailed info: Buffer object Y will use VIDEO memory as the source for buffer object operations."
+		};
+		glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_OTHER, GL_DONT_CARE, static_cast<GLsizei>(api_other_ids.size()), api_other_ids.data(), GL_FALSE);
 #endif
 	}
 	else
