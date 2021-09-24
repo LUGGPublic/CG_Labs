@@ -1,7 +1,7 @@
 #version 330
 
 in VS_OUT {
-	flat uint axis_index;
+	flat int axis_index;
 } vs_out;
 
 out vec4 frag_color;
