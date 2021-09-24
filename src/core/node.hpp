@@ -20,9 +20,6 @@ namespace bonobo
 class Node
 {
 public:
-	//! \brief Default constructor.
-	Node();
-
 	//! \brief Render this node.
 	//!
 	//! @param [in] view_projection Matrix transforming from world-space to clip-space
@@ -116,14 +113,14 @@ public:
 
 private:
 	// Geometry data
-	GLuint _vao;
-	GLsizei _vertices_nb;
-	GLsizei _indices_nb;
-	GLenum _drawing_mode;
-	bool _has_indices;
+	GLuint _vao{ 0u };
+	GLsizei _vertices_nb{ 0u };
+	GLsizei _indices_nb{ 0u };
+	GLenum _drawing_mode{ GL_TRIANGLES };
+	bool _has_indices{ false };
 
 	// Program data
-	GLuint const* _program;
+	GLuint const* _program{ nullptr };
 	std::function<void (GLuint)> _set_uniforms;
 
 	// Textures data

@@ -7,10 +7,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Node::Node() : _vao(0u), _vertices_nb(0u), _indices_nb(0u), _drawing_mode(GL_TRIANGLES), _has_indices(true), _program(nullptr), _textures(), _transform(), _children()
-{
-}
-
 void
 Node::render(glm::mat4 const& view_projection, glm::mat4 const& parent_transform) const
 {
