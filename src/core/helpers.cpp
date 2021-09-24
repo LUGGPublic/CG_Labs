@@ -535,6 +535,9 @@ bonobo::drawFullscreen()
 void
 bonobo::renderBasis(float thickness_scale, float length_scale, glm::mat4 const& view_projection, glm::mat4 const& world)
 {
+	if (basis.shader == 0u)
+		return;
+
 	glUseProgram(basis.shader);
 	glBindVertexArray(basis.vao);
 	glUniformMatrix4fv(basis.shader_locations.world, 1, GL_FALSE, glm::value_ptr(world));
@@ -676,8 +679,10 @@ namespace
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0U);
 
 		basis.shader = bonobo::createProgram("common/basis.vert", "common/basis.frag");
-		if (basis.shader == 0u)
+		if (basis.shader == 0u) {
 			LogError("Failed to load \"basis.vert\" and \"basis.frag\"");
+			return;
+		}
 
 		GLint shader_location = glGetUniformLocation(basis.shader, "vertex_model_to_world");
 		assert(shader_location >= 0);
