@@ -165,6 +165,9 @@ namespace bonobo
 	//! \brief Draw full screen.
 	void drawFullscreen();
 
+	//! \brief Retrieve the ID of a small placeholder texture.
+	GLuint getDebugTextureID();
+
 	//! \brief Render a right-hand orthonormal basis.
 	//!
 	//! @param [in] thickness_scale By how much to scale the thickness of the axes

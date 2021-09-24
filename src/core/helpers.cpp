@@ -33,7 +33,10 @@ namespace
 		} shader_locations;
 	} basis;
 
+	GLuint debug_texture_id{ 0u };
+
 	void setupBasisData();
+	void createDebugTexture();
 }
 
 namespace local
@@ -56,6 +59,7 @@ void
 bonobo::init()
 {
 	setupBasisData();
+	createDebugTexture();
 
 	glGenVertexArrays(1, &local::display_vao);
 	assert(local::display_vao != 0u);
@@ -67,6 +71,9 @@ bonobo::init()
 void
 bonobo::deinit()
 {
+	glDeleteTextures(1, &debug_texture_id);
+	debug_texture_id = 0u;
+
 	glDeleteProgram(basis.shader);
 	glDeleteBuffers(1, &basis.ibo);
 	glDeleteBuffers(1, &basis.vbo);
@@ -532,6 +539,12 @@ bonobo::drawFullscreen()
 	glBindVertexArray(0u);
 }
 
+GLuint
+bonobo::getDebugTextureID()
+{
+	return debug_texture_id;
+}
+
 void
 bonobo::renderBasis(float thickness_scale, float length_scale, glm::mat4 const& view_projection, glm::mat4 const& world)
 {
@@ -699,5 +712,21 @@ namespace
 		shader_location = glGetUniformLocation(basis.shader, "length_scale");
 		assert(shader_location >= 0);
 		basis.shader_locations.length_scale = shader_location;
+	}
+
+	void createDebugTexture()
+	{
+		const GLsizei debug_texture_width = 16;
+		const GLsizei debug_texture_height = 16;
+		std::array<std::uint32_t, debug_texture_width* debug_texture_height> debug_texture_content;
+		debug_texture_content.fill(0xFFE935DAu);
+		glGenTextures(1, &debug_texture_id);
+		glBindTexture(GL_TEXTURE_2D, debug_texture_id);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, debug_texture_width, debug_texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, debug_texture_content.data());
+		glBindTexture(GL_TEXTURE_2D, 0u);
+
+		utils::opengl::debug::nameObject(GL_TEXTURE, debug_texture_id, "Debug texture");
 	}
 }
