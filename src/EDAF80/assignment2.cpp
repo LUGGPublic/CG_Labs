@@ -121,6 +121,10 @@ edaf80::Assignment2::run()
 	// always be changed at runtime through the "Scene Controls" window.
 	bool interpolate = true;
 
+	// Set whether to show the control points or not; it can always be changed
+	// at runtime through the "Scene Controls" window.
+	bool show_control_points = true;
+
 	auto circle_rings = Node();
 	circle_rings.set_geometry(shape);
 	circle_rings.set_program(&fallback_shader, set_uniforms);
@@ -225,8 +229,10 @@ edaf80::Assignment2::run()
 		}
 
 		circle_rings.render(mCamera.GetWorldToClipMatrix());
-		for (auto const& control_point : control_points) {
-			control_point.render(mCamera.GetWorldToClipMatrix());
+		if (show_control_points) {
+			for (auto const& control_point : control_points) {
+				control_point.render(mCamera.GetWorldToClipMatrix());
+			}
 		}
 
 		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImGuiWindowFlags_None);
@@ -241,6 +247,7 @@ edaf80::Assignment2::run()
 				circle_rings.set_program(selection_result.program, set_uniforms);
 			}
 			ImGui::Separator();
+			ImGui::Checkbox("Show control points", &show_control_points);
 			ImGui::Checkbox("Enable interpolation", &interpolate);
 			ImGui::Checkbox("Use linear interpolation", &use_linear);
 			ImGui::SliderFloat("Catmull-Rom tension", &catmull_rom_tension, 0.0f, 1.0f);
