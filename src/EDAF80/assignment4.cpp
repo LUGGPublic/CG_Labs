@@ -62,7 +62,7 @@ edaf80::Assignment4::run()
 	//       (Check how it was done in assignment 3.)
 	//
 
-	float ellapsed_time_s = 0.0f;
+	float elapsed_time_s = 0.0f;
 
 	//
 	// Todo: Load your geometry
@@ -90,7 +90,7 @@ edaf80::Assignment4::run()
 		auto const nowTime = std::chrono::high_resolution_clock::now();
 		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
 		lastTime = nowTime;
-		ellapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
+		elapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);

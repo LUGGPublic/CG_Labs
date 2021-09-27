@@ -163,7 +163,7 @@ edaf80::Assignment2::run()
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	std::int32_t program_index = 0;
-	float ellapsed_time_s = 0.0f;
+	float elapsed_time_s = 0.0f;
 	auto cull_mode = bonobo::cull_mode_t::disabled;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
@@ -185,7 +185,7 @@ edaf80::Assignment2::run()
 		glfwPollEvents();
 		inputHandler.Advance();
 		mCamera.Update(deltaTimeUs, inputHandler);
-		ellapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
+		elapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
