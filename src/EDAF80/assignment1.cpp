@@ -57,6 +57,8 @@ int main()
 	if (objects.empty()) {
 		LogError("Failed to load the sphere geometry: exiting.");
 
+		bonobo::deinit();
+
 		return EXIT_FAILURE;
 	}
 	bonobo::mesh_data const& sphere = objects.front();
@@ -75,8 +77,7 @@ int main()
 	if (celestial_body_shader == 0u) {
 		LogError("Failed to generate the “Celestial Body” shader program: exiting.");
 
-		Log::View::Destroy();
-		Log::Destroy();
+		bonobo::deinit();
 
 		return EXIT_FAILURE;
 	}
@@ -88,8 +89,7 @@ int main()
 	if (celestial_ring_shader == 0u) {
 		LogError("Failed to generate the “Celestial Ring” shader program: exiting.");
 
-		Log::View::Destroy();
-		Log::Destroy();
+		bonobo::deinit();
 
 		return EXIT_FAILURE;
 	}

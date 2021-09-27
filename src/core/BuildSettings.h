@@ -2,7 +2,7 @@
 
 /*
 *	0: Debugging disabled (maximum performance)
-*	1: Minimal error reporting. Constatly checks glGetError().
+*	1: Minimal error reporting. Constantly checks glGetError().
 *	2: Creates GL debug context, but only logs medium and severe problems.
 *	3: Creates GL debug context and enables all GL debugging features.
 */

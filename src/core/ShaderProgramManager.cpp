@@ -73,7 +73,7 @@ ShaderProgramManager::SelectedProgram ShaderProgramManager::SelectProgram(std::s
 		return selection_result;
 	}
 
-	selection_result.was_selection_changed = ImGui::Combo(label.c_str(), &program_index, program_names.data(), program_names.size());
+	selection_result.was_selection_changed = ImGui::Combo(label.c_str(), &program_index, program_names.data(), static_cast<int>(program_names.size()));
 	selection_result.program = &program_entries.at(program_index).first;
 	selection_result.name = program_names.at(program_index);
 	return selection_result;
@@ -107,11 +107,7 @@ void ShaderProgramManager::ProcessProgram(std::size_t const program_index)
 	}
 
 	program = utils::opengl::shader::generate_program(shaders);
-	if (utils::opengl::debug::isSupported())
-	{
-		auto const& program_name = program_names[program_index];
-		glObjectLabel(GL_PROGRAM, program, strlen(program_name), program_name);
-	}
+	utils::opengl::debug::nameObject(GL_PROGRAM, program, program_names[program_index]);
 
 	for (auto& shader : shaders)
 		glDeleteShader(shader);

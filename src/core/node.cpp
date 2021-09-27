@@ -7,10 +7,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Node::Node() : _vao(0u), _vertices_nb(0u), _indices_nb(0u), _drawing_mode(GL_TRIANGLES), _has_indices(true), _program(nullptr), _textures(), _transform(), _children()
-{
-}
-
 void
 Node::render(glm::mat4 const& view_projection, glm::mat4 const& parent_transform) const
 {
@@ -24,10 +20,7 @@ Node::render(glm::mat4 const& view_projection, glm::mat4 const& world, GLuint pr
 	if (_vao == 0u || program == 0u)
 		return;
 
-	if (utils::opengl::debug::isSupported())
-	{
-		glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0u, _name.size(), _name.data());
-	}
+	utils::opengl::debug::beginDebugGroup(_name);
 
 	glUseProgram(program);
 
@@ -66,10 +59,7 @@ Node::render(glm::mat4 const& view_projection, glm::mat4 const& world, GLuint pr
 
 	glUseProgram(0u);
 
-	if (utils::opengl::debug::isSupported())
-	{
-		glPopDebugGroup();
-	}
+	utils::opengl::debug::endDebugGroup();
 }
 
 void
@@ -80,7 +70,7 @@ Node::set_geometry(bonobo::mesh_data const& shape)
 	_indices_nb = static_cast<GLsizei>(shape.indices_nb);
 	_drawing_mode = shape.drawing_mode;
 	_has_indices = shape.ibo != 0u;
-	_name = shape.name;
+	_name = std::string("Render ") + shape.name;
 
 	if (!shape.bindings.empty()) {
 		for (auto const& binding : shape.bindings)
@@ -98,6 +88,12 @@ Node::set_program(GLuint const* const program, std::function<void (GLuint)> cons
 
 	_program = program;
 	_set_uniforms = set_uniforms;
+}
+
+void
+Node::set_name(std::string const& name)
+{
+	_name = std::string("Render ") + name;
 }
 
 size_t

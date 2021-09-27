@@ -121,6 +121,10 @@ edaf80::Assignment2::run()
 	// always be changed at runtime through the "Scene Controls" window.
 	bool interpolate = true;
 
+	// Set whether to show the control points or not; it can always be changed
+	// at runtime through the "Scene Controls" window.
+	bool show_control_points = true;
+
 	auto circle_rings = Node();
 	circle_rings.set_geometry(shape);
 	circle_rings.set_program(&fallback_shader, set_uniforms);
@@ -159,7 +163,7 @@ edaf80::Assignment2::run()
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	std::int32_t program_index = 0;
-	float ellapsed_time_s = 0.0f;
+	float elapsed_time_s = 0.0f;
 	auto cull_mode = bonobo::cull_mode_t::disabled;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
@@ -181,7 +185,7 @@ edaf80::Assignment2::run()
 		glfwPollEvents();
 		inputHandler.Advance();
 		mCamera.Update(deltaTimeUs, inputHandler);
-		ellapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
+		elapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_F3) & JUST_RELEASED)
 			show_logs = !show_logs;
@@ -225,8 +229,10 @@ edaf80::Assignment2::run()
 		}
 
 		circle_rings.render(mCamera.GetWorldToClipMatrix());
-		for (auto const& control_point : control_points) {
-			control_point.render(mCamera.GetWorldToClipMatrix());
+		if (show_control_points) {
+			for (auto const& control_point : control_points) {
+				control_point.render(mCamera.GetWorldToClipMatrix());
+			}
 		}
 
 		bool const opened = ImGui::Begin("Scene Controls", nullptr, ImGuiWindowFlags_None);
@@ -241,6 +247,7 @@ edaf80::Assignment2::run()
 				circle_rings.set_program(selection_result.program, set_uniforms);
 			}
 			ImGui::Separator();
+			ImGui::Checkbox("Show control points", &show_control_points);
 			ImGui::Checkbox("Enable interpolation", &interpolate);
 			ImGui::Checkbox("Use linear interpolation", &use_linear);
 			ImGui::SliderFloat("Catmull-Rom tension", &catmull_rom_tension, 0.0f, 1.0f);

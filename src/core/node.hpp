@@ -20,9 +20,6 @@ namespace bonobo
 class Node
 {
 public:
-	//! \brief Default constructor.
-	Node();
-
 	//! \brief Render this node.
 	//!
 	//! @param [in] view_projection Matrix transforming from world-space to clip-space
@@ -71,13 +68,23 @@ public:
 	//! A node without a program will not render itself, but its children
 	//! will be rendered if they have one.
 	//!
-	//! @param [in] pointer to the program OpenGL shader program to use;
-	//!             the pointer should not be nul.
+	//! @param [in] program pointer to the program OpenGL shader program to
+	//!             use; the pointer should not be null.
 	//! @param [in] set_uniforms function that will take as argument an
 	//!             OpenGL shader program, and will setup that program's
 	//!             uniforms
 	void set_program(GLuint const* const program,
 	                 std::function<void (GLuint)> const& set_uniforms = [](GLuint /*programID*/){});
+
+	//! \brief Set the name of this node.
+	//!
+	//! This name will be used when pushing debug groups to scope OpenGL
+	//! commands and help when debugging or profiling the application using
+	//! third-party applications.
+	//!
+	//! @param [in] name the name used when creating the debug group during
+	//!             rendering; it will automatically be prefixed by "Render ".
+	void set_name(std::string const& name);
 
 	//! \brief Add a texture to this node.
 	//!
@@ -116,14 +123,14 @@ public:
 
 private:
 	// Geometry data
-	GLuint _vao;
-	GLsizei _vertices_nb;
-	GLsizei _indices_nb;
-	GLenum _drawing_mode;
-	bool _has_indices;
+	GLuint _vao{ 0u };
+	GLsizei _vertices_nb{ 0u };
+	GLsizei _indices_nb{ 0u };
+	GLenum _drawing_mode{ GL_TRIANGLES };
+	bool _has_indices{ false };
 
 	// Program data
-	GLuint const* _program;
+	GLuint const* _program{ nullptr };
 	std::function<void (GLuint)> _set_uniforms;
 
 	// Textures data
@@ -136,5 +143,5 @@ private:
 	std::vector<Node const*> _children;
 
 	// Debug data
-	std::string _name;
+	std::string _name{"Render un-named node"};
 };
