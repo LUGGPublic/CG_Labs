@@ -62,7 +62,7 @@ edaf80::Assignment4::run()
 	//       (Check how it was done in assignment 3.)
 	//
 
-	float ellapsed_time_s = 0.0f;
+	float elapsed_time_s = 0.0f;
 
 	//
 	// Todo: Load your geometry
@@ -75,6 +75,7 @@ edaf80::Assignment4::run()
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
+	bool pause_animation = true;
 	auto cull_mode = bonobo::cull_mode_t::disabled;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
@@ -90,7 +91,9 @@ edaf80::Assignment4::run()
 		auto const nowTime = std::chrono::high_resolution_clock::now();
 		auto const deltaTimeUs = std::chrono::duration_cast<std::chrono::microseconds>(nowTime - lastTime);
 		lastTime = nowTime;
-		ellapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
+		if (!pause_animation) {
+			elapsed_time_s += std::chrono::duration<float>(deltaTimeUs).count();
+		}
 
 		auto& io = ImGui::GetIO();
 		inputHandler.SetUICapture(io.WantCaptureMouse, io.WantCaptureKeyboard);
@@ -155,6 +158,7 @@ edaf80::Assignment4::run()
 
 		bool opened = ImGui::Begin("Scene Control", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
+			ImGui::Checkbox("Pause animation", &pause_animation);
 			auto const cull_mode_changed = bonobo::uiSelectCullMode("Cull mode", cull_mode);
 			if (cull_mode_changed) {
 				changeCullMode(cull_mode);

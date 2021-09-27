@@ -55,8 +55,10 @@ void Init()
 void Destroy()
 {
 	fileMutex.lock();
-	if (!logfile)
+	if (!logfile) {
+		fileMutex.unlock();
 		return;
+	}
 	fprintf(logfile, "\n === End of log === \n\n");
 	fflush(logfile);
 	fclose(logfile);

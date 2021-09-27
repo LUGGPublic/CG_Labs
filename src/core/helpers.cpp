@@ -33,7 +33,10 @@ namespace
 		} shader_locations;
 	} basis;
 
+	GLuint debug_texture_id{ 0u };
+
 	void setupBasisData();
+	void createDebugTexture();
 }
 
 namespace local
@@ -56,6 +59,7 @@ void
 bonobo::init()
 {
 	setupBasisData();
+	createDebugTexture();
 
 	glGenVertexArrays(1, &local::display_vao);
 	assert(local::display_vao != 0u);
@@ -67,6 +71,9 @@ bonobo::init()
 void
 bonobo::deinit()
 {
+	glDeleteTextures(1, &debug_texture_id);
+	debug_texture_id = 0u;
+
 	glDeleteProgram(basis.shader);
 	glDeleteBuffers(1, &basis.ibo);
 	glDeleteBuffers(1, &basis.vbo);
@@ -150,13 +157,15 @@ bonobo::loadObjects(std::string const& filename)
 					LogWarning("Material \"%s\" has more than one %s texture: discarding all but the first one.", material->GetName().C_Str(), type_as_str.c_str());
 				aiString path;
 				material->GetTexture(type, 0, &path);
-				auto const id = bonobo::loadTexture2D(parent_folder + std::string(path.C_Str()), type_as_str != "opacity");
+				auto const id = bonobo::loadTexture2D(parent_folder + std::string(path.C_Str()));
 				if (id == 0u) {
 					LogWarning("Failed to load the %s texture for material \"%s\".", type_as_str.c_str(), material->GetName().C_Str());
 					return;
 				}
 				bindings.emplace(name, id);
 				++texture_count;
+
+				utils::opengl::debug::nameObject(GL_TEXTURE, id, std::string(material->GetName().C_Str()) + " " + type_as_str);
 
 				auto const texture_end_time = std::chrono::high_resolution_clock::now();
 				LogTrivia("│ %s Texture \"%s\" loaded in %.3f ms",
@@ -285,6 +294,10 @@ bonobo::loadObjects(std::string const& filename)
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<unsigned int>(object.indices_nb) * sizeof(GL_UNSIGNED_INT), reinterpret_cast<GLvoid const*>(object_indices.get()), GL_STATIC_DRAW);
 		object_indices.reset(nullptr);
 
+		utils::opengl::debug::nameObject(GL_VERTEX_ARRAY, object.vao, object.name + " VAO");
+		utils::opengl::debug::nameObject(GL_BUFFER, object.bo, object.name + " VBO");
+		utils::opengl::debug::nameObject(GL_BUFFER, object.ibo, object.name + " IBO");
+
 		glBindVertexArray(0u);
 		glBindBuffer(GL_ARRAY_BUFFER, 0u);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
@@ -307,7 +320,7 @@ bonobo::loadObjects(std::string const& filename)
 		if (assimp_object_mesh->HasTextureCoords(0))
 		  attributes += "texture coordinates";
 		LogTrivia("│ %s Mesh \"%s\" loaded with attributes [%s] in %.3f ms",
-		          j == 0 ? "┌" : (j == assimp_scene->mNumMeshes - 1 ? "└" : "├"),
+		          (assimp_scene->mNumMeshes == 1u) ? "╶" : (j == 0 ? "┌" : (j == assimp_scene->mNumMeshes - 1 ? "└" : "├")),
 		          assimp_object_mesh->mName.C_Str(), attributes.c_str(),
 		          std::chrono::duration<float, std::milli>(mesh_end_time - mesh_start_time).count());
 	}
@@ -532,9 +545,18 @@ bonobo::drawFullscreen()
 	glBindVertexArray(0u);
 }
 
+GLuint
+bonobo::getDebugTextureID()
+{
+	return debug_texture_id;
+}
+
 void
 bonobo::renderBasis(float thickness_scale, float length_scale, glm::mat4 const& view_projection, glm::mat4 const& world)
 {
+	if (basis.shader == 0u)
+		return;
+
 	glUseProgram(basis.shader);
 	glBindVertexArray(basis.vao);
 	glUniformMatrix4fv(basis.shader_locations.world, 1, GL_FALSE, glm::value_ptr(world));
@@ -552,7 +574,7 @@ bonobo::uiSelectCullMode(std::string const& label, enum cull_mode_t& cull_mode) 
 	auto cull_mode_index = static_cast<int>(cull_mode);
 	bool was_modified = ImGui::Combo(label.c_str(), &cull_mode_index,
 	                                 local::cull_mode_labels.data(),
-	                                 local::cull_mode_labels.size());
+	                                 static_cast<int>(local::cull_mode_labels.size()));
 	cull_mode = static_cast<cull_mode_t>(cull_mode_index);
 	return was_modified;
 }
@@ -581,7 +603,7 @@ bonobo::uiSelectPolygonMode(std::string const& label, enum polygon_mode_t& polyg
 	auto polygon_mode_index = static_cast<int>(polygon_mode);
 	bool was_modified = ImGui::Combo(label.c_str(), &polygon_mode_index,
 	                                 local::polygon_mode_labels.data(),
-	                                 local::polygon_mode_labels.size());
+	                                 static_cast<int>(local::polygon_mode_labels.size()));
 	polygon_mode = static_cast<polygon_mode_t>(polygon_mode_index);
 	return was_modified;
 }
@@ -669,15 +691,17 @@ namespace
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, basis.ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
 
-		basis.index_count = indices.size() * 3;
+		basis.index_count = static_cast<GLsizei>(indices.size() * 3);
 
 		glBindVertexArray(0u);
 		glBindBuffer(GL_ARRAY_BUFFER, 0U);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0U);
 
 		basis.shader = bonobo::createProgram("common/basis.vert", "common/basis.frag");
-		if (basis.shader == 0u)
+		if (basis.shader == 0u) {
 			LogError("Failed to load \"basis.vert\" and \"basis.frag\"");
+			return;
+		}
 
 		GLint shader_location = glGetUniformLocation(basis.shader, "vertex_model_to_world");
 		assert(shader_location >= 0);
@@ -694,5 +718,25 @@ namespace
 		shader_location = glGetUniformLocation(basis.shader, "length_scale");
 		assert(shader_location >= 0);
 		basis.shader_locations.length_scale = shader_location;
+
+		utils::opengl::debug::nameObject(GL_VERTEX_ARRAY, basis.vao, "Basis VAO");
+		utils::opengl::debug::nameObject(GL_BUFFER, basis.vbo, "Basis VBO");
+		utils::opengl::debug::nameObject(GL_BUFFER, basis.ibo, "Basis IBO");
+	}
+
+	void createDebugTexture()
+	{
+		const GLsizei debug_texture_width = 16;
+		const GLsizei debug_texture_height = 16;
+		std::array<std::uint32_t, debug_texture_width* debug_texture_height> debug_texture_content;
+		debug_texture_content.fill(0xFFE935DAu);
+		glGenTextures(1, &debug_texture_id);
+		glBindTexture(GL_TEXTURE_2D, debug_texture_id);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, debug_texture_width, debug_texture_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, debug_texture_content.data());
+		glBindTexture(GL_TEXTURE_2D, 0u);
+
+		utils::opengl::debug::nameObject(GL_TEXTURE, debug_texture_id, "Debug texture");
 	}
 }
