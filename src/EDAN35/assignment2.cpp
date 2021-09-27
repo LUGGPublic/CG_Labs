@@ -262,6 +262,9 @@ edan35::Assignment2::run()
 	glEnable(GL_CULL_FACE);
 
 
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
+
+
 	auto seconds_nb = 0.0f;
 	std::array<GLuint64, toU(ElapsedTimeQuery::Count)> pass_elapsed_times;
 	auto lastTime = std::chrono::high_resolution_clock::now();
@@ -454,13 +457,18 @@ edan35::Assignment2::run()
 		}
 
 
+		auto const show_debug_elements = show_cone_wireframe || show_basis;
+		if (show_debug_elements) {
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)]);
+		}
+
+
 		//
 		// Draw wireframe cones on top of the final image for debugging purposes
 		//
 		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::ConeWireframe)]);
 		if (show_cone_wireframe) {
 			utils::opengl::debug::beginDebugGroup("Draw cone wireframe");
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)]);
 
 			glDisable(GL_CULL_FACE);
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -482,14 +490,15 @@ edan35::Assignment2::run()
 		//
 		// Display 3D helpers
 		//
-		if (show_basis)
-		{
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::FinalWithDepth)]);
-
+		if (show_basis) {
 			bonobo::renderBasis(basis_thickness_scale, basis_length_scale, mCamera.GetWorldToClipMatrix());
 		}
 
-		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
+		// If the basis and cone wireframe were not shown, FBO::Resolve
+		// is still bound so there is no need to rebind it.
+		if (show_debug_elements) {
+			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
+		}
 
 		//
 		// Output content of the g-buffer as well as of the shadowmap, for debugging purposes
@@ -594,7 +603,8 @@ edan35::Assignment2::run()
 		utils::opengl::debug::beginDebugGroup("Copy to default framebuffer");
 		glBeginQuery(GL_TIME_ELAPSED, elapsed_time_queries[toU(ElapsedTimeQuery::CopyToFramebuffer)]);
 
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, fbos[toU(FBO::Resolve)]);
+		// FBO::Resolve has already been bound to GL_READ_FRAMEBUFFER before rendering the first frame,
+		// as no other frame buffer gets bound to it.
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0u);
 		glBlitFramebuffer(0, 0, framebuffer_width, framebuffer_height, 0, 0, framebuffer_width, framebuffer_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
