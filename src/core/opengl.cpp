@@ -138,13 +138,6 @@ opengl_error_callback( GLenum source, GLenum type, GLuint id, GLenum severity
 		return;
 	}
 
-	// "Texture state usage warning: The texture object (X) bound to texture unit Y does not have a defined base level and cannot be used for texture mapping."
-	if (source == GL_DEBUG_SOURCE_API && type == GL_DEBUG_TYPE_OTHER && id == 131204u) {
-		// Discard if this is about the “default texture”, i.e. ID 0.
-		if (std::strstr(msg, "The texture object (0)") != nullptr)
-			return;
-	}
-
 	std::ostringstream oss;
 	oss << "[id: " << id << "] of type " << getStringForType(type)
 	    << ", from " << getStringForSource(source) << ":" << std::endl;
