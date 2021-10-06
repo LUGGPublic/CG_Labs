@@ -44,14 +44,12 @@ public:
 	T mFov, mAspect, mNear, mFar;
 	glm::tmat4x4<T, P> mProjection;
 	glm::tmat4x4<T, P> mProjectionInverse;
-	glm::tvec2<T, P> mRotation;
 	glm::tvec2<T, P> mMousePosition;
 
 public:
 	friend std::ostream &operator<<(std::ostream &os, FPSCamera<T, P> &v) {
 		os << v.mFov << " " << v.mAspect << " " << v.mNear << " " << v.mFar << std::endl;
 		os << v.mMovementSpeed << " " << v.mMouseSensitivity << std::endl;
-		os << v.mRotation << std::endl;
 		os << v.mWorld;
 		return os;
 	}
@@ -60,7 +58,6 @@ public:
 		is >> fov >> aspect >> nnear >> far;
 		v.SetProjection(fov, aspect, nnear, far);
 		is >> v.mMovementSpeed >> v.mMouseSensitivity;
-		is >> v.mRotation;
 		is >> v.mWorld;
 		return is;
 	}

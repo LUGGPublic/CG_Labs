@@ -1,5 +1,5 @@
 template<typename T, glm::precision P>
-FPSCamera<T, P>::FPSCamera(T fovy, T aspect, T nnear, T nfar) : mWorld(), mMovementSpeed(1), mMouseSensitivity(1), mFov(fovy), mAspect(aspect), mNear(nnear), mFar(nfar), mProjection(), mProjectionInverse(), mRotation(glm::tvec2<T, P>(0.0f)), mMousePosition(glm::tvec2<T, P>(0.0f))
+FPSCamera<T, P>::FPSCamera(T fovy, T aspect, T nnear, T nfar) : mWorld(), mMovementSpeed(1), mMouseSensitivity(1), mFov(fovy), mAspect(aspect), mNear(nnear), mFar(nfar), mProjection(), mProjectionInverse(), mMousePosition(glm::tvec2<T, P>(0.0f))
 {
 	SetProjection(fovy, aspect, nnear, nfar);
 }
@@ -55,10 +55,8 @@ void FPSCamera<T, P>::Update(std::chrono::microseconds deltaTime, InputHandler &
 	mouse_diff *= mMouseSensitivity;
 
 	if (!ih.IsMouseCapturedByUI() && !ignoreMouseEvents && (ih.GetMouseState(GLFW_MOUSE_BUTTON_LEFT) & PRESSED)) {
-		mRotation.x -= mouse_diff.x;
-		mRotation.y += mouse_diff.y;
-		mWorld.SetRotateX(mRotation.y);
-		mWorld.RotateY(mRotation.x);
+		mWorld.PreRotateX(mouse_diff.y);
+		mWorld.RotateY(-mouse_diff.x);
 	}
 
 	T movementModifier = ((ih.GetKeycodeState(GLFW_KEY_LEFT_SHIFT) & PRESSED)) ? 0.25f : ((ih.GetKeycodeState(GLFW_KEY_LEFT_CONTROL) & PRESSED)) ? 4.0f : 1.0f;
