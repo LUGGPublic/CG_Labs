@@ -40,7 +40,8 @@ void
 edaf80::Assignment4::run()
 {
 	// Set up the camera
-	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 0.0f, 6.0f));
+	mCamera.mWorld.SetTranslate(glm::vec3(-40.0f, 14.0f, 6.0f));
+	mCamera.mWorld.LookAt(glm::vec3(0.0f));
 	mCamera.mMouseSensitivity = 0.003f;
 	mCamera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
 	auto camera_position = mCamera.mWorld.GetTranslation();
@@ -76,6 +77,7 @@ edaf80::Assignment4::run()
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
 	bool pause_animation = true;
+	bool use_orbit_camera = false;
 	auto cull_mode = bonobo::cull_mode_t::disabled;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
 	bool show_logs = true;
@@ -101,6 +103,9 @@ edaf80::Assignment4::run()
 		glfwPollEvents();
 		inputHandler.Advance();
 		mCamera.Update(deltaTimeUs, inputHandler);
+		if (use_orbit_camera) {
+			mCamera.mWorld.LookAt(glm::vec3(0.0f));
+		}
 		camera_position = mCamera.mWorld.GetTranslation();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
@@ -159,6 +164,8 @@ edaf80::Assignment4::run()
 		bool opened = ImGui::Begin("Scene Control", nullptr, ImGuiWindowFlags_None);
 		if (opened) {
 			ImGui::Checkbox("Pause animation", &pause_animation);
+			ImGui::Checkbox("Use orbit camera", &use_orbit_camera);
+			ImGui::Separator();
 			auto const cull_mode_changed = bonobo::uiSelectCullMode("Cull mode", cull_mode);
 			if (cull_mode_changed) {
 				changeCullMode(cull_mode);

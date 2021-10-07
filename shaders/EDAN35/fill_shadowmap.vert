@@ -1,7 +1,18 @@
 #version 330
 
+struct ViewProjTransforms
+{
+	mat4 view_projection;
+	mat4 view_projection_inverse;
+};
+
+layout (std140) uniform LightViewProjTransforms
+{
+	ViewProjTransforms lights[4];
+};
+
+uniform int light_index;
 uniform mat4 vertex_model_to_world;
-uniform mat4 vertex_world_to_clip;
 
 layout (location = 0) in vec3 vertex;
 layout (location = 2) in vec3 texcoord;
@@ -14,5 +25,5 @@ void main()
 {
 	vs_out.texcoord = texcoord.xy;
 
-	gl_Position = vertex_world_to_clip * vertex_model_to_world * vec4(vertex, 1.0);
+	gl_Position = lights[light_index].view_projection * vertex_model_to_world * vec4(vertex, 1.0);
 }

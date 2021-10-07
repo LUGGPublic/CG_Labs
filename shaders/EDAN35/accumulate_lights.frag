@@ -1,14 +1,30 @@
 #version 330
 
+struct ViewProjTransforms
+{
+	mat4 view_projection;
+	mat4 view_projection_inverse;
+};
+
+layout (std140) uniform CameraViewProjTransforms
+{
+	ViewProjTransforms camera;
+};
+
+layout (std140) uniform LightViewProjTransforms
+{
+	ViewProjTransforms lights[4];
+};
+
+uniform int light_index;
+
 uniform sampler2D depth_texture;
 uniform sampler2D normal_texture;
 uniform sampler2DShadow shadow_texture;
 
-uniform vec2 inv_res;
+uniform vec2 inverse_screen_resolution;
 
-uniform mat4 view_projection_inverse;
 uniform vec3 camera_position;
-uniform mat4 shadow_view_projection;
 
 uniform vec3 light_color;
 uniform vec3 light_position;
