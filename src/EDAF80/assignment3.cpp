@@ -136,6 +136,7 @@ edaf80::Assignment3::run()
 
 	auto lastTime = std::chrono::high_resolution_clock::now();
 
+	bool use_orbit_camera = false;
 	std::int32_t demo_sphere_program_index = 0;
 	auto cull_mode = bonobo::cull_mode_t::disabled;
 	auto polygon_mode = bonobo::polygon_mode_t::fill;
@@ -159,6 +160,9 @@ edaf80::Assignment3::run()
 		glfwPollEvents();
 		inputHandler.Advance();
 		mCamera.Update(deltaTimeUs, inputHandler);
+		if (use_orbit_camera) {
+			mCamera.mWorld.LookAt(glm::vec3(0.0f));
+		}
 		camera_position = mCamera.mWorld.GetTranslation();
 
 		if (inputHandler.GetKeycodeState(GLFW_KEY_R) & JUST_PRESSED) {
@@ -220,6 +224,8 @@ edaf80::Assignment3::run()
 			ImGui::ColorEdit3("Specular", glm::value_ptr(specular));
 			ImGui::SliderFloat("Shininess", &shininess, 1.0f, 1000.0f);
 			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -20.0f, 20.0f);
+			ImGui::Separator();
+			ImGui::Checkbox("Use orbit camera", &use_orbit_camera);
 			ImGui::Separator();
 			ImGui::Checkbox("Show basis", &show_basis);
 			ImGui::SliderFloat("Basis thickness scale", &basis_thickness_scale, 0.0f, 100.0f);
