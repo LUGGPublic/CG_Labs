@@ -90,18 +90,10 @@ edaf80::Assignment3::run()
 
 	bool use_normal_mapping = false;
 	auto camera_position = mCamera.mWorld.GetTranslation();
-	auto ambient = glm::vec3(0.1f, 0.1f, 0.1f);
-	auto diffuse = glm::vec3(0.7f, 0.2f, 0.4f);
-	auto specular = glm::vec3(1.0f, 1.0f, 1.0f);
-	auto shininess = 10.0f;
-	auto const phong_set_uniforms = [&use_normal_mapping,&light_position,&camera_position,&ambient,&diffuse,&specular,&shininess](GLuint program){
+	auto const phong_set_uniforms = [&use_normal_mapping,&light_position,&camera_position](GLuint program){
 		glUniform1i(glGetUniformLocation(program, "use_normal_mapping"), use_normal_mapping ? 1 : 0);
 		glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
 		glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, glm::value_ptr(camera_position));
-		glUniform3fv(glGetUniformLocation(program, "ambient"), 1, glm::value_ptr(ambient));
-		glUniform3fv(glGetUniformLocation(program, "diffuse"), 1, glm::value_ptr(diffuse));
-		glUniform3fv(glGetUniformLocation(program, "specular"), 1, glm::value_ptr(specular));
-		glUniform1f(glGetUniformLocation(program, "shininess"), shininess);
 	};
 
 
@@ -124,9 +116,16 @@ edaf80::Assignment3::run()
 		return;
 	}
 
+	bonobo::material_data demo_material;
+	demo_material.ambient = glm::vec3(0.1f, 0.1f, 0.1f);
+	demo_material.diffuse = glm::vec3(0.7f, 0.2f, 0.4f);
+	demo_material.specular = glm::vec3(1.0f, 1.0f, 1.0f);
+	demo_material.shininess = 10.0f;
+
 	Node demo_sphere;
 	demo_sphere.set_geometry(demo_shape);
-	demo_sphere.set_program(&fallback_shader, set_uniforms);
+	demo_sphere.set_material_constants(demo_material);
+	demo_sphere.set_program(&fallback_shader, phong_set_uniforms);
 
 
 	glClearDepthf(1.0f);
@@ -219,10 +218,10 @@ edaf80::Assignment3::run()
 			}
 			ImGui::Separator();
 			ImGui::Checkbox("Use normal mapping", &use_normal_mapping);
-			ImGui::ColorEdit3("Ambient", glm::value_ptr(ambient));
-			ImGui::ColorEdit3("Diffuse", glm::value_ptr(diffuse));
-			ImGui::ColorEdit3("Specular", glm::value_ptr(specular));
-			ImGui::SliderFloat("Shininess", &shininess, 1.0f, 1000.0f);
+			ImGui::ColorEdit3("Ambient", glm::value_ptr(demo_material.ambient));
+			ImGui::ColorEdit3("Diffuse", glm::value_ptr(demo_material.diffuse));
+			ImGui::ColorEdit3("Specular", glm::value_ptr(demo_material.specular));
+			ImGui::SliderFloat("Shininess", &demo_material.shininess, 1.0f, 1000.0f);
 			ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position), -20.0f, 20.0f);
 			ImGui::Separator();
 			ImGui::Checkbox("Use orbit camera", &use_orbit_camera);
@@ -232,6 +231,8 @@ edaf80::Assignment3::run()
 			ImGui::SliderFloat("Basis length scale", &basis_length_scale, 0.0f, 100.0f);
 		}
 		ImGui::End();
+
+		demo_sphere.set_material_constants(demo_material);
 
 		if (show_basis)
 			bonobo::renderBasis(basis_thickness_scale, basis_length_scale, mCamera.GetWorldToClipMatrix());
