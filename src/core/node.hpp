@@ -1,5 +1,6 @@
 #pragma once
 
+#include "helpers.hpp"
 #include "TRSTransform.h"
 
 #include <glad/glad.h>
@@ -10,11 +11,6 @@
 #include <string>
 #include <tuple>
 #include <vector>
-
-namespace bonobo
-{
-	struct mesh_data;
-}
 
 //! \brief Represents a node of a scene graph
 class Node
@@ -47,11 +43,24 @@ public:
 
 	//! \brief Set the geometry of this node.
 	//!
+	//! It will overwrite any constants provided by an earlier call to
+	//! |set_material_constants()|.
+	//!
 	//! A node without any geometry will not render itself, but its
 	//! children will be rendered if they have any geometry.
 	//!
 	//! @param [in] shape OpenGL data to use as geometry
 	void set_geometry(bonobo::mesh_data const& shape);
+
+	//! \brief Set the material constants of this node.
+	//!
+	//! It will overwrite any constants provided by the geometry.
+	//!
+	//! A node without any geometry will not render itself, but its
+	//! children will be rendered if they have any geometry.
+	//!
+	//! @param [in] constants Material constants to be made available during rendering
+	void set_material_constants(bonobo::material_data const& constants);
 
 	//! \brief Get the number of indices to use.
 	//!
@@ -133,8 +142,9 @@ private:
 	GLuint const* _program{ nullptr };
 	std::function<void (GLuint)> _set_uniforms;
 
-	// Textures data
+	// Material data
 	std::vector<std::tuple<std::string, GLuint, GLenum>> _textures;
+	bonobo::material_data _constants;
 
 	// Transformation data
 	TRSTransformf _transform;

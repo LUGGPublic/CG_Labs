@@ -52,6 +52,14 @@ Node::render(glm::mat4 const& view_projection, glm::mat4 const& world, GLuint pr
 		glUniform1i(glGetUniformLocation(program, texture_presence_var_name.c_str()), 1);
 	}
 
+	glUniform3fv(glGetUniformLocation(program, "diffuse_colour"), 1, glm::value_ptr(_constants.diffuse));
+	glUniform3fv(glGetUniformLocation(program, "specular_colour"), 1, glm::value_ptr(_constants.specular));
+	glUniform3fv(glGetUniformLocation(program, "ambient_colour"), 1, glm::value_ptr(_constants.ambient));
+	glUniform3fv(glGetUniformLocation(program, "emissive_colour"), 1, glm::value_ptr(_constants.emissive));
+	glUniform1f(glGetUniformLocation(program, "shininess_value"), _constants.shininess);
+	glUniform1f(glGetUniformLocation(program, "index_of_refraction_value"), _constants.indexOfRefraction);
+	glUniform1f(glGetUniformLocation(program, "opacity_value"), _constants.opacity);
+
 	glBindVertexArray(_vao);
 	if (_has_indices)
 		glDrawElements(_drawing_mode, _indices_nb, GL_UNSIGNED_INT, reinterpret_cast<GLvoid const*>(0x0));
@@ -91,6 +99,14 @@ Node::set_geometry(bonobo::mesh_data const& shape)
 		for (auto const& binding : shape.bindings)
 			add_texture(binding.first, binding.second, GL_TEXTURE_2D);
 	}
+
+	_constants = shape.material;
+}
+
+void
+Node::set_material_constants(bonobo::material_data const& constants)
+{
+	_constants = constants;
 }
 
 void

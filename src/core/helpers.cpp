@@ -140,6 +140,7 @@ bonobo::loadObjects(std::string const& filename)
 
 	auto const materials_start_time = std::chrono::high_resolution_clock::now();
 	std::vector<texture_bindings> materials_bindings(assimp_scene->mNumMaterials);
+	std::vector<material_data> material_constants(assimp_scene->mNumMaterials);
 	uint32_t texture_count = 0u;
 	for (size_t i = 0; i < assimp_scene->mNumMaterials; ++i) {
 		if (!are_materials_used[i])
@@ -147,6 +148,7 @@ bonobo::loadObjects(std::string const& filename)
 
 		auto const material_start_time = std::chrono::high_resolution_clock::now();
 		texture_bindings& bindings = materials_bindings[i];
+		material_data& constants = material_constants[i];
 		auto const material = assimp_scene->mMaterials[i];
 
 		auto const process_texture = [&bindings,&material,i,&parent_folder,&texture_count](aiTextureType type, std::string const& type_as_str, std::string const& name){
@@ -173,6 +175,20 @@ bonobo::loadObjects(std::string const& filename)
 				          std::chrono::duration<float, std::milli>(texture_end_time - texture_start_time).count());
 			}
 		};
+
+		aiColor3D color;
+
+		material->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+		constants.diffuse = glm::vec3(color.r, color.g, color.b);
+		material->Get(AI_MATKEY_COLOR_SPECULAR, color);
+		constants.specular = glm::vec3(color.r, color.g, color.b);
+		material->Get(AI_MATKEY_COLOR_AMBIENT, color);
+		constants.ambient = glm::vec3(color.r, color.g, color.b);
+		material->Get(AI_MATKEY_COLOR_EMISSIVE, color);
+		constants.emissive = glm::vec3(color.r, color.g, color.b);
+		material->Get(AI_MATKEY_SHININESS, constants.shininess);
+		material->Get(AI_MATKEY_REFRACTI, constants.indexOfRefraction);
+		material->Get(AI_MATKEY_OPACITY, constants.opacity);
 
 		process_texture(aiTextureType_DIFFUSE,  "diffuse",  "diffuse_texture");
 		process_texture(aiTextureType_SPECULAR, "specular", "specular_texture");
@@ -303,8 +319,10 @@ bonobo::loadObjects(std::string const& filename)
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0u);
 
 		auto const material_id = assimp_object_mesh->mMaterialIndex;
-		if (material_id < materials_bindings.size())
+		if (material_id < materials_bindings.size()) {
 			object.bindings = materials_bindings[material_id];
+			object.material = material_constants[material_id];
+		}
 
 		objects.push_back(object);
 
