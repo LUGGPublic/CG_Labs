@@ -612,12 +612,12 @@ edan35::Assignment2::run()
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::DepthBuffer)]);
 				glUniform1i(accumulate_light_shader_locations.depth_texture, 0);
-				glBindSampler(0, samplers[toU(Sampler::Nearest)]);
+				glBindSampler(0, samplers[toU(Sampler::Linear)]);
 
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::GBufferWorldSpaceNormal)]);
 				glUniform1i(accumulate_light_shader_locations.normal_texture, 1);
-				glBindSampler(1, samplers[toU(Sampler::Nearest)]);
+				glBindSampler(1, samplers[toU(Sampler::Linear)]);
 
 				glActiveTexture(GL_TEXTURE2);
 				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::ShadowMap)]);
