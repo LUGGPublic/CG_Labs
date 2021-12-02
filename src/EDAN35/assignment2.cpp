@@ -60,7 +60,6 @@ namespace
 		Nearest = 0u,
 		Linear,
 		Mipmaps,
-		Shadow,
 		Count
 	};
 	using Samplers = std::array<GLuint, toU(Sampler::Count)>;
@@ -623,7 +622,7 @@ edan35::Assignment2::run()
 				glActiveTexture(GL_TEXTURE2);
 				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::ShadowMap)]);
 				glUniform1i(accumulate_light_shader_locations.shadow_texture, 2);
-				glBindSampler(2, samplers[toU(Sampler::Shadow)]);
+				glBindSampler(2, samplers[toU(Sampler::Linear)]);
 
 				glBindVertexArray(cone_geometry.vao);
 				glDrawArrays(cone_geometry.drawing_mode, 0, cone_geometry.vertices_nb);
@@ -926,13 +925,6 @@ Samplers createSamplers()
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Mipmaps)], "Mimaps");
-
-	// For sampling 2-D shadow maps
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_COMPARE_FUNC, GL_LESS);
-	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Shadow)], "Shadow");
 
 	return samplers;
 }

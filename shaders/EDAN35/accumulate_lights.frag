@@ -20,7 +20,7 @@ uniform int light_index;
 
 uniform sampler2D depth_texture;
 uniform sampler2D normal_texture;
-uniform sampler2DShadow shadow_texture;
+uniform sampler2D shadow_texture;
 
 uniform vec2 inverse_screen_resolution;
 
