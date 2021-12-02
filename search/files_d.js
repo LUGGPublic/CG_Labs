@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['windowmanager_2ecpp_623',['WindowManager.cpp',['../WindowManager_8cpp.html',1,'']]],
-  ['windowmanager_2ehpp_624',['WindowManager.hpp',['../WindowManager_8hpp.html',1,'']]]
+  ['various_2ecpp_624',['various.cpp',['../various_8cpp.html',1,'']]],
+  ['various_2ehpp_625',['various.hpp',['../various_8hpp.html',1,'']]]
 ];

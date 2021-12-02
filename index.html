@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.17"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>CG_Labs: Main Page</title>
+<title>CG_Labs: CG_Labs — Documentation</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -22,7 +22,7 @@
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
    <div id="projectname">CG_Labs
-   &#160;<span id="projectnumber">2021.1</span>
+   &#160;<span id="projectnumber">2021.2</span>
    </div>
   </td>
  </tr>
@@ -61,11 +61,51 @@ $(function() {
 </iframe>
 </div>
 
-<div class="header">
+<div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">CG_Labs Documentation</div>  </div>
+<div class="title">CG_Labs — Documentation </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="toc"><h3>Table of Contents</h3>
+<ul><li class="level1"><a href="#intro">Introduction</a><ul><li class="level2"><a href="#intro_doc">Documentation</a></li>
+<li class="level2"><a href="#intro_framework">Framework</a></li>
+</ul>
+</li>
+<li class="level1"><a href="#quick_links">Quick Links</a></li>
+</ul>
+</div>
+<div class="textblock"><h1><a class="anchor" id="intro"></a>
+Introduction</h1>
+<p>Here you can find the documentation for the source code used in the courses <a href="https://cs.lth.se/edaf80/">EDAF80</a> and <a href="https://cs.lth.se/edan35/">EDAN35</a> given at Lund University, Sweden. The source code itself is hosted on GitHub at <a href="https://github.com/LUGGPublic/CG_Labs">https://github.com/LUGGPublic/CG_Labs</a>.</p>
+<h2><a class="anchor" id="intro_doc"></a>
+Documentation</h2>
+<p>Information about the dependencies and main requirements for building and running the project can be found in the <a href="https://github.com/LUGGPublic/CG_Labs#dependencies">README.rst</a> file.<br  />
+ A guide for setting up and building the project is provided in <a href="https://github.com/LUGGPublic/CG_Labs/blob/master/BUILD.rst">BUILD.rst</a>.</p>
+<p>In the top-right corner of this page, there is a search field you can use to quickly look up a function or class. Via the navigation bar, you can quickly get an overview of all classes and namespaces found in the framework.</p>
+<h2><a class="anchor" id="intro_framework"></a>
+Framework</h2>
+<p>There are a couple of folders in the main directory you will be interacting with:</p><ul>
+<li><em>res/</em> which contains all the resources used in the course, such as images and 3D&#160;models;</li>
+<li><em>src/</em> for all the C++ code, which runs on the CPU;</li>
+<li><em>shaders/</em> for all the GLSL code that will be executed on the GPU.</li>
+</ul>
+<p><em>src/</em> is further subdivided in:</p><ul>
+<li>a <em>core/</em> folder containing various helpers and code shared by the different assignments;</li>
+<li>a <em>EDAF80/</em> folder for files specific to assignments for the EDAF80 course; <em>shaders/EDAF80</em> is its associated shader folder.</li>
+<li>a <em>EDAN35/</em> folder for files specific to assignments for the EDAN35 course; <em>shaders/EDAN35</em> is its associated shader folder.</li>
+</ul>
+<p>Each assignment uses a main file called <em>assignmentX.cpp</em>, where <em>X</em> corresponds to the number of the assignment (e.g. <em>assignment1.cpp</em> for the first one).</p>
+<h1><a class="anchor" id="quick_links"></a>
+Quick Links</h1>
+<p>Here is a list of classes for which you might want to check the documentation:</p><ul>
+<li><a class="el" href="classFPSCamera.html">FPSCamera</a></li>
+<li><a class="el" href="classNode.html" title="Represents a node of a scene graph.">Node</a></li>
+<li><a class="el" href="classTRSTransform.html">TRSTransform</a></li>
+<li><a class="el" href="classWindowManager.html" title="A simple class for creating and interacting with windows, using the GLFW library.">WindowManager</a></li>
+</ul>
+<p>The <a class="el" href="namespacebonobo.html">bonobo</a> namespace contains a couple of structures and functions you will be interacting with.</p>
+<p>An overview of the to-do list (from all assignments) can be found on this page: <a class="el" href="todo.html">Todo List</a>. </p>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

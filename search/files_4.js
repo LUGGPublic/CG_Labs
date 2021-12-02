@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['helpers_2ecpp_600',['helpers.cpp',['../helpers_8cpp.html',1,'']]],
-  ['helpers_2ehpp_601',['helpers.hpp',['../helpers_8hpp.html',1,'']]]
+  ['fpscamera_2eh_601',['FPSCamera.h',['../FPSCamera_8h.html',1,'']]],
+  ['fpscamera_2einl_602',['FPSCamera.inl',['../FPSCamera_8inl.html',1,'']]]
 ];
