@@ -42,8 +42,8 @@ edaf80::Assignment4::run()
 	// Set up the camera
 	mCamera.mWorld.SetTranslate(glm::vec3(-40.0f, 14.0f, 6.0f));
 	mCamera.mWorld.LookAt(glm::vec3(0.0f));
-	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 3.0f; // 3 m/s => 10.8 km/h
+	mCamera.mMouseSensitivity = glm::vec2(0.003f);
+	mCamera.mMovementSpeed = glm::vec3(3.0f); // 3 m/s => 10.8 km/h
 	auto camera_position = mCamera.mWorld.GetTranslation();
 
 	// Create the shader programs

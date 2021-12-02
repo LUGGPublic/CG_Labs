@@ -37,8 +37,8 @@ public:
 
 public:
 	TRSTransform<T, P> mWorld;
-	T mMovementSpeed;
-	T mMouseSensitivity;
+	glm::tvec3<T, P> mMovementSpeed;
+	glm::tvec2<T, P> mMouseSensitivity;
 
 public:
 	T mFov, mAspect, mNear, mFar;

@@ -228,8 +228,8 @@ edan35::Assignment2::run()
 	// Setup the camera
 	//
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 1.0f, 1.8f) * constant::scale_lengths);
-	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 3.0f * constant::scale_lengths; // 3 m/s => 10.8 km/h.
+	mCamera.mMouseSensitivity = glm::vec2(0.003f);
+	mCamera.mMovementSpeed = glm::vec3(3.0f) * constant::scale_lengths; // 3 m/s => 10.8 km/h.
 
 	int framebuffer_width, framebuffer_height;
 	glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
