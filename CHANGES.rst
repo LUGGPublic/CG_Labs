@@ -20,7 +20,7 @@ Improvements
   - Re-work which debug messages are enabled and disabled, and how push and pop
     groups are printed.
   - Always show shader compilation and link logs when available, rather than
-    only when it fialed;
+    only when it failed;
   - Label vertex arrays, buffers, and textures when importing new objects via
     `bonobo::loadObjects()`;
   - Add new debug helpers to reduce casting-related warning messages;
