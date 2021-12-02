@@ -15,8 +15,9 @@ var searchData=
   ['interpolation_2ecpp_225',['interpolation.cpp',['../interpolation_8cpp.html',1,'']]],
   ['interpolation_2ehpp_226',['interpolation.hpp',['../interpolation_8hpp.html',1,'']]],
   ['inverse_5fscreen_5fresolution_227',['inverse_screen_resolution',['../structanonymous__namespace_02assignment2_8cpp_03_1_1AccumulateLightsShaderLocations.html#a2e246bc746df81820979a6e1ed465cb7',1,'anonymous_namespace{assignment2.cpp}::AccumulateLightsShaderLocations']]],
-  ['iskeyboardcapturedbyui_228',['IsKeyboardCapturedByUI',['../classInputHandler.html#aee3eaf92d6fcfb8cc0ad3c8df840b1c8',1,'InputHandler']]],
-  ['ismousecapturedbyui_229',['IsMouseCapturedByUI',['../classInputHandler.html#a71f483b44557b2a0bb47809b38e06586',1,'InputHandler']]],
-  ['issupported_230',['isSupported',['../namespaceutils_1_1opengl_1_1debug.html#a6eaf846b5dcda5741f0960ee1ab072be',1,'utils::opengl::debug']]],
-  ['istate_231',['IState',['../structInputHandler_1_1IState.html',1,'InputHandler']]]
+  ['is_5fset_228',['is_set',['../classCelestialBody.html#adfd93532309d69c0ef3f3a67a42ddd9c',1,'CelestialBody']]],
+  ['iskeyboardcapturedbyui_229',['IsKeyboardCapturedByUI',['../classInputHandler.html#aee3eaf92d6fcfb8cc0ad3c8df840b1c8',1,'InputHandler']]],
+  ['ismousecapturedbyui_230',['IsMouseCapturedByUI',['../classInputHandler.html#a71f483b44557b2a0bb47809b38e06586',1,'InputHandler']]],
+  ['issupported_231',['isSupported',['../namespaceutils_1_1opengl_1_1debug.html#a6eaf846b5dcda5741f0960ee1ab072be',1,'utils::opengl::debug']]],
+  ['istate_232',['IState',['../structInputHandler_1_1IState.html',1,'InputHandler']]]
 ];

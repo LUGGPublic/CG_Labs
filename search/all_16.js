@@ -7,7 +7,7 @@ var searchData=
   ['windowdatum_516',['WindowDatum',['../structWindowManager_1_1WindowDatum.html',1,'WindowManager']]],
   ['windowed_5fheight_517',['windowed_height',['../structWindowManager_1_1WindowDatum.html#adcbf39446c74bfb2af10ef53a4b9882d',1,'WindowManager::WindowDatum']]],
   ['windowed_5fwidth_518',['windowed_width',['../structWindowManager_1_1WindowDatum.html#a49347cadb15004f381472a0c9b6d59c0',1,'WindowManager::WindowDatum']]],
-  ['windowmanager_519',['WindowManager',['../classWindowManager.html',1,'WindowManager'],['../classBonobo.html#af8820284d337b1b3fe0dccf789ac2f37',1,'Bonobo::windowManager()'],['../classWindowManager.html#a3a283b34c19aaa20296befaabad4d29b',1,'WindowManager::WindowManager()']]],
+  ['windowmanager_519',['WindowManager',['../classWindowManager.html',1,'WindowManager'],['../classWindowManager.html#a3a283b34c19aaa20296befaabad4d29b',1,'WindowManager::WindowManager()'],['../classBonobo.html#af8820284d337b1b3fe0dccf789ac2f37',1,'Bonobo::windowManager()']]],
   ['windowmanager_2ecpp_520',['WindowManager.cpp',['../WindowManager_8cpp.html',1,'']]],
   ['windowmanager_2ehpp_521',['WindowManager.hpp',['../WindowManager_8hpp.html',1,'']]],
   ['world_522',['world',['../namespaceanonymous__namespace_02helpers_8cpp_03.html#a98e83d5caa08a0203519068b7a817d56',1,'anonymous_namespace{helpers.cpp}']]]
