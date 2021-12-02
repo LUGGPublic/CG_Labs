@@ -86,4 +86,6 @@ void CelestialBody::set_ring(bonobo::mesh_data const& shape,
 	_ring.node.set_program(program);
 
 	_ring.scale = scale;
+
+	_ring.is_set = true;
 }
