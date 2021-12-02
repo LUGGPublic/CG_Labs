@@ -69,7 +69,7 @@ void FPSCamera<T, P>::Update(std::chrono::microseconds deltaTime, InputHandler &
 		if ((ih.GetKeycodeState(GLFW_KEY_Q) & PRESSED)) levitate -= 1.0f;
 		if ((ih.GetKeycodeState(GLFW_KEY_E) & PRESSED)) levitate += 1.0f;
 
-		T const movementModifier = ((ih.GetKeycodeState(GLFW_KEY_LEFT_SHIFT) & PRESSED)) ? 0.25f : ((ih.GetKeycodeState(GLFW_KEY_LEFT_CONTROL) & PRESSED)) ? 4.0f : 1.0f;
+		T const movementModifier = ((ih.GetKeycodeState(GLFW_KEY_LEFT_CONTROL) & PRESSED)) ? 0.25f : ((ih.GetKeycodeState(GLFW_KEY_LEFT_SHIFT) & PRESSED)) ? 4.0f : 1.0f;
 		auto const deltaTime_s = std::chrono::duration<T>(deltaTime);
 		auto const movementChange = movementModifier * (mWorld.GetFront() * move + mWorld.GetRight() * strafe + mWorld.GetUp() * levitate);
 		auto const movementSpeed = mMovementSpeed * movementChange;
