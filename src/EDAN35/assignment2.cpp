@@ -433,7 +433,7 @@ edan35::Assignment2::run()
 
 		for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
 			auto& lightTransform = lightTransforms[i];
-			lightTransform.SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
+			lightTransform.SetRotate(glm::two_pi<float>() * static_cast<float>(i) / static_cast<float>(constant::lights_nb) + 0.1f * seconds_nb, glm::vec3(0.0f, 1.0f, 0.0f));
 
 			auto const light_view_matrix = lightOffsetTransform.GetMatrixInverse() * lightTransform.GetMatrixInverse();
 			auto const light_world_matrix = glm::inverse(light_view_matrix) * coneScaleTransform.GetMatrix();
