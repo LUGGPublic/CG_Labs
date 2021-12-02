@@ -38,32 +38,39 @@ public:
 	~TRSTransform();
 
 public:
-	/* Reset the transformation to the identity matrix */
+	// Reset the transformation to the identity matrix
 	void ResetTransform();
 
-		/* Relative transformations */
+	///////////////////////////////////////////////////////////////////////////
+	// Relative transformations: combine new transform with existing ones.
+	///////////////////////////////////////////////////////////////////////////
 
 	void Translate(glm::tvec3<T, P> v);
 	void Scale(glm::tvec3<T, P> v);
 	void Scale(T uniform);
 
-	/* Rotate around vector (x, y, z) */
+	// Rotate around vector (x, y, z)
+	// - Perform `new = current * newRotation`
 	void Rotate(T angle, glm::tvec3<T, P> v);
 	void RotateX(T angle);
 	void RotateY(T angle);
 	void RotateZ(T angle);
+	// - Perform `new = newRotation * current`
 	void PreRotate(T angle, glm::tvec3<T, P> v);
 	void PreRotateX(T angle);
 	void PreRotateY(T angle);
 	void PreRotateZ(T angle);
 
-		/* Absolute transformations */
+
+	///////////////////////////////////////////////////////////////////////////
+	// Absolute transformations: overwrite existing transformations with new ones.
+	///////////////////////////////////////////////////////////////////////////
 
 	void SetTranslate(glm::tvec3<T, P> v);
 	void SetScale(glm::tvec3<T, P> v);
 	void SetScale(T uniform);
 
-	/* Rotate around vector (x, y, z) */
+	// Rotate around vector (x, y, z)
 	void SetRotate(T angle, glm::tvec3<T, P> v);
 	void SetRotateX(T angle);
 	void SetRotateY(T angle);
@@ -75,7 +82,10 @@ public:
 	void LookAt(glm::tvec3<T, P> point, glm::tvec3<T, P> up_vec);
 	void LookAt(glm::tvec3<T, P> point);
 
-		/* Useful getters */
+
+	///////////////////////////////////////////////////////////////////////////
+	// Useful getters
+	///////////////////////////////////////////////////////////////////////////
 
 	glm::tmat4x4<T, P> GetMatrix() const;
 	glm::tmat4x4<T, P> GetMatrixInverse() const;
