@@ -165,7 +165,7 @@ namespace
 edan35::Assignment2::Assignment2(WindowManager& windowManager) :
 	mCamera(0.5f * glm::half_pi<float>(),
 	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
-	        0.01f * constant::scale_lengths, 30.0f * constant::scale_lengths),
+	        0.01f * constant::scale_lengths, 40.0f * constant::scale_lengths),
 	inputHandler(), mWindowManager(windowManager), window(nullptr)
 {
 	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
