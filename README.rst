@@ -11,7 +11,8 @@ CG_Labs contains the source code for the various Computer Graphics courses
 taught at `Lund University`_ (EDAF80_ and EDAN35_). All assignments of EDAF80
 are available, as well as the second assignment of EDAN35.
 
-The public repository is found at https://github.com/LUGGPublic/CG_Labs.
+The public repository is found at https://github.com/LUGGPublic/CG_Labs, and
+its documentation at https://luggpublic.github.io/CG_Labs.
 
 Dependencies
 ============

@@ -5,14 +5,6 @@ if (NOT assimp_FOUND)
 		GIT_REPOSITORY [[https://github.com/assimp/assimp.git]]
 		GIT_TAG "v${LUGGCGL_ASSIMP_DOWNLOAD_VERSION}"
 		GIT_SHALLOW ON
-
-		PATCH_COMMAND ${GIT_EXECUTABLE} reset --hard HEAD # Remove any existing changes before applying the patch (in case patch is applied twice, for example)
-		# assimp will fail to link on Windows without that commit
-		# (which is not part of any release as of now).
-		COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/0001-Fix-CMake-import.patch
-		COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/0002-Always-set-IMPORTED_CONFIGURATIONS.patch
-		COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/0003-Fix-dynamic-loading-path-for-OSX.patch
-		COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/0004-Turn-multi-configuration-off.patch
 	)
 
 	FetchContent_GetProperties (assimp)

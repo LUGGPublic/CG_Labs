@@ -12,7 +12,7 @@ endif ()
 # Set project attributes.
 project (
 	CG_Labs
-	VERSION 2021.1
+	VERSION 2021.2
 	DESCRIPTION [[Repository for Computer Graphics courses EDAF80 and EDAN35 at Lund University, Sweden.]]
 	HOMEPAGE_URL [[https://github.com/LUGGPublic/CG_Labs/]]
 	LANGUAGES CXX C
@@ -43,8 +43,8 @@ if (NOT EXISTS "${FETCHCONTENT_BASE_DIR}")
 endif ()
 
 # assimp is used for loading the objects’s models
-set (LUGGCGL_ASSIMP_MIN_VERSION 5.0.0)
-set (LUGGCGL_ASSIMP_DOWNLOAD_VERSION 5.0.1)
+set (LUGGCGL_ASSIMP_MIN_VERSION 5.1.0)
+set (LUGGCGL_ASSIMP_DOWNLOAD_VERSION 5.1.2)
 include (CMake/InstallAssimp.cmake)
 find_package (assimp ${LUGGCGL_ASSIMP_MIN_VERSION} REQUIRED)
 link_directories (${ASSIMP_LIBRARY_DIRS})
@@ -132,8 +132,8 @@ target_link_libraries (
 
 function (copy_dlls target target_folder)
 	if (WIN32)
-		set (assimp_dll "assimp${ASSIMP_LIBRARY_SUFFIX}.dll")
-		set (assimp_dll_path "${ASSIMP_ROOT_DIR}/bin/${assimp_dll}")
+		get_target_property (assimp_dll_path assimp::assimp IMPORTED_LOCATION_RELEASE)
+		get_filename_component (assimp_dll "${assimp_dll_path}" NAME)
 
 		if (NOT EXISTS "${target_folder}/${assimp_dll}")
 			add_custom_command (

@@ -60,7 +60,6 @@ namespace
 		Nearest = 0u,
 		Linear,
 		Mipmaps,
-		Shadow,
 		Count
 	};
 	using Samplers = std::array<GLuint, toU(Sampler::Count)>;
@@ -165,7 +164,7 @@ namespace
 edan35::Assignment2::Assignment2(WindowManager& windowManager) :
 	mCamera(0.5f * glm::half_pi<float>(),
 	        static_cast<float>(config::resolution_x) / static_cast<float>(config::resolution_y),
-	        0.01f * constant::scale_lengths, 30.0f * constant::scale_lengths),
+	        0.01f * constant::scale_lengths, 40.0f * constant::scale_lengths),
 	inputHandler(), mWindowManager(windowManager), window(nullptr)
 {
 	WindowManager::WindowDatum window_datum{ inputHandler, mCamera, config::resolution_x, config::resolution_y, 0, 0, 0, 0};
@@ -228,8 +227,8 @@ edan35::Assignment2::run()
 	// Setup the camera
 	//
 	mCamera.mWorld.SetTranslate(glm::vec3(0.0f, 1.0f, 1.8f) * constant::scale_lengths);
-	mCamera.mMouseSensitivity = 0.003f;
-	mCamera.mMovementSpeed = 3.0f * constant::scale_lengths; // 3 m/s => 10.8 km/h.
+	mCamera.mMouseSensitivity = glm::vec2(0.003f);
+	mCamera.mMovementSpeed = glm::vec3(3.0f) * constant::scale_lengths; // 3 m/s => 10.8 km/h.
 
 	int framebuffer_width, framebuffer_height;
 	glfwGetFramebufferSize(window, &framebuffer_width, &framebuffer_height);
@@ -433,7 +432,7 @@ edan35::Assignment2::run()
 
 		for (size_t i = 0; i < static_cast<size_t>(lights_nb); ++i) {
 			auto& lightTransform = lightTransforms[i];
-			lightTransform.SetRotate(seconds_nb * 0.1f + i * 1.57f, glm::vec3(0.0f, 1.0f, 0.0f));
+			lightTransform.SetRotate(glm::two_pi<float>() * static_cast<float>(i) / static_cast<float>(constant::lights_nb) + 0.1f * seconds_nb, glm::vec3(0.0f, 1.0f, 0.0f));
 
 			auto const light_view_matrix = lightOffsetTransform.GetMatrixInverse() * lightTransform.GetMatrixInverse();
 			auto const light_world_matrix = glm::inverse(light_view_matrix) * coneScaleTransform.GetMatrix();
@@ -613,17 +612,17 @@ edan35::Assignment2::run()
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::DepthBuffer)]);
 				glUniform1i(accumulate_light_shader_locations.depth_texture, 0);
-				glBindSampler(0, samplers[toU(Sampler::Nearest)]);
+				glBindSampler(0, samplers[toU(Sampler::Linear)]);
 
 				glActiveTexture(GL_TEXTURE1);
 				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::GBufferWorldSpaceNormal)]);
 				glUniform1i(accumulate_light_shader_locations.normal_texture, 1);
-				glBindSampler(1, samplers[toU(Sampler::Nearest)]);
+				glBindSampler(1, samplers[toU(Sampler::Linear)]);
 
 				glActiveTexture(GL_TEXTURE2);
 				glBindTexture(GL_TEXTURE_2D, textures[toU(Texture::ShadowMap)]);
 				glUniform1i(accumulate_light_shader_locations.shadow_texture, 2);
-				glBindSampler(2, samplers[toU(Sampler::Shadow)]);
+				glBindSampler(2, samplers[toU(Sampler::Linear)]);
 
 				glBindVertexArray(cone_geometry.vao);
 				glDrawArrays(cone_geometry.drawing_mode, 0, cone_geometry.vertices_nb);
@@ -926,13 +925,6 @@ Samplers createSamplers()
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glSamplerParameteri(samplers[toU(Sampler::Mipmaps)], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Mipmaps)], "Mimaps");
-
-	// For sampling 2-D shadow maps
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
-	glSamplerParameteri(samplers[toU(Sampler::Shadow)], GL_TEXTURE_COMPARE_FUNC, GL_LESS);
-	utils::opengl::debug::nameObject(GL_SAMPLER, samplers[toU(Sampler::Shadow)], "Shadow");
 
 	return samplers;
 }

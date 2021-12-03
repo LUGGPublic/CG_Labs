@@ -99,6 +99,7 @@ private:
 	struct {
 		Node node;
 		glm::vec2 scale{1.0f};
+		bool is_set{false};
 	} _ring;
 
 	std::vector<CelestialBody*> _children;

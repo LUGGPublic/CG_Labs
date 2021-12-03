@@ -50,32 +50,32 @@ void FPSCamera<T, P>::Update(std::chrono::microseconds deltaTime, InputHandler &
 {
 	glm::tvec2<T, P> newMousePosition = glm::tvec2<T, P>(ih.GetMousePosition().x, ih.GetMousePosition().y);
 	glm::tvec2<T, P> mouse_diff = newMousePosition - mMousePosition;
-	mouse_diff.y = -mouse_diff.y;
 	mMousePosition = newMousePosition;
-	mouse_diff *= mMouseSensitivity;
 
 	if (!ih.IsMouseCapturedByUI() && !ignoreMouseEvents && (ih.GetMouseState(GLFW_MOUSE_BUTTON_LEFT) & PRESSED)) {
+		mouse_diff.y = -mouse_diff.y;
+		mouse_diff *= mMouseSensitivity;
+
 		mWorld.PreRotateX(mouse_diff.y);
 		mWorld.RotateY(-mouse_diff.x);
 	}
 
-	T movementModifier = ((ih.GetKeycodeState(GLFW_KEY_LEFT_SHIFT) & PRESSED)) ? 0.25f : ((ih.GetKeycodeState(GLFW_KEY_LEFT_CONTROL) & PRESSED)) ? 4.0f : 1.0f;
-	auto const deltaTime_s = std::chrono::duration<T>(deltaTime);
-	T movement = movementModifier * deltaTime_s.count() * mMovementSpeed;
-
-	T move = 0.0f, strafe = 0.0f, levitate = 0.0f;
 	if (!ih.IsKeyboardCapturedByUI() && !ignoreKeyEvents) {
-		if ((ih.GetKeycodeState(GLFW_KEY_W) & PRESSED)) move += movement;
-		if ((ih.GetKeycodeState(GLFW_KEY_S) & PRESSED)) move -= movement;
-		if ((ih.GetKeycodeState(GLFW_KEY_A) & PRESSED)) strafe -= movement;
-		if ((ih.GetKeycodeState(GLFW_KEY_D) & PRESSED)) strafe += movement;
-		if ((ih.GetKeycodeState(GLFW_KEY_Q) & PRESSED)) levitate -= movement;
-		if ((ih.GetKeycodeState(GLFW_KEY_E) & PRESSED)) levitate += movement;
-	}
+		T move = 0.0f, strafe = 0.0f, levitate = 0.0f;
+		if ((ih.GetKeycodeState(GLFW_KEY_W) & PRESSED)) move += 1.0f;
+		if ((ih.GetKeycodeState(GLFW_KEY_S) & PRESSED)) move -= 1.0f;
+		if ((ih.GetKeycodeState(GLFW_KEY_A) & PRESSED)) strafe -= 1.0f;
+		if ((ih.GetKeycodeState(GLFW_KEY_D) & PRESSED)) strafe += 1.0f;
+		if ((ih.GetKeycodeState(GLFW_KEY_Q) & PRESSED)) levitate -= 1.0f;
+		if ((ih.GetKeycodeState(GLFW_KEY_E) & PRESSED)) levitate += 1.0f;
 
-	mWorld.Translate(mWorld.GetFront() * move);
-	mWorld.Translate(mWorld.GetRight() * strafe);
-	mWorld.Translate(mWorld.GetUp() * levitate);
+		T const movementModifier = ((ih.GetKeycodeState(GLFW_KEY_LEFT_CONTROL) & PRESSED)) ? 0.25f : ((ih.GetKeycodeState(GLFW_KEY_LEFT_SHIFT) & PRESSED)) ? 4.0f : 1.0f;
+		auto const deltaTime_s = std::chrono::duration<T>(deltaTime);
+		auto const movementChange = movementModifier * (mWorld.GetFront() * move + mWorld.GetRight() * strafe + mWorld.GetUp() * levitate);
+		auto const movementSpeed = mMovementSpeed * movementChange;
+
+		mWorld.Translate(movementSpeed * deltaTime_s.count());
+	}
 }
 
 template<typename T, glm::precision P>

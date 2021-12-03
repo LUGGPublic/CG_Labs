@@ -1,7 +1,57 @@
 Revision history for CG_Labs
 
 
-v2020.1 2020-09-27
+v2021.2 2021-12-02
+==================
+
+New features
+------------
+
+* Add content to the default landing page of the documentation;
+* Parse common material constants when loading custom objects via
+  `loadObjects()`;
+* Allow per-axis movement and rotation speed for the camera;
+- Allow orbiting cameras for Lab 3 and 4 of EDAF80;
+* Use *Uniform Buffer Objects* in EDAN35/Lab2 for transforms and light
+  attributes.
+
+Improvements
+------------
+
+* Several debug improvements:
+  - Error out if a node is lacking a VAO or program rather than silently not
+    rendering it;
+  - Un-ignore certain warning messages.
+- Swap “sprint” and “walk” modifiers, so they match the behaviour found in most
+  games;
+- Improve the documentation of `TRSTransform`;
+- Several improvements to EDAN35/Lab2, especially on the performance side.
+
+Changes
+-------
+
+* Use a regular `sampler2D` for the shadow map during light accumulation;
+* Automatically build the documentation using GitHub Actions and host it using
+  GitHub Pages.
+
+Fixes
+-----
+
+* Increase the camera far plane in EDAN35/Lab2 to avoid artefacts during
+  lighting;
+* Use a single rotation tracking system for the camera, allowing `Look*()`
+  methods to be used and not instantly overwritten by other rotations;
+* Set `shadowmap_texel_size`;
+* Make the angular spacing between light sources in EDAN35/Lab2 dependent on
+  the maximum amount of light sources.
+
+Dependencies updates
+--------------------
+
+* Update assimp to 5.1.2, and increase the requirement to 5.1.
+
+
+v2021.1 2021-09-27
 ==================
 
 New features
@@ -20,7 +70,7 @@ Improvements
   - Re-work which debug messages are enabled and disabled, and how push and pop
     groups are printed.
   - Always show shader compilation and link logs when available, rather than
-    only when it fialed;
+    only when it failed;
   - Label vertex arrays, buffers, and textures when importing new objects via
     `bonobo::loadObjects()`;
   - Add new debug helpers to reduce casting-related warning messages;

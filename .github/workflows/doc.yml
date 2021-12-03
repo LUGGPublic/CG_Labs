@@ -1,0 +1,31 @@
+name: Documentation
+
+on:
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Ubuntu Packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ninja-build libassimp-dev libglfw3-dev doxygen
+
+    - name: Setup
+      run: cmake -S${{ github.workspace }} -B${{ github.workspace }}/build -G"Ninja Multi-Config" -DLUGGCGL_BUILD_DOCUMENTATION=ON
+
+    - name: Generate
+      run: cmake --build ${{ github.workspace }}/build --config RelWithDebInfo --target doc
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      if: ${{ github.ref == 'refs/heads/master' }}
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ${{ github.workspace }}/build/doc/html
