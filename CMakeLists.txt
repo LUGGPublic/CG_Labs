@@ -47,7 +47,6 @@ set (LUGGCGL_ASSIMP_MIN_VERSION 5.1.0)
 set (LUGGCGL_ASSIMP_DOWNLOAD_VERSION 5.1.2)
 include (CMake/InstallAssimp.cmake)
 find_package (assimp ${LUGGCGL_ASSIMP_MIN_VERSION} REQUIRED)
-link_directories (${ASSIMP_LIBRARY_DIRS})
 
 # GLFW is used for inputs and windows handling
 set (LUGGCGL_GLFW_MIN_VERSION 3.2.0)
