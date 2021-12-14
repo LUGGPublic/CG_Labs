@@ -47,6 +47,9 @@ set (LUGGCGL_ASSIMP_MIN_VERSION 5.1.0)
 set (LUGGCGL_ASSIMP_DOWNLOAD_VERSION 5.1.2)
 include (CMake/InstallAssimp.cmake)
 find_package (assimp ${LUGGCGL_ASSIMP_MIN_VERSION} REQUIRED)
+if (WIN32)
+	get_target_property (assimp_dll_path assimp::assimp IMPORTED_LOCATION_RELEASE)
+endif ()
 
 # GLFW is used for inputs and windows handling
 set (LUGGCGL_GLFW_MIN_VERSION 3.2.0)
@@ -131,7 +134,6 @@ target_link_libraries (
 
 function (copy_dlls target target_folder)
 	if (WIN32)
-		get_target_property (assimp_dll_path assimp::assimp IMPORTED_LOCATION_RELEASE)
 		get_filename_component (assimp_dll "${assimp_dll_path}" NAME)
 
 		if (NOT EXISTS "${target_folder}/${assimp_dll}")
@@ -153,3 +155,6 @@ add_subdirectory ("${CMAKE_SOURCE_DIR}/src/EDAN35")
 
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/shaders DESTINATION bin)
 install (DIRECTORY ${CMAKE_SOURCE_DIR}/res DESTINATION bin)
+if (WIN32)
+	install (FILES "${assimp_dll_path}" DESTINATION [[bin]])
+endif ()
