@@ -61,6 +61,7 @@ the command line tools installed.
 
 You will additionally need to install CMake_.
 
+Once you open the project file in Xcode, switch Scheme to EDAF80_Assignment1, under the Product directory.
 
 On Linux
 --------
