@@ -10,25 +10,15 @@
 void
 Node::render(glm::mat4 const& view_projection, glm::mat4 const& parent_transform) const
 {
-	if (_program == nullptr) {
-		LogError("Node \"%s\" can not be rendered due to lacking a shader program.", _name.c_str() + 7);
-		return;
-	}
-
-	render(view_projection, parent_transform * _transform.GetMatrix(), *_program, _set_uniforms);
+	if (_program != nullptr)
+		render(view_projection, parent_transform * _transform.GetMatrix(), *_program, _set_uniforms);
 }
 
 void
 Node::render(glm::mat4 const& view_projection, glm::mat4 const& world, GLuint program, std::function<void (GLuint)> const& set_uniforms) const
 {
-	if (program == 0u) {
-		LogError("Node \"%s\" can not be rendered with the specified shader program (currently set to 0).", _name.c_str() + 7);
+	if (_vao == 0u || program == 0u)
 		return;
-	}
-	if (_vao == 0u) {
-		LogError("Node \"%s\" can not be rendered due to lacking a VAO (currently set to 0).", _name.c_str() + 7);
-		return;
-	}
 
 	utils::opengl::debug::beginDebugGroup(_name);
 
@@ -83,11 +73,6 @@ Node::render(glm::mat4 const& view_projection, glm::mat4 const& world, GLuint pr
 void
 Node::set_geometry(bonobo::mesh_data const& shape)
 {
-	if (shape.vao == 0u) {
-		LogError("The shape's VAO can not be 0; this operation will be discarded.");
-		return;
-	}
-
 	_vao = shape.vao;
 	_vertices_nb = static_cast<GLsizei>(shape.vertices_nb);
 	_indices_nb = static_cast<GLsizei>(shape.indices_nb);
