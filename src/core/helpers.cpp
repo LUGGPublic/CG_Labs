@@ -581,7 +581,7 @@ bonobo::renderBasis(float thickness_scale, float length_scale, glm::mat4 const& 
 	glUniformMatrix4fv(basis.shader_locations.view_proj, 1, GL_FALSE, glm::value_ptr(view_projection));
 	glUniform1f(basis.shader_locations.thickness_scale, thickness_scale);
 	glUniform1f(basis.shader_locations.length_scale, length_scale);
-	glDrawElementsInstanced(GL_TRIANGLES, basis.index_count, GL_UNSIGNED_BYTE, nullptr, 3);
+	glDrawElementsInstanced(GL_TRIANGLES, basis.index_count, GL_UNSIGNED_INT, nullptr, 3);
 	glBindVertexArray(0u);
 	glUseProgram(0u);
 }
@@ -678,33 +678,33 @@ namespace
 
 		glGenBuffers(1, &basis.ibo);
 		assert(basis.ibo != 0);
-		std::array<glm::u8vec3, 16> const indices = {
+		std::array<glm::uvec3, 16> const indices = {
 			// Body: Left
-			glm::u8vec3(0u, 1u, 2u),
-			glm::u8vec3(0u, 2u, 3u),
+			glm::uvec3(0u, 1u, 2u),
+			glm::uvec3(0u, 2u, 3u),
 			// Body: Back
-			glm::u8vec3(4u, 0u, 3u),
-			glm::u8vec3(4u, 3u, 7u),
+			glm::uvec3(4u, 0u, 3u),
+			glm::uvec3(4u, 3u, 7u),
 			// Body: Bottom
-			glm::u8vec3(0u, 4u, 5u),
-			glm::u8vec3(0u, 5u, 1u),
+			glm::uvec3(0u, 4u, 5u),
+			glm::uvec3(0u, 5u, 1u),
 			// Body: Front
-			glm::u8vec3(1u, 5u, 6u),
-			glm::u8vec3(1u, 6u, 2u),
+			glm::uvec3(1u, 5u, 6u),
+			glm::uvec3(1u, 6u, 2u),
 			// Body: Top
-			glm::u8vec3(2u, 6u, 7u),
-			glm::u8vec3(2u, 7u, 3u),
+			glm::uvec3(2u, 6u, 7u),
+			glm::uvec3(2u, 7u, 3u),
 			// Tip: Left
-			glm::u8vec3(8u, 9u, 10u),
-			glm::u8vec3(8u, 10u, 11u),
+			glm::uvec3(8u, 9u, 10u),
+			glm::uvec3(8u, 10u, 11u),
 			// Tip: Back
-			glm::u8vec3(12u, 8u, 11u),
+			glm::uvec3(12u, 8u, 11u),
 			// Tip: Bottom
-			glm::u8vec3(8u, 12u, 9u),
+			glm::uvec3(8u, 12u, 9u),
 			// Tip: Front
-			glm::u8vec3(9u, 12u, 10u),
+			glm::uvec3(9u, 12u, 10u),
 			// Tip: Top
-			glm::u8vec3(10u, 12u, 11u)
+			glm::uvec3(10u, 12u, 11u)
 		};
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, basis.ibo);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices.data(), GL_STATIC_DRAW);
