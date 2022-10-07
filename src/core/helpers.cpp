@@ -299,9 +299,9 @@ bonobo::loadObjects(std::string const& filename)
 			auto const& face = assimp_object_mesh->mFaces[i];
 			assert(face.mNumIndices <= 3);
 			object_indices[num_vertices_per_face * i + 0u] = face.mIndices[0u];
-			if (num_vertices_per_face >= 1u)
+			if (num_vertices_per_face > 1u)
 				object_indices[num_vertices_per_face * i + 1u] = face.mIndices[1u];
-			if (num_vertices_per_face >= 2u)
+			if (num_vertices_per_face > 2u)
 				object_indices[num_vertices_per_face * i + 2u] = face.mIndices[2u];
 		}
 		glGenBuffers(1, &object.ibo);
