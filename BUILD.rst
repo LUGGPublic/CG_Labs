@@ -25,7 +25,7 @@ Setting up the software stack
 On Windows
 ----------
 
-We recommend using Microsoft’s `Visual Studio`_ 2019; the *Community* edition
+We recommend using Microsoft’s `Visual Studio`_ 2022; the *Community* edition
 is free to download and is meant for students (among others). When installing
 it, make sure to check the *Desktop development with C++* workload (in the
 *Workloads* tab, under the *Desktop & Mobile* group) and to at least have
@@ -215,7 +215,7 @@ the command line to achieve the same results.
       The first assignment running when launched for the first time.
 
 
-.. _Visual Studio: https://visualstudio.microsoft.com/vs/
+.. _Visual Studio: https://visualstudio.microsoft.com/vs/features/cplusplus/
 .. _Git: https://git-scm.com/
 .. _CMake: https://cmake.org/
 .. _Xcode: https://apps.apple.com/se/app/xcode/id497799835?mt=12
