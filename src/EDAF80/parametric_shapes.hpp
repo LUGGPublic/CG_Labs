@@ -21,7 +21,8 @@ namespace parametric_shapes
 	//!         data
 	bonobo::mesh_data createQuad(float const width, float const height,
 	                             unsigned int const horizontal_split_count = 0u,
-	                             unsigned int const vertical_split_count = 0u);
+                                 unsigned int const vertical_split_count = 0u);
+    
 
 	//! \brief Create a sphere for a given tesselation level and make it
 	//!        available to OpenGL.

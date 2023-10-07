@@ -7,8 +7,11 @@
 #include "core/helpers.hpp"
 #include "core/node.hpp"
 #include "core/ShaderProgramManager.hpp"
+#include "core/opengl.hpp"
+#include "core/JuceConfig.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <juce_core/juce_core.h>
 #include <imgui.h>
 #include <tinyfiledialogs.h>
 
@@ -48,6 +51,7 @@ edaf80::Assignment4::run()
 
 	// Create the shader programs
 	ShaderProgramManager program_manager;
+    //AudioFormatManager formatManager;
 	GLuint fallback_shader = 0u;
 	program_manager.CreateAndRegisterProgram("Fallback",
 	                                         { { ShaderType::vertex, "common/fallback.vert" },
@@ -57,6 +61,31 @@ edaf80::Assignment4::run()
 		LogError("Failed to load fallback shader");
 		return;
 	}
+    
+    GLuint water_shader = 0u;
+    program_manager.CreateAndRegisterProgram("Water",
+                                             { { ShaderType::vertex, "EDAF80/water.vert" },
+                                               { ShaderType::fragment, "EDAF80/water.frag" } },
+                                             water_shader);
+    if (water_shader == 0u) {
+        LogError("Failed to load water shader");
+        return;
+    }
+    
+    GLuint diffuse_shader = 0u;
+    program_manager.CreateAndRegisterProgram("Diffuse",
+                                             { { ShaderType::vertex, "EDAF80/diffuse.vert" },
+                                               { ShaderType::fragment, "EDAF80/diffuse.frag" } },
+                                             diffuse_shader);
+    if (diffuse_shader == 0u) {
+        LogError("Failed to load diffuse shader");
+        return;
+    }
+    
+    std::vector<GLuint> skybox_shaders;
+    skybox_shaders.push_back(utils::opengl::shader::generate_shader(GL_VERTEX_SHADER, utils::slurp_file(config::shaders_path("EDAF80/skybox.vert"))));
+    skybox_shaders.push_back(utils::opengl::shader::generate_shader(GL_FRAGMENT_SHADER, utils::slurp_file(config::shaders_path("EDAF80/skybox.frag"))));
+    GLuint skybox_shader = utils::opengl::shader::generate_program(skybox_shaders);
 
 	//
 	// Todo: Insert the creation of other shader programs.
@@ -65,9 +94,37 @@ edaf80::Assignment4::run()
 
 	float elapsed_time_s = 0.0f;
 
+    auto light_position = glm::vec3(-16.0f, 4.0f, 16.0f);
+    auto const set_uniforms = [&light_position,&camera_position,&elapsed_time_s](GLuint program) {
+        glUniform3fv(glGetUniformLocation(program, "light_position"), 1, glm::value_ptr(light_position));
+        glUniform3fv(glGetUniformLocation(program, "camera_position"), 1, glm::value_ptr(camera_position));
+        glUniform1f(glGetUniformLocation(program, "t"), elapsed_time_s);
+    };
+    
+    std::string skybox_dir = "cubemaps/NissiBeach2/";
+    GLuint const skybox_texture = bonobo::loadTextureCubeMap(config::resources_path(skybox_dir + "posx.jpg"), config::resources_path(skybox_dir + "negx.jpg"),
+                                                             config::resources_path(skybox_dir + "posy.jpg"), config::resources_path(skybox_dir + "negy.jpg"),
+                                                             config::resources_path(skybox_dir + "posz.jpg"), config::resources_path(skybox_dir + "negz.jpg"), true);
+    
+    GLuint const normal_texture = bonobo::loadTexture2D(config::resources_path("textures/waves.png"));
+    
 	//
 	// Todo: Load your geometry
 	//
+    
+    auto quad = parametric_shapes::createQuad(100.0f, 100.0f, 1000u, 1000u);
+    Node ocean;
+    ocean.set_geometry(quad);
+    ocean.add_texture("cube_map", skybox_texture, GL_TEXTURE_CUBE_MAP);
+    ocean.add_texture("normal_map", normal_texture, GL_TEXTURE_2D);
+    ocean.get_transform().SetTranslate(glm::vec3(-50.0f,-5.0f,-50.0f));
+    ocean.set_program(&water_shader, set_uniforms);
+    
+    auto sky = parametric_shapes::createSphere(50.0f, 100u, 100u);
+    Node skybox;
+    skybox.set_geometry(sky);
+    skybox.add_texture("skybox_texture", skybox_texture, GL_TEXTURE_CUBE_MAP);
+    skybox.set_program(&skybox_shader, set_uniforms);
 
 	glClearDepthf(1.0f);
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -147,9 +204,8 @@ edaf80::Assignment4::run()
 
 
 		if (!shader_reload_failed) {
-			//
-			// Todo: Render all your geometry here.
-			//
+            skybox.render(mCamera.GetWorldToClipMatrix());
+            ocean.render(mCamera.GetWorldToClipMatrix());
 		}
 
 

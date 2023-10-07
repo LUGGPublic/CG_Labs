@@ -43,7 +43,10 @@ void
 edaf80::Assignment2::run()
 {
 	// Load the sphere geometry
-	auto const shape = parametric_shapes::createCircleRing(2.0f, 0.75f, 40u, 4u);
+	//auto const shape = parametric_shapes::createCircleRing(2.0f, 0.75f, 40u, 4u);
+    //auto const shape = parametric_shapes::createQuad(0.25f, 0.15f);
+    auto const shape = parametric_shapes::createSphere(0.15f, 10u, 10u);
+    //auto const shape = parametric_shapes::createTorus(0.15f, 0.05f, 10u, 10u);
 	if (shape.vao == 0u)
 		return;
 
@@ -111,7 +114,7 @@ edaf80::Assignment2::run()
 
 	// Set the default tensions value; it can always be changed at runtime
 	// through the "Scene Controls" window.
-	float catmull_rom_tension = 0.0f;
+	float catmull_rom_tension = 0.5f;
 
 	// Set whether the default interpolation algorithm should be the linear one;
 	// it can always be changed at runtime through the "Scene Controls" window.
@@ -173,6 +176,7 @@ edaf80::Assignment2::run()
 	float basis_length_scale = 1.0f;
 
 	changeCullMode(cull_mode);
+    int idx = 1;
 
 	while (!glfwWindowShouldClose(window)) {
 		auto const nowTime = std::chrono::high_resolution_clock::now();
@@ -214,17 +218,33 @@ edaf80::Assignment2::run()
 
 
 		if (interpolate) {
-			//! \todo Interpolate the movement of a shape between various
-			//!        control points.
+            
+            auto transf = circle_rings.get_transform();
+            float curx = transf.GetTranslation().x;
+            float cury = transf.GetTranslation().y;
+            float curz = transf.GetTranslation().z;
+            
+            float targx = control_points[idx % 9].get_transform().GetTranslation().x;
+            float targy = control_points[idx % 9].get_transform().GetTranslation().y;
+            float targz = control_points[idx % 9].get_transform().GetTranslation().z;
+            
+            float threshold = 0.01f;
+            
+            if((std::abs(curx - targx)<threshold) && (std::abs(cury - targy)<threshold) && (std::abs(curz - targz)<threshold)) {
+                printf("\n\nold location: %f %f %f\n", transf.GetTranslation().x, transf.GetTranslation().y, transf.GetTranslation().z);
+                printf("location: %f %f %f\n", control_point_locations[idx % 9].x, control_point_locations[idx % 9].y, control_point_locations[idx % 9].z);
+                idx++;
+                printf("\n\nlocation: %f %f %f\n", control_point_locations[idx % 9].x, control_point_locations[idx % 9].y, control_point_locations[idx % 9].z);
+            }
+            
 			if (use_linear) {
-				//! \todo Compute the interpolated position
-				//!       using the linear interpolation.
+                circle_rings.get_transform().SetTranslate(interpolation::evalLERP(control_point_locations[idx % 9], control_point_locations[(idx + 1) % 9], elapsed_time_s/10));
 			}
 			else {
-				//! \todo Compute the interpolated position
-				//!       using the Catmull-Rom interpolation;
-				//!       use the `catmull_rom_tension`
-				//!       variable as your tension argument.
+                circle_rings.get_transform().SetTranslate(interpolation::evalCatmullRom(control_point_locations[(idx-1) % 9],
+                                                                                        control_point_locations[idx % 9],
+                                                                                        control_point_locations[(idx+1) % 9],
+                                                                                        control_point_locations[(idx+2) % 9], catmull_rom_tension, elapsed_time_s));
 			}
 		}
 

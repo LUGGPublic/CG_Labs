@@ -8,5 +8,5 @@ out vec4 frag_color;
 
 void main()
 {
-	frag_color = vec4(fs_in.texcoord, 0.0, 1.0);
+	frag_color = vec4(fs_in.texcoord, 0.0, 0.5);
 }
