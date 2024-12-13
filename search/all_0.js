@@ -1,7 +1,7 @@
 var searchData=
 [
   ['_5fbody_0',['_body',['../classCelestialBody.html#a6c0d459dae7499dc50bfcce9b5d55a4a',1,'CelestialBody']]],
-  ['_5fchildren_1',['_children',['../classNode.html#a38f0ed9c79f1db0d8e505fc79288f595',1,'Node::_children()'],['../classCelestialBody.html#aa81a8f7c7d15d4fff110998310b4e656',1,'CelestialBody::_children()']]],
+  ['_5fchildren_1',['_children',['../classNode.html#a38f0ed9c79f1db0d8e505fc79288f595',1,'Node::_children'],['../classCelestialBody.html#aa81a8f7c7d15d4fff110998310b4e656',1,'CelestialBody::_children']]],
   ['_5fconstants_2',['_constants',['../classNode.html#a68aae19473b9d17f41aff622d8d354ac',1,'Node']]],
   ['_5fdrawing_5fmode_3',['_drawing_mode',['../classNode.html#a4d9aa10d3efb744b7df82cc69551ed02',1,'Node']]],
   ['_5fhas_5findices_4',['_has_indices',['../classNode.html#ab4d9d4eb2e415eac931acaf0208408c3',1,'Node']]],
