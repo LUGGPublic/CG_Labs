@@ -19,7 +19,7 @@ Dependencies
 
 CG_Labs uses the following dependencies:
 
-* assimp_ (>= 5.0.0): to load OBJ models;
+* assimp_ (>= 5.4.3): to load OBJ models;
 * CMake_ (>= 3.13): to generate project files and handle dependencies;
 * `Dear ImGui`_ (1.84.2): to display information on screen, such as logs;
 * Git_: to clone missing dependencies;

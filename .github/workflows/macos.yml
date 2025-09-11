@@ -30,7 +30,6 @@ jobs:
 
     - name: Install MacOS Packages
       run: |
-        brew install assimp
         brew install glfw
 
     - name: Generate
