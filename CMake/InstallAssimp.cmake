@@ -24,6 +24,7 @@ if (NOT assimp_FOUND)
 		                         -A "${CMAKE_GENERATOR_PLATFORM}"
 		                         -DASSIMP_NO_EXPORT=ON
 		                         -DASSIMP_BUILD_ASSIMP_TOOLS=OFF
+								 -DASSIMP_BUILD_ZLIB=ON
 		                         -DASSIMP_BUILD_TESTS=OFF
 		                         -DCMAKE_INSTALL_PREFIX=${assimp_INSTALL_DIR}
 		                         -DCMAKE_BUILD_TYPE=Release

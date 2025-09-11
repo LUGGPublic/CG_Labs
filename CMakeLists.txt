@@ -43,8 +43,8 @@ if (NOT EXISTS "${FETCHCONTENT_BASE_DIR}")
 endif ()
 
 # assimp is used for loading the objects’s models
-set (LUGGCGL_ASSIMP_MIN_VERSION 5.1.0)
-set (LUGGCGL_ASSIMP_DOWNLOAD_VERSION 5.1.2)
+set (LUGGCGL_ASSIMP_MIN_VERSION 5.4.3)
+set (LUGGCGL_ASSIMP_DOWNLOAD_VERSION 5.4.3)
 include (CMake/InstallAssimp.cmake)
 find_package (assimp ${LUGGCGL_ASSIMP_MIN_VERSION} REQUIRED)
 link_directories (${ASSIMP_LIBRARY_DIRS})
