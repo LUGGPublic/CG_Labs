@@ -1,3 +1,12 @@
+#
+# Course-specific
+#
+
+# Compiled executives specific to courses involved
+# as they don't have extensions by default in Linux
+EDAF80_Assignment*
+EDAN35_Assignment*
+
 # Build folders
 build/
 Debug/
@@ -22,3 +31,56 @@ log.txt
 *.sdf
 *.suo
 *.vcxproj.user
+
+#
+# C/C++
+# from: https://github.com/github/gitignore/blob/main/C%2B%2B.gitignore
+#
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+#
+# CMake
+# from: https://github.com/github/gitignore/blob/main/CMake.gitignore
+#
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
