@@ -34,7 +34,8 @@ jobs:
     - name: Install Ubuntu Packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build libassimp-dev libglfw3-dev
+        #sudo apt-get install -y ninja-build libassimp-dev libglfw3-dev
+        sudo apt-get install -y ninja-build
 
     - name: Generate
       env:
