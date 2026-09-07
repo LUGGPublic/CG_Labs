@@ -59,7 +59,7 @@ if (NOT assimp_FOUND)
 		message (FATAL_ERROR "Build step for assimp failed: ${result}")
 	endif ()
 
-	list (APPEND CMAKE_PREFIX_PATH ${assimp_INSTALL_DIR}/lib/cmake)
+	list (APPEND CMAKE_PREFIX_PATH ${assimp_INSTALL_DIR})
 
 	set (assimp_INSTALL_DIR)
 endif ()

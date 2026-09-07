@@ -52,7 +52,7 @@ if (NOT glfw3_FOUND)
                              "Error output: ${stderr}")
     endif ()
 
-    list (APPEND CMAKE_PREFIX_PATH ${glfw_INSTALL_DIR}/lib/cmake)
+    list (APPEND CMAKE_PREFIX_PATH ${glfw_INSTALL_DIR})
 
     set (glfw_INSTALL_DIR)
 endif ()
